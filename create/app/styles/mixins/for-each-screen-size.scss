@@ -1,0 +1,155 @@
+//
+// We can't use functions to cause side-effects; mixins are currently the way
+//   to do this.  See sass issue #1854 for more info
+//
+// https://github.com/sass/sass/issues/1854
+//
+// Also important to note, this ugly sharing of global variables is only
+//   necessary to gain the scoping which is otherwise not possible.  Ideally i'd
+//   be able to declare variables that are scoped like the following;
+//
+/*
+
+$size-filter: 'all';
+
+@mixin for-small-phones {
+  $size-filter: 'small-phones';
+
+  @media (max-width: $small-phone-max) {
+    //
+    // Ideally all references in @content to $size-filter would resolve to
+    //   'small-phones'.  Sass just doesn't work like this though, so we're left
+    //   procedurally modifying the global variable.
+    //
+    @content;
+  }
+}
+
+*/
+//
+// Anyway, that ends my justification for ugly code :)
+//
+
+$__old_size-filter: null;
+
+@mixin set-size-filter($new-size-filter) {
+  $__old_size-filter: $size-filter !global;
+  $size-filter: $new-size-filter !global;
+}
+
+@mixin reset-size-filter {
+  $size-filter: $__old_size-filter !global;
+  $__old_size-filter: null !global;
+}
+
+@mixin for-small-phones {
+  @include set-size-filter('small-phones');
+
+  @media (max-width: $small-phone-max) {
+    @content;
+  }
+
+  @include reset-size-filter;
+
+  @if ($size-filter == null) {
+    @error 'size-filter is null in for-small-phones';
+  }
+}
+
+@mixin for-phones {
+  @include set-size-filter('phones');
+
+  @media (min-width: $phone-min) and (max-width: $phone-max) {
+    @content;
+  }
+
+  @include reset-size-filter;
+
+  @if ($size-filter == null) {
+    @error 'size-filter is null in for-phones';
+  }
+}
+
+@mixin for-tablets {
+  @include set-size-filter('tablets');
+
+  @media (min-width: $tablet-min) and (max-width: $tablet-max) {
+    @content;
+  }
+
+  @include reset-size-filter;
+
+  @if ($size-filter == null) {
+    @error 'size-filter is null in for-tablets';
+  }
+}
+
+@mixin for-desktops {
+  @include set-size-filter('desktops');
+
+  @media (min-width: $desktop-min) {
+    @content;
+  }
+
+  @include reset-size-filter;
+
+  @if ($size-filter == null) {
+    @error 'size-filter is null in for-desktops';
+  }
+}
+
+@mixin for-phones-and-down {
+  @include set-size-filter('phones-and-down');
+
+  @media (max-width: $phone-max) {
+    @content;
+  }
+
+  @include reset-size-filter;
+
+  @if ($size-filter == null) {
+    @error 'size-filter is null in for-phones-and-down';
+  }
+}
+
+@mixin for-tablets-and-down {
+  @include set-size-filter('tablets-and-down');
+
+  @media (max-width: $tablet-max) {
+    @content;
+  }
+
+  @include reset-size-filter;
+
+  @if ($size-filter == null) {
+    @error 'size-filter is null in for-tablets-and-down';
+  }
+}
+
+@mixin for-phones-and-up {
+  @include set-size-filter('phones-and-up');
+
+  @media (min-width: $phone-min) {
+    @content;
+  }
+
+  @include reset-size-filter;
+
+  @if ($size-filter == null) {
+    @error 'size-filter is null in for-phones-and-up';
+  }
+}
+
+@mixin for-tablets-and-up {
+  @include set-size-filter('tablets-and-up');
+
+  @media (min-width: $tablet-min) {
+    @content;
+  }
+
+  @include reset-size-filter;
+
+  @if ($size-filter == null) {
+    @error 'size-filter is null in for-tablets-and-up';
+  }
+}

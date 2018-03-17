@@ -1,0 +1,12 @@
+@import './styles/variables';
+
+:export {
+  phoneMin: $phone-min;
+  tabletMin: $tablet-min;
+  desktopMin: $desktop-min;
+
+  // derived from above
+  smallPhoneMax: $small-phone-max;
+  phoneMax: $phone-max;
+  tabletMax: $tablet-max;
+}

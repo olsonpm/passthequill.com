@@ -1,0 +1,30 @@
+button {
+  border: 0;
+  outline: 0 !important;
+}
+
+//
+// Apparently normalize.scss sets the font-family of these to sans-serif.  Seems
+//   odd given websites would rarely ever use browser-default fonts
+//
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: Raleway, sans-serif;
+}
+
+//
+// border box makes life easier
+// https://css-tricks.com/inheriting-box-sizing-probably-slightly-better-best-practice/
+//
+
+html {
+  box-sizing: border-box;
+}
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}

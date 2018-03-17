@@ -1,0 +1,56 @@
+@mixin res-aware-font-size($size) {
+  $font-size-map: (
+    small-phone: (
+      base: 12,
+      md: 16,
+      lg: 19,
+      xl: 28,
+    ),
+    phone: (
+      base: 14,
+      md: 17,
+      lg: 21,
+      xl: 32,
+    ),
+    tablet: (
+      base: 15,
+      md: 17,
+      lg: 23,
+      xl: 38,
+    ),
+    desktop: (
+      base: 16,
+      md: 18,
+      lg: 25,
+      xl: 48,
+    ),
+  );
+
+  @if contains($small-phone-sizes, $size-filter) {
+    @media (max-width: $small-phone-max) {
+      // prettier-ignore
+      font-size: map-get(map-get($font-size-map, 'small-phone'), $size)#{$px};
+    }
+  }
+
+  @if contains($phone-sizes, $size-filter) {
+    @media (min-width: $phone-min) and (max-width: $phone-max) {
+      // prettier-ignore
+      font-size: map-get(map-get($font-size-map, 'phone'), $size)#{$px};
+    }
+  }
+
+  @if contains($tablet-sizes, $size-filter) {
+    @media (min-width: $tablet-min) and (max-width: $tablet-max) {
+      // prettier-ignore
+      font-size: map-get(map-get($font-size-map, 'tablet'), $size)#{$px};
+    }
+  }
+
+  @if contains($desktop-sizes, $size-filter) {
+    @media (min-width: $desktop-min) {
+      // prettier-ignore
+      font-size: map-get(map-get($font-size-map, 'desktop'), $size)#{$px};
+    }
+  }
+}

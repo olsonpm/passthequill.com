@@ -1,0 +1,95 @@
+//--------//
+// colors //
+//--------//
+
+$bg: white;
+$bg-off: darken($bg, 10%);
+$fg: #131313;
+$fg-disabled: lighten($fg, 30%);
+$fg-light: lighten($fg, 50%);
+$green: #4caf50;
+$green-focus-border: #003e03;
+$green-focus-background: #02a809;
+$orange: #ff9b46;
+$yellow-warn: #d49300;
+$yellow-warn-light: #ffe4a7;
+$error-red: #de5858;
+$error-red-dark: #a44242;
+$info-blue: #b7d1eb;
+$info-blue-dark: #789abd;
+$info-blue-light: lighten($info-blue, 10%);
+$info-blue-focus: #3d496f;
+$purple: #8c4f84;
+$quill-blue: #4c7eaf;
+$quill-blue-light: #a3d1ff;
+$disabled-gray: #888;
+$disabled-gray-dark: #555;
+$shadow-gray-default: #aaa;
+
+// TODO: figure out whether this color will be used elsewhere, and change the
+//   name accordingly if so
+$footer-color: #383838;
+
+//
+//--------//
+// common //
+//--------//
+
+$site-width: 1024px;
+
+$radius-small: 4px;
+$radius-large: 10px;
+
+$duration-tiny: 0.15s;
+$duration-short: 0.3s;
+$duration-normal: 0.4s;
+
+$default-textbox-width: 300px;
+
+// easeInSine
+$easing-default: cubic-bezier(0.47, 0, 0.745, 0.715);
+
+$default-line-height: 1.4;
+
+// some misc shared values
+$mobile-footer-height: 60;
+$button-margin-top-size: 'xl';
+$button-vertical-padding-size: 'md';
+
+//
+//------//
+// game //
+//------//
+
+$column-width: 320px;
+
+//
+//-------//
+// sizes //
+//-------//
+
+$phone-min: 425px;
+$tablet-min: 768px;
+$desktop-min: $site-width;
+
+$small-phone-max: ($phone-min - 1);
+$phone-max: ($tablet-min - 1);
+$tablet-max: ($desktop-min - 1);
+
+//
+// used in mixins to create scopes of size filters.  e.g. $size-filter is set
+//   to 'small-phone' inside the 'for-small-phones' mixin.  That way deeper
+//   mixins can filter their css output accordingly.  Here we're just setting
+//   the default top-level filter to 'all'
+//
+$size-filter: 'all';
+
+//
+// the size filter above will be checked against these lists to filter the css
+//
+$small-phone-sizes: 'all', 'small-phones', 'phones-and-down', 'tablets-and-down';
+$phone-sizes: 'all', 'phones', 'phones-and-down', 'tablets-and-down',
+  'phones-and-up';
+$tablet-sizes: 'all', 'tablets', 'tablets-and-down', 'phones-and-up',
+  'tablets-and-up';
+$desktop-sizes: 'all', 'desktops', 'phones-and-up', 'tablets-and-up';

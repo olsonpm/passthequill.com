@@ -1,0 +1,48 @@
+// I can't figure out why I need to interpolate 'px' in order to get it
+//   concatenating with values properly (e.g. map-get(<some map>, <some key>)px
+//   results in an invalid "<val> px" as opposed to "<val>px"
+$px: px;
+
+@import 'for-each-screen-size';
+@import 'per-screen-size';
+@import 'res-aware-font-size';
+@import 'res-aware-element-spacing';
+
+@mixin cf() {
+  &:before,
+  &:after {
+    content: '';
+    display: table;
+  }
+
+  &:after {
+    clear: both;
+  }
+}
+
+@mixin feather-icon() {
+  height: 24px;
+  width: 24px;
+}
+
+@mixin shadow-small($color: $shadow-gray-default, $with-focus: false) {
+  box-shadow: 0 2px 6px $color;
+
+  @if $with-focus {
+    &:focus,
+    &:focus-within {
+      box-shadow: 0 2px 6px darken($color, 10%);
+    }
+  }
+}
+
+@mixin shadow-normal($color: $shadow-gray-default, $with-focus: false) {
+  box-shadow: 0 3px 6px $color;
+
+  @if $with-focus {
+    &:focus,
+    &:focus-within {
+      box-shadow: 0 5px 6px darken($color, 20%);
+    }
+  }
+}

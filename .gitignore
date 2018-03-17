@@ -1,0 +1,7 @@
+/node_modules
+/dev-modules
+/server.bundle.js
+/dist
+/config/app.js
+/config/debug.js
+/lib/server/email/templates/*.inline.html

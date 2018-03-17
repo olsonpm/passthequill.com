@@ -1,0 +1,22 @@
+form {
+  > ul > li {
+    + li {
+      @include res-aware-element-spacing('margin-top', 'xl');
+    }
+  }
+
+  label {
+    display: inline-block;
+  }
+
+  .help-circle + label {
+    @include for-phones-and-down {
+      @include res-aware-element-spacing('margin-bottom', 'sm');
+    }
+  }
+  :not(.help-circle) + label {
+    @include for-phones-and-down {
+      @include res-aware-element-spacing('margin-bottom', 'xs');
+    }
+  }
+}

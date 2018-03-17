@@ -1,0 +1,176 @@
+<template>
+  <can-fade ref="canFadeComponent"
+    :should-animate-slowly="true"
+    :show-initially="showInitially">
+
+    <li class="enter-guess">
+      <my-form class="guess-form"
+        :form-object="formObject"
+        :on-submit="onSubmit"
+        :set-submit-active="setSubmitActive">
+
+        <my-text-input id="guess"
+          label="Your Guess"
+          maxlength="5"
+          :disable-validation-indicator="true"
+          :include-inline-submit-button="true"
+          :parent-component="this" />
+
+        <notifier v-if="state.showNotification"
+          type="error"
+          :afterClose="afterNotificationClosed">
+
+          <p>Your guess must be 1 - 5 letters</p>
+        </notifier>
+      </my-form>
+    </li>
+  </can-fade>
+</template>
+
+<script>
+//---------//
+// Imports //
+//---------//
+
+import validationInfo from 'universal/input-validation-info'
+
+import { createNamespacedHelpers } from 'vuex'
+import { combineAll } from 'fes'
+import {
+  createComputedFormData,
+  createFormData,
+  createFormObject,
+} from 'client/form-helpers'
+
+//
+//------//
+// Init //
+//------//
+
+const inputIdToInitialState = validationInfo.guess.body,
+  { mapState } = createNamespacedHelpers('room')
+
+if (process.env.NODE_ENV === 'development') {
+  inputIdToInitialState.guess.initialValue = 'coast'
+}
+
+//
+//------//
+// Main //
+//------//
+
+export default {
+  name: 'enter-guess',
+
+  beforeCreate() {
+    this.formObject = createFormObject(inputIdToInitialState, this)
+  },
+
+  props: ['show-initially'],
+
+  computed: getComputedProperties(),
+
+  data() {
+    return {
+      formData: createFormData(this.formObject),
+      state: {
+        clientErrorMessagesSnapshot: [],
+        failureReason: '',
+        showFailureIndicator: false,
+        showNotification: false,
+        submitActive: false,
+        success: null,
+      },
+    }
+  },
+
+  methods: {
+    afterNotificationClosed() {
+      this.state.showNotification = false
+    },
+    animateHide() {
+      const { canFadeComponent } = this.$refs
+      return canFadeComponent.animateHide()
+    },
+    animateShow() {
+      const { canFadeComponent } = this.$refs
+      return canFadeComponent.animateShow()
+    },
+    onSubmit() {
+      const { $myStore, formData, formObject, state } = this
+
+      if (!formObject.isValid()) {
+        state.showNotification = true
+        return
+      }
+
+      const guess = formData.inputs.guess
+      return $myStore.dispatch('room/addGuess', { guess })
+    },
+    setSubmitActive(trueOrFalse) {
+      this.state.submitActive = trueOrFalse
+    },
+  },
+}
+
+//
+//------------------//
+// Helper Functions //
+//------------------//
+
+function getComputedProperties() {
+  const vuexState = mapState(['currentPlayer', 'otherPlayer']),
+    formState = createComputedFormData(inputIdToInitialState)
+
+  return combineAll.objects([vuexState, formState])
+}
+</script>
+
+<style lang="scss">
+.enter-guess {
+  height: 56px;
+  line-height: 56px;
+
+  > .guess-form {
+    > .my-text-input {
+      > label {
+        @include res-aware-element-spacing('margin-right', 'sm');
+
+        display: inline-block;
+
+        &::after {
+          content: ':';
+        }
+      }
+
+      > .input-wrapper {
+        @include per-screen-size('width', 76, 102, 102, 102, 'px');
+        @include per-screen-size('height', 34, 36, 36, 36, 'px');
+
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        display: inline-block;
+        vertical-align: middle;
+
+        > input#guess {
+          @include per-screen-size('width', 74, 100, 100, 100, 'px');
+          @include per-screen-size(
+            ('height', 'line-height'),
+            32,
+            34,
+            34,
+            34,
+            'px'
+          );
+
+          background-color: $bg;
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+          font-family: Hack, monospace;
+          vertical-align: top;
+        }
+      }
+    }
+  }
+}
+</style>

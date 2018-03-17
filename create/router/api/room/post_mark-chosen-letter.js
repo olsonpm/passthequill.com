@@ -1,0 +1,155 @@
+//
+// TODO: update friend's client via web sockets
+//
+
+//---------//
+// Imports //
+//---------//
+
+import dedent from 'dedent'
+
+import { handleErrorDuringRoute } from 'project-root/create/router/api/helpers'
+import { combine, last, mAssignOver } from 'fes'
+import { sanitize } from './helpers'
+import {
+  createIfRequestIsValid,
+  ifResponseIsNot404,
+  ifStatusIsNot404,
+} from 'server/utils'
+import {
+  dal,
+  docidToHash,
+  hashToDocid,
+  pickIdAndRev,
+  removeCouchdbProperties,
+} from 'server/db'
+
+//
+//------//
+// Init //
+//------//
+
+const ifRequestIsValid = createIfRequestIsValid('markChosenLetter'),
+  optionsForGet = {
+    allow404: true,
+    returnRawResponse: true,
+  }
+
+//
+//------//
+// Main //
+//------//
+
+function createPostMarkChosenLetter(arg) {
+  const { router, websocketServer } = arg,
+    markChosenLetter = createMarkChosenLetter(websocketServer)
+
+  router.post(
+    '/:roomHash/player/:playerHash/mark-chosen-letter',
+    ifRequestIsValid(markChosenLetter)
+  )
+
+  return arg
+}
+
+function createMarkChosenLetter(websocketServer) {
+  return ctx => {
+    const { playerHash, roomHash } = ctx.params,
+      { chosenLetter } = ctx.request.body,
+      errorArgs = [playerHash, roomHash, chosenLetter],
+      authorizeThenGetOtherPlayerData = createAuthorizeThenGetOtherPlayerData(
+        ctx
+      ),
+      markChosenLetterAndReturnOtherPlayer = createMarkChosenLetterAndReturnOtherPlayer(
+        websocketServer
+      )
+
+    return dal.activeRoom
+      .get({ _id: hashToDocid(roomHash) }, optionsForGet)
+      .then(ifResponseIsNot404(ctx, authorizeThenGetOtherPlayerData))
+      .then(ifStatusIsNot404(markChosenLetterAndReturnOtherPlayer))
+      .catch(handleErrorDuringRoute(ctx, createErrorMessage, errorArgs))
+  }
+}
+
+function createAuthorizeThenGetOtherPlayerData(ctx) {
+  const { playerHash: currentPlayerHash } = ctx.params
+
+  return function authorizeThenGetOtherPlayerData(roomData) {
+    const { player1Hash, player2Hash } = roomData,
+      possiblePlayerHashes = new Set([player1Hash, player2Hash])
+
+    if (!possiblePlayerHashes.has(currentPlayerHash)) {
+      ctx.status = 404
+      ctx.body = {
+        error: "The room isn't associated with your specified playerHash",
+      }
+      return { is404: true }
+    }
+
+    const otherPlayerHash =
+      currentPlayerHash === player1Hash ? player2Hash : player1Hash
+
+    return Promise.all([
+      ctx,
+      dal.player.get({ _id: hashToDocid(otherPlayerHash) }),
+    ])
+  }
+}
+
+function createMarkChosenLetterAndReturnOtherPlayer(websocketServer) {
+  return ([ctx, couchdbOtherPlayerData]) => {
+    const playerIdAndRev = pickIdAndRev(couchdbOtherPlayerData),
+      otherPlayerData = removeCouchdbProperties(couchdbOtherPlayerData),
+      { chosenLetter } = ctx.request.body,
+      lastGuess = last(otherPlayerData.guesses)
+
+    mAssignOver(lastGuess)({
+      chosenLetter,
+      isValid: true,
+      wasReviewed: true,
+    })
+
+    return dal.player
+      .update(combine(otherPlayerData)(playerIdAndRev))
+      .then(() => {
+        websocketServer.maybeUpdateClient({
+          playerHash: docidToHash(couchdbOtherPlayerData._id),
+          data: {
+            id: 'otherPlayerChoseLetter',
+            data: {
+              commitOrDispatch: 'commit',
+              type: 'room/updateCurrentPlayer',
+              payload: {
+                currentPlayer: sanitize.player.current(otherPlayerData),
+              },
+            },
+          },
+        })
+
+        ctx.status = 200
+        ctx.body = {
+          otherPlayer: sanitize.player.other(otherPlayerData),
+        }
+      })
+  }
+}
+
+function createErrorMessage(playerHash, roomHash, chosenLetter) {
+  return {
+    friendly: 'marking your chosen letter',
+    detailed: dedent(`
+      error occurred during POST mark-chosen-letter
+        playerHash: ${playerHash}
+        roomHash: ${roomHash}
+        chosenLetter: ${chosenLetter}
+    `),
+  }
+}
+
+//
+//---------//
+// Exports //
+//---------//
+
+export default createPostMarkChosenLetter

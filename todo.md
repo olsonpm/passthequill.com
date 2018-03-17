@@ -1,0 +1,4 @@
+- ensure 'once' modifier is on appropriate buttons
+- prevent calls to api when they are out of turn
+- turn all clickable non-links into buttons
+- set up couchdb ssl

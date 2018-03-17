@@ -1,0 +1,284 @@
+@import '~normalize-scss/sass/_normalize';
+@include normalize();
+
+@import 'imported-by-all-components';
+
+@import 'fonts';
+@import 'forms';
+@import 'custom-reset';
+
+html,
+body {
+  background-color: $bg;
+  color: $fg;
+  font-family: Raleway, sans-serif;
+  font-size: 16px;
+  line-height: $default-line-height;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+  > main {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+
+    > .site-container {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+
+      > .view {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+      }
+    }
+  }
+}
+
+.site-container {
+  @include res-aware-element-spacing(('padding-left', 'padding-right'), 'lg');
+  @include for-phones {
+    max-width: $phone-min;
+  }
+
+  margin: 0 auto;
+  max-width: $site-width;
+  width: 100%;
+}
+
+header {
+  @include res-aware-element-spacing('margin-top', 'lg');
+}
+
+footer {
+  @include per-screen-size(
+    ('height', 'line-height', 'margin-top'),
+    $mobile-footer-height,
+    $mobile-footer-height,
+    80,
+    80,
+    'px'
+  );
+
+  background-color: $footer-color;
+  color: $bg;
+  font-weight: 500;
+
+  .author {
+    @include res-aware-element-spacing('margin-right', 'md');
+  }
+
+  .octicon,
+  .small-quill {
+    height: 40px;
+    vertical-align: middle;
+    width: 40px;
+  }
+
+  .small-quill {
+    > .outer-stem {
+      stroke: $bg;
+    }
+
+    > .feather {
+      fill: $bg;
+    }
+
+    > .inner-stem {
+      fill: $fg;
+    }
+  }
+
+  .octicon {
+    color: $bg;
+    height: 40px;
+  }
+
+  @include for-small-phones {
+    .author {
+      font-size: 15px;
+    }
+
+    .octicon {
+      height: 36px;
+    }
+
+    .small-quill {
+      height: 30px;
+      width: 30px;
+    }
+  }
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Source Serif Pro', serif;
+  font-weight: 600;
+}
+
+h5 {
+  @include res-aware-element-spacing('margin-top', 'lg');
+
+  font-size: 16px;
+  font-weight: 600;
+}
+
+h1 {
+  @include per-screen-size('font-size', 32, 38, 44, 48, 'px');
+  margin-top: 0;
+}
+
+h2 {
+  @include per-screen-size('font-size', 26, 29, 32, 32, 'px');
+}
+
+h3 {
+  @include per-screen-size('font-size', 22, 22, 24, 26, 'px');
+}
+
+h4 {
+  font-size: 20px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: 0;
+}
+
+p {
+  @include res-aware-element-spacing('margin-top', 'sm');
+
+  margin-bottom: 0;
+
+  &.sidenote {
+    font-style: italic;
+  }
+}
+
+header {
+  a + a {
+    margin-left: 20px;
+  }
+
+  h1,
+  .quill {
+    @include res-aware-element-spacing('margin-bottom', 'lg');
+
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .quill {
+    @include res-aware-element-spacing('margin-left', 'lg');
+    @include per-screen-size('height', 60, 70, 75, 80, 'px');
+
+    fill: $quill-blue;
+    margin-top: 0;
+  }
+}
+
+ul:not(.bulleted) {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+ul.bulleted {
+  list-style-type: disc;
+  padding-left: 20px;
+
+  > li {
+    @include res-aware-element-spacing('margin-top', 'xxs');
+  }
+}
+
+.feather-icon {
+  height: 24px;
+  width: 24px;
+}
+
+button {
+  cursor: pointer;
+
+  &.link {
+    background-color: transparent;
+    text-decoration: underline;
+  }
+}
+
+a,
+a:visited {
+  color: currentColor;
+}
+
+.dont-wrap {
+  white-space: nowrap;
+}
+
+svg.emoji {
+  display: inline-block;
+  margin-top: -1px;
+  vertical-align: middle;
+}
+
+span.important {
+  font-weight: 600;
+}
+
+dl {
+  > dt {
+    @include res-aware-element-spacing('margin-bottom', 'xxs');
+
+    font-weight: bold;
+  }
+  > dd {
+    @include res-aware-element-spacing('margin-left', 'lg');
+
+    > p:first-child {
+      margin-top: 0;
+    }
+  }
+  > dd + dt {
+    @include res-aware-element-spacing('margin-top', 'md');
+  }
+}
+
+//
+// These are only necessary for ssr.  After the initial rendering, the v-if
+//   statements should take care of whether elements display
+//
+// NOTE: These classes should **always** be accompanied by a matching
+//       v-if="isTabletOrLarger" or v-if="isPhoneOrSmaller"
+//
+@include for-tablets-and-up {
+  .phones-and-smaller {
+    display: none !important;
+  }
+}
+@include for-phones-and-down {
+  .tablets-and-larger {
+    display: none !important;
+  }
+}
+@include for-small-phones {
+  .phones-and-larger {
+    display: none !important;
+  }
+}
+@include for-phones-and-up {
+  .small-phones {
+    display: none !important;
+  }
+}
