@@ -135,7 +135,7 @@ import dedentMacro from 'dedent/macro'
 import validationInfo from 'universal/input-validation-info'
 import api from 'universal/api'
 import { getValueAtPath, getValueFrom, isEmpty, join, map } from 'fes'
-import { player1Email, player2Email } from 'project-root/config/debug'
+import debug from 'project-root/config/debug'
 import { settleAll, waitMs } from 'universal/utils'
 import {
   createComputedFormData,
@@ -150,7 +150,8 @@ import {
 const inputIdToInitialState = validationInfo.createARoom.body,
   playerNumberToFamiliarName = getPlayerNumberToFamiliarName(),
   toFamiliarNames = getValueFrom(playerNumberToFamiliarName),
-  getFriendlyMessage = getValueAtPath(['response', 'data', 'error'])
+  getFriendlyMessage = getValueAtPath(['response', 'data', 'error']),
+  { player1Email, player2Email } = debug
 
 if (process.env.NODE_ENV === 'development') {
   inputIdToInitialState.player1Email.initialValue = player1Email

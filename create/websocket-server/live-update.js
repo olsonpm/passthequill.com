@@ -13,7 +13,7 @@
 import ws from 'ws'
 import log from 'server/log'
 
-import { websocketPort } from 'project-root/config/debug'
+import { liveUpdateWebsocket } from 'project-root/config/app'
 
 //
 //------//
@@ -30,7 +30,7 @@ const playerHashToClientSocket = {},
 //------//
 
 const createWebsocketServer = () => {
-  const server = new ws.Server({ port: websocketPort.liveUpdate })
+  const server = new ws.Server({ port: liveUpdateWebsocket.port })
 
   server.on('connection', ws => {
     ws.on('error', handleConnectionError)

@@ -68,64 +68,7 @@ const getCommonConfig = babelLoaderOptions => {
     },
     plugins,
     module: {
-      rules: [
-        {
-          loader: 'vue-loader',
-          options: {
-            compilerOptions: { preserveWhitespace: false },
-          },
-          test: /\.vue$/,
-        },
-        {
-          exclude: /\/node_modules\/(?!(vue2-hammer)\/).*/,
-          loader: 'babel-loader',
-          options: babelLoaderOptions,
-          test: /\.js$/,
-        },
-        {
-          loader: 'url-loader',
-          options: { limit: 10000 },
-          test: /\.(ttf|woff|png|jpg|gif|svg)$/,
-        },
-        {
-          test: screenSizeBreakpointsRe,
-          use: ['css-loader', 'sass-loader'],
-        },
-        {
-          test: /\.scss$/,
-          exclude: screenSizeBreakpointsRe,
-          use: [
-            extractOrStyleLoader,
-            {
-              loader: 'css-loader',
-              options: { sourceMap: false },
-            },
-            {
-              loader: 'postcss-loader',
-              options: {
-                plugins: [
-                  autoprefixer({ browsers: ['last 2 versions'] }),
-                  focusWithin(),
-                ],
-                sourceMap: false,
-              },
-            },
-            {
-              loader: 'sass-loader',
-              options: { sourceMap: false },
-            },
-            {
-              loader: 'sass-resources-loader',
-              options: {
-                resources: path.join(
-                  __dirname,
-                  'create/app/styles/imported-by-all-components.scss'
-                ),
-              },
-            },
-          ],
-        },
-      ],
+      rules: getRules(babelLoaderOptions, extractOrStyleLoader),
     },
   }
 }
@@ -134,6 +77,67 @@ const getCommonConfig = babelLoaderOptions => {
 //------------------//
 // Helper Functions //
 //------------------//
+
+function getRules(babelLoaderOptions, extractOrStyleLoader) {
+  return [
+    {
+      loader: 'vue-loader',
+      options: {
+        compilerOptions: { preserveWhitespace: false },
+      },
+      test: /\.vue$/,
+    },
+    {
+      exclude: /\/node_modules\/(?!(vue2-hammer)\/).*/,
+      loader: 'babel-loader',
+      options: babelLoaderOptions,
+      test: /\.js$/,
+    },
+    {
+      loader: 'url-loader',
+      options: { limit: 10000 },
+      test: /\.(ttf|woff|png|jpg|gif|svg)$/,
+    },
+    {
+      test: screenSizeBreakpointsRe,
+      use: ['css-loader', 'sass-loader'],
+    },
+    {
+      test: /\.scss$/,
+      exclude: screenSizeBreakpointsRe,
+      use: [
+        extractOrStyleLoader,
+        {
+          loader: 'css-loader',
+          options: { sourceMap: false },
+        },
+        {
+          loader: 'postcss-loader',
+          options: {
+            plugins: [
+              autoprefixer({ browsers: ['last 2 versions'] }),
+              focusWithin(),
+            ],
+            sourceMap: false,
+          },
+        },
+        {
+          loader: 'sass-loader',
+          options: { sourceMap: false },
+        },
+        {
+          loader: 'sass-resources-loader',
+          options: {
+            resources: path.join(
+              __dirname,
+              'create/app/styles/imported-by-all-components.scss'
+            ),
+          },
+        },
+      ],
+    },
+  ]
+}
 
 function joinPath(firstPart) {
   return secondPart => path.join(firstPart, secondPart)

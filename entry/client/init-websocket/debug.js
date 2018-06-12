@@ -2,7 +2,14 @@
 // Imports //
 //---------//
 
-import { websocketUrl } from 'project-root/config/debug'
+import debug from 'project-root/config/debug'
+
+//
+//------//
+// Init //
+//------//
+
+const { websocketUrl } = debug
 
 //
 //------//

@@ -43,9 +43,7 @@ clientConfig.plugins = appendAll(clientPlugins)(clientConfig.plugins)
 function getClientPlugins() {
   return [
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(
-        process.env.NODE_ENV || 'development'
-      ),
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
       'process.env.VUE_ENV': '"client"',
       'process.env.BASE_URL': `'${baseUrl.external}/'`,
     }),

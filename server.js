@@ -35,8 +35,7 @@ import { logError } from 'universal/utils'
 //------//
 
 const highlight = chalk.green,
-  isDevelopment = process.env.NODE_ENV !== 'production',
-  isProduction = !isDevelopment,
+  isDevelopment = process.env.NODE_ENV === 'development',
   serverPort = 8085,
   webpackHotClientPort = 8086,
   templatePath = path.join(__dirname, 'index.template.html'),
@@ -82,7 +81,7 @@ initDevDatabase()
 //------------------//
 
 function initDevDatabase() {
-  if (isProduction) return Promise.resolve()
+  if (!isDevelopment) return Promise.resolve()
 
   return deleteAllDatabases()
     .then(createAllDatabases)

@@ -40,7 +40,7 @@ const eventualConfig = createInlineTemplates().then(() => ({
     path: projectRootDir,
   },
   externals: webpackNodeExternals({
-    whitelist: /\.css$/,
+    whitelist: [/\.css$/, 'fes'],
   }),
   resolve: {
     alias: _moduleAliases,
@@ -58,27 +58,34 @@ const eventualConfig = createInlineTemplates().then(() => ({
     new webpack.optimize.ModuleConcatenationPlugin(),
     new FriendlyErrorsPlugin(),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(
-        process.env.NODE_ENV || 'development'
-      ),
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
       'process.env.BASE_URL': `'${baseUrl.local}/'`,
     }),
   ],
   module: {
-    rules: [
-      {
-        loader: 'raw-loader',
-        test: /email\/templates\/.*\.html/,
-      },
-      {
-        exclude: /\/node_modules\/(?!(vue2-hammer)\/).*/,
-        loader: 'babel-loader',
-        options: babelConfig,
-        test: /.js$/,
-      },
-    ],
+    rules: getRules(),
   },
 }))
+
+//
+//------------------//
+// Helper Functions //
+//------------------//
+
+function getRules() {
+  return [
+    {
+      loader: 'raw-loader',
+      test: /email\/templates\/.*\.html/,
+    },
+    {
+      exclude: /\/node_modules\/(?!(vue2-hammer)\/).*/,
+      loader: 'babel-loader',
+      options: babelConfig,
+      test: /.js$/,
+    },
+  ]
+}
 
 //
 //---------//

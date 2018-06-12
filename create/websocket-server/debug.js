@@ -6,7 +6,14 @@ import ws from 'ws'
 import log from 'server/log'
 
 import { applyAt, forEach, keepWhen, passThrough } from 'fes'
-import { websocketPort } from 'project-root/config/debug'
+import debug from 'project-root/config/debug'
+
+//
+//------//
+// Init //
+//------//
+
+const { websocketPort } = debug
 
 //
 //------//

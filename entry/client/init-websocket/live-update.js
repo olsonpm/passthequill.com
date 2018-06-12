@@ -17,7 +17,7 @@
 
 import vue from 'vue'
 
-import { websocketUrl } from 'project-root/config/debug'
+import { liveUpdateWebsocket } from 'project-root/config/app'
 import { noop } from 'universal/utils'
 import { assignOver, last, mSet, reduce } from 'fes'
 
@@ -27,13 +27,7 @@ import { assignOver, last, mSet, reduce } from 'fes'
 //------//
 
 const idToMutatePayload = getIdToMutatePayload(),
-  liveUpdateIds = new Set([
-    'otherPlayerChoseLetter',
-    'otherPlayerGuessed',
-    'otherPlayerInitialized',
-    'otherPlayerMarkedGuessAsInvalid',
-    'otherPlayerMarkedGuessAsValid',
-  ])
+  liveUpdateIds = getLiveUpdateIds()
 
 //
 //------//
@@ -41,7 +35,7 @@ const idToMutatePayload = getIdToMutatePayload(),
 //------//
 
 const init = ({ eventManager, store, playerHash, roomHash }) => {
-  const liveUpdateWs = new WebSocket(websocketUrl.liveUpdate),
+  const liveUpdateWs = new WebSocket(liveUpdateWebsocket.url),
     idToHandleUpdate = getIdToHandleUpdate(eventManager, store)
 
   liveUpdateWs.onopen = () => {
@@ -78,6 +72,16 @@ const init = ({ eventManager, store, playerHash, roomHash }) => {
 //------------------//
 // Helper Functions //
 //------------------//
+
+function getLiveUpdateIds() {
+  return new Set([
+    'otherPlayerChoseLetter',
+    'otherPlayerGuessed',
+    'otherPlayerInitialized',
+    'otherPlayerMarkedGuessAsInvalid',
+    'otherPlayerMarkedGuessAsValid',
+  ])
+}
 
 function getIdToMutatePayload() {
   return {

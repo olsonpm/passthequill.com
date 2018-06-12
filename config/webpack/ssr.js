@@ -37,7 +37,7 @@ const ssrConfig = Object.assign({}, commonConfig, {
   entry: path.join(__dirname, 'entry/ssr.js'),
   target: 'node',
   externals: webpackNodeExternals({
-    whitelist: /\.css$/,
+    whitelist: [/\.css$/, 'fes'],
   }),
 })
 
@@ -74,12 +74,13 @@ function getReplaceLoader() {
           flags: '',
           search: "import (velocityA|a)nimate from 'velocity-animate'\n",
           replace: '',
-        }, {
+        },
+        {
           search: "import hammerjs from 'hammerjs'\n",
           replace: '',
-        }
-      ]
-    }
+        },
+      ],
+    },
   }
 }
 
