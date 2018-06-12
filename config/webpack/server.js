@@ -49,8 +49,8 @@ const eventualConfig = createInlineTemplates().then(() => ({
       //
       // dev-modules are necessary because things break when symlinks are used
       //
-      path.join(projectRootDir, 'node_modules'),
       path.join(projectRootDir, 'dev-modules'),
+      path.join(projectRootDir, 'node_modules'),
       path.join(projectRootDir, 'dev-modules/fes/node_modules'),
     ],
   },

@@ -61,8 +61,8 @@ const getCommonConfig = babelLoaderOptions => {
         // Also, dev-modules are necessary because things break when symlinks
         //   are used
         //
-        path.join(__dirname, 'node_modules'),
         path.join(__dirname, 'dev-modules'),
+        path.join(__dirname, 'node_modules'),
         path.join(__dirname, 'dev-modules/fes/node_modules'),
       ],
     },
