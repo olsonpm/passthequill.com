@@ -42,7 +42,7 @@ import { logError } from 'universal/utils'
 
 const highlight = chalk.green,
   isDevelopment = process.env.NODE_ENV === 'development',
-  serverPort = 8085,
+  serverPort = isDevelopment ? 8085 : 80,
   webpackHotClientPort = 8086,
   templatePath = path.resolve(__dirname, 'index.template.html'),
   webpackConfigs = {
