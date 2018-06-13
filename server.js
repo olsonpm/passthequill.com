@@ -24,6 +24,7 @@ import createPageRouter from './create/router/page'
 import fixtureNameToInstall from './dev/fixture-name-to-install'
 import Koa from 'koa'
 import KoaRouter from 'koa-router'
+import koaStatic from 'koa-static'
 import koaVueSsr_initDevServer from 'koa-vue-ssr_init-dev-server'
 import path from 'path'
 import { createBundleRenderer } from 'vue-server-renderer'
@@ -41,7 +42,8 @@ import { serverPort } from 'project-root/config/app'
 // Init //
 //------//
 
-const highlight = chalk.green,
+const distVueDir = path.resolve(__dirname, 'dist/vue'),
+  highlight = chalk.green,
   isDevelopment = process.env.NODE_ENV === 'development',
   webpackHotClientPort = 8086,
   templatePath = path.resolve(__dirname, 'index.template.html'),
@@ -65,6 +67,10 @@ maybeInitDevDatabase()
   })
   .then(({ getRenderer, koaApp }) => {
     const router = createRouter(getRenderer)
+
+    if (!isDevelopment) {
+      koaApp.use(koaStatic(distVueDir))
+    }
 
     koaApp
       .use(router.routes())

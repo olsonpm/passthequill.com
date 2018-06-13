@@ -39,7 +39,7 @@ const getCommonConfig = babelLoaderOptions => {
     output: {
       filename: '[name].[chunkhash].js',
       path: path.resolve(projectRootDir, 'dist/vue'),
-      publicPath: '/dist/vue/',
+      publicPath: '/',
     },
     performance: {
       maxEntrypointSize: 300000,
