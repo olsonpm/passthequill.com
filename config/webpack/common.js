@@ -45,9 +45,6 @@ const getCommonConfig = babelLoaderOptions => {
       maxEntrypointSize: 300000,
       hints: !!isProd && 'warning',
     },
-    optimization: {
-      splitChunks: { chunks: 'all' },
-    },
     resolve: {
       alias: getFullPathAliases(_moduleAliases),
       extensions: ['.js', '.json', '.vue'],

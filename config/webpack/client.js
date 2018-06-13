@@ -27,6 +27,9 @@ const commonConfig = getCommonConfig(babelConfig),
 
 const clientConfig = Object.assign({}, commonConfig, {
   entry: [path.resolve(__dirname, '../../entry/client/index.js')],
+  optimization: {
+    splitChunks: { chunks: 'all' },
+  },
 })
 
 clientConfig.plugins = appendAll(clientPlugins)(clientConfig.plugins)
