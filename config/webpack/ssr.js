@@ -1,5 +1,3 @@
-'use strict'
-
 //---------//
 // Imports //
 //---------//
@@ -30,11 +28,7 @@ const commonConfig = getCommonConfig(babelConfig),
 //------//
 
 const ssrConfig = Object.assign({}, commonConfig, {
-  //
-  // HACK workaround due to https://github.com/webpack/webpack/issues/4303
-  // __dirname is the project root instead of the directory containing this file
-  //
-  entry: path.join(__dirname, 'entry/ssr.js'),
+  entry: path.resolve(__dirname, '../../entry/ssr.js'),
   target: 'node',
   externals: webpackNodeExternals({
     whitelist: [/\.css$/, 'fes'],

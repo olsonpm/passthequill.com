@@ -1,9 +1,3 @@
-//
-// HACK workaround due to https://github.com/webpack/webpack/issues/4303
-// __dirname is the project root instead of the directory containing
-//   this file
-//
-
 //---------//
 // Imports //
 //---------//
@@ -17,7 +11,7 @@ import webpack from 'webpack'
 
 import { _moduleAliases } from '../../package.json'
 import { VueLoaderPlugin } from 'vue-loader'
-import { map, mAppendAll } from 'fes'
+import { map, mAppendAll, startsWith } from 'fes'
 
 //
 //------//
@@ -25,6 +19,7 @@ import { map, mAppendAll } from 'fes'
 //------//
 
 const isProd = process.env.NODE_ENV === 'production',
+  projectRootDir = path.resolve(__dirname, '../../'),
   screenSizeBreakpointsRe = /app\/screen-size-breakpoints\.scss$/
 
 //
@@ -42,9 +37,9 @@ const getCommonConfig = babelLoaderOptions => {
     mode: isProd ? 'production' : 'development',
     devtool: isProd ? 'source-map' : 'cheap-module-eval-source-map',
     output: {
-      filename: '[name].chunkhash.js',
-      path: path.join(__dirname, 'dist/vue'),
-      publicPath: '/dist/vue',
+      filename: '[name].[chunkhash].js',
+      path: path.resolve(projectRootDir, 'dist/vue'),
+      publicPath: '/dist/vue/',
     },
     performance: {
       maxEntrypointSize: 300000,
@@ -54,16 +49,16 @@ const getCommonConfig = babelLoaderOptions => {
       splitChunks: { chunks: 'all' },
     },
     resolve: {
-      alias: map(joinPath(__dirname))(_moduleAliases),
+      alias: getFullPathAliases(_moduleAliases),
       extensions: ['.js', '.json', '.vue'],
       modules: [
         //
         // Also, dev-modules are necessary because things break when symlinks
         //   are used
         //
-        path.join(__dirname, 'dev-modules'),
-        path.join(__dirname, 'node_modules'),
-        path.join(__dirname, 'dev-modules/fes/node_modules'),
+        path.resolve(projectRootDir, 'dev-modules'),
+        path.resolve(projectRootDir, 'node_modules'),
+        path.resolve(projectRootDir, 'dev-modules/fes/node_modules'),
       ],
     },
     plugins,
@@ -77,6 +72,20 @@ const getCommonConfig = babelLoaderOptions => {
 //------------------//
 // Helper Functions //
 //------------------//
+
+//
+// During development the _moduleAliases will be relative because I don't feel
+//   like forking the `module-alias` project and preventing it from mutating the
+//   _moduleAliases package.json field
+//
+function getFullPathAliases() {
+  const firstValue = _moduleAliases[Object.keys(_moduleAliases)[0]],
+    aliasesAreAbsolute = startsWith('/')(firstValue)
+
+  return aliasesAreAbsolute
+    ? _moduleAliases
+    : map(resolvePath(projectRootDir))(_moduleAliases)
+}
 
 function getRules(babelLoaderOptions, extractOrStyleLoader) {
   return [
@@ -128,8 +137,8 @@ function getRules(babelLoaderOptions, extractOrStyleLoader) {
         {
           loader: 'sass-resources-loader',
           options: {
-            resources: path.join(
-              __dirname,
+            resources: path.resolve(
+              projectRootDir,
               'create/app/styles/imported-by-all-components.scss'
             ),
           },
@@ -139,8 +148,8 @@ function getRules(babelLoaderOptions, extractOrStyleLoader) {
   ]
 }
 
-function joinPath(firstPart) {
-  return secondPart => path.join(firstPart, secondPart)
+function resolvePath(firstPart) {
+  return secondPart => path.resolve(firstPart, secondPart)
 }
 
 function getPlugins() {

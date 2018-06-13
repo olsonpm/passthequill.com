@@ -1,9 +1,14 @@
-//---------//
-// Imports //
-//---------//
+//-------------//
+// Pre-Imports //
+//-------------//
 
 // mutates _moduleAliases to full paths
 import 'module-alias/register'
+
+//
+//---------//
+// Imports //
+//---------//
 
 import FriendlyErrorsPlugin from 'friendly-errors-webpack-plugin'
 import path from 'path'
@@ -21,51 +26,55 @@ import { baseUrl } from 'project-root/config/app'
 // Init //
 //------//
 
-const projectRootDir = path.join(__dirname, '../..')
+const projectRootDir = path.resolve(__dirname, '../../'),
+  isDevelopment = process.env.NODE_ENV === 'development'
 
 //
 //------//
 // Main //
 //------//
 
-const eventualConfig = createInlineTemplates().then(() => ({
-  mode: 'development',
-  entry: path.join(projectRootDir, 'server.js'),
-  target: 'node',
-  devtool: '#cheap-module-inline-source-map',
-  node: { __dirname: false },
-  output: {
-    libraryTarget: 'commonjs2',
-    filename: 'server.bundle.js',
-    path: projectRootDir,
-  },
-  externals: webpackNodeExternals({
-    whitelist: [/\.css$/, 'fes'],
-  }),
-  resolve: {
-    alias: _moduleAliases,
-    extensions: ['.js', '.json', '.vue'],
-    modules: [
-      //
-      // dev-modules are necessary because things break when symlinks are used
-      //
-      path.join(projectRootDir, 'dev-modules'),
-      path.join(projectRootDir, 'node_modules'),
-      path.join(projectRootDir, 'dev-modules/fes/node_modules'),
-    ],
-  },
-  plugins: [
-    new webpack.optimize.ModuleConcatenationPlugin(),
-    new FriendlyErrorsPlugin(),
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-      'process.env.BASE_URL': `'${baseUrl.local}/'`,
+const eventualConfig = createInlineTemplates().then(() => {
+  return {
+    mode: 'development',
+    context: projectRootDir,
+    entry: path.resolve(projectRootDir, 'server.js'),
+    target: 'node',
+    devtool: isDevelopment ? '#cheap-module-inline-source-map' : 'source-map',
+    node: { __dirname: true },
+    output: {
+      libraryTarget: 'commonjs2',
+      filename: 'server.bundle.js',
+      path: projectRootDir,
+    },
+    externals: webpackNodeExternals({
+      whitelist: [/\.css$/, 'fes'],
     }),
-  ],
-  module: {
-    rules: getRules(),
-  },
-}))
+    resolve: {
+      alias: _moduleAliases,
+      extensions: ['.js', '.json', '.vue'],
+      modules: [
+        //
+        // dev-modules are necessary because things break when symlinks are used
+        //
+        path.resolve(projectRootDir, 'dev-modules'),
+        path.resolve(projectRootDir, 'node_modules'),
+        path.resolve(projectRootDir, 'dev-modules/fes/node_modules'),
+      ],
+    },
+    plugins: [
+      new webpack.optimize.ModuleConcatenationPlugin(),
+      new FriendlyErrorsPlugin(),
+      new webpack.DefinePlugin({
+        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+        'process.env.BASE_URL': `'${baseUrl.local}/'`,
+      }),
+    ],
+    module: {
+      rules: getRules(),
+    },
+  }
+})
 
 //
 //------------------//
