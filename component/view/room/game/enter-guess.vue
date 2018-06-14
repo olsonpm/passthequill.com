@@ -96,6 +96,10 @@ export default {
       const { canFadeComponent } = this.$refs
       return canFadeComponent.animateShow()
     },
+    clearText() {
+      this.formData.inputs.guess = ''
+      return this
+    },
     onSubmit() {
       const { $myStore, formData, formObject, state } = this
 

@@ -261,7 +261,7 @@ export default {
               : undefined
 
           const maybeShowEnterGuess = currentPlayerMustGuess
-            ? this.getRef('enterGuessComponent').animateShow()
+            ? this.revealEnterGuess()
             : undefined
 
           return Promise.all([
@@ -282,7 +282,7 @@ export default {
           state.showEnterGuess = true
           return Promise.all([
             $refs.statusComponent.animateShow({ isLiveUpdate: true }),
-            this.getRef('enterGuessComponent').animateShow()
+            this.revealEnterGuess()
           ])
         },
       },
@@ -417,7 +417,10 @@ export default {
       }
     },
     revealEnterGuess() {
-      return this.getRef('enterGuessComponent').animateShow()
+      const enterGuessComponent = this.getRef('enterGuessComponent')
+
+      return enterGuessComponent.clearText()
+        .animateShow()
     },
     slide(positionMoved) {
       const { state } = this

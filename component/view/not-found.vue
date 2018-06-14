@@ -7,7 +7,7 @@
 			possible I screwed up and you've reached this page when you shouldn't
 			have.  If you feel this is the case then email me at
 			{{ global.authorEmail }} with the url and an explanation of how you got
-			here. An issue like this should't take long to fix.
+			here. An issue like this shouldn't take long to fix.
 		</p>
 
 		<p class="closing-statement">
