@@ -23,6 +23,7 @@ import createLruCache from 'lru-cache'
 import createPageRouter from './create/router/page'
 import fixtureNameToInstall from './dev/fixture-name-to-install'
 import Koa from 'koa'
+import koaCompress from 'koa-compress'
 import KoaRouter from 'koa-router'
 import koaStatic from 'koa-static'
 import koaVueSsr_initDevServer from 'koa-vue-ssr_init-dev-server'
@@ -35,7 +36,7 @@ import _ssr from './config/webpack/ssr'
 import { createAllDatabases, deleteAllDatabases } from 'server/db'
 import { readFile, readRawFile } from 'server/utils'
 import { logError, resolveAllProperties } from 'universal/utils'
-import { serverPort } from 'project-root/config/app'
+import { persistentStaticDir, serverPort } from 'project-root/config/app'
 
 //
 //------//
@@ -77,7 +78,9 @@ maybeInitDevDatabase()
     const router = createRouter(getRenderer)
 
     if (!isDevelopment) {
-      koaApp.use(koaStatic(distVueDir))
+      koaApp
+        .use(koaStatic(persistentStaticDir, { hidden: true }))
+        .use(koaStatic(distVueDir))
     }
 
     koaApp
@@ -98,17 +101,19 @@ maybeInitDevDatabase()
 function createInitialKoaApp(faviconContents) {
   const koaApp = new Koa()
 
-  koaApp.use((ctx, next) => {
-    if (ctx.url === '/favicon.ico') {
-      ctx.body = faviconContents.ico
-      return
-    } else if (ctx.url === '/favicon.png') {
-      ctx.body = faviconContents.png
-      return
-    } else {
-      return next()
-    }
-  })
+  koaApp
+    .use(koaCompress())
+    .use((ctx, next) => {
+      if (ctx.url === '/favicon.ico') {
+        ctx.body = faviconContents.ico
+        return
+      } else if (ctx.url === '/favicon.png') {
+        ctx.body = faviconContents.png
+        return
+      } else {
+        return next()
+      }
+    })
 
   return koaApp
 }

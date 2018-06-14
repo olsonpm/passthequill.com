@@ -3,6 +3,7 @@
 //---------//
 
 import autoprefixer from 'autoprefixer'
+import clean from 'postcss-clean'
 import focusWithin from 'postcss-focus-within'
 import FriendlyErrorsPlugin from 'friendly-errors-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
@@ -18,7 +19,8 @@ import { map, mAppendAll, startsWith } from 'fes'
 // Init //
 //------//
 
-const isProd = process.env.NODE_ENV === 'production',
+const isDevelopment = process.env.NODE_ENV === 'development',
+  isProduction = process.env.NODE_ENV === 'production',
   projectRootDir = path.resolve(__dirname, '../../'),
   screenSizeBreakpointsRe = /app\/screen-size-breakpoints\.scss$/
 
@@ -29,13 +31,13 @@ const isProd = process.env.NODE_ENV === 'production',
 
 const getCommonConfig = babelLoaderOptions => {
   const plugins = getPlugins(),
-    extractOrStyleLoader = isProd
-      ? MiniCssExtractPlugin.loader
-      : 'vue-style-loader'
+    extractOrStyleLoader = isDevelopment
+      ? 'vue-style-loader'
+      : MiniCssExtractPlugin.loader
 
   return {
-    mode: isProd ? 'production' : 'development',
-    devtool: isProd ? 'source-map' : 'cheap-module-eval-source-map',
+    mode: isDevelopment ? 'development' : 'production',
+    devtool: isDevelopment ? 'cheap-module-eval-source-map' : 'source-map',
     output: {
       filename: '[name].[chunkhash].js',
       path: path.resolve(projectRootDir, 'dist/vue'),
@@ -43,7 +45,7 @@ const getCommonConfig = babelLoaderOptions => {
     },
     performance: {
       maxEntrypointSize: 300000,
-      hints: !!isProd && 'warning',
+      hints: !!isProduction && 'warning',
     },
     resolve: {
       alias: getFullPathAliases(_moduleAliases),
@@ -123,6 +125,7 @@ function getRules(babelLoaderOptions, extractOrStyleLoader) {
             plugins: [
               autoprefixer({ browsers: ['last 2 versions'] }),
               focusWithin(),
+              clean(),
             ],
             sourceMap: false,
           },
@@ -154,9 +157,9 @@ function getPlugins() {
       new webpack.optimize.ModuleConcatenationPlugin(),
       new VueLoaderPlugin(),
     ],
-    environmentDependentPlugins = isProd
-      ? [new MiniCssExtractPlugin()]
-      : [new FriendlyErrorsPlugin()]
+    environmentDependentPlugins = isDevelopment
+      ? [new FriendlyErrorsPlugin()]
+      : [new MiniCssExtractPlugin()]
 
   return mAppendAll(environmentDependentPlugins)(plugins)
 }
@@ -167,3 +170,4 @@ function getPlugins() {
 //---------//
 
 export default getCommonConfig
+
