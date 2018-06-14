@@ -67,7 +67,8 @@ maybeInitDevDatabase()
   .then(() =>
     resolveAllProperties({
       ico: readRawFile(faviconPath + '.ico'),
-      png: readRawFile(faviconPath + '.png'),
+      png16: readRawFile(faviconPath + '.16.png'),
+      png32: readRawFile(faviconPath + '.32.png'),
     })
   )
   .then(contents => {
@@ -107,8 +108,11 @@ function createInitialKoaApp(faviconContents) {
     if (ctx.url === '/favicon.ico') {
       ctx.body = faviconContents.ico
       return
-    } else if (ctx.url === '/favicon.png') {
-      ctx.body = faviconContents.png
+    } else if (ctx.url === '/favicon.png' || ctx.url === '/favicon.16.png') {
+      ctx.body = faviconContents.png16
+      return
+    } else if (ctx.url === '/favicon.32.png') {
+      ctx.body = faviconContents.png32
       return
     } else {
       return next()
