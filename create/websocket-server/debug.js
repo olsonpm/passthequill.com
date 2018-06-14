@@ -21,7 +21,7 @@ const { websocketPort } = debug
 //------//
 
 const createWebsocketServer = () => {
-  const server = new ws.Server({ port: websocketPort.debug })
+  const server = new ws.Server({ port: websocketPort })
 
   server.broadcast = data => {
     const sendData = applyAt('send', [data, handleBroadcastError])

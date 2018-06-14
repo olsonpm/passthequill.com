@@ -33,8 +33,8 @@ import _client from './config/webpack/client'
 import _ssr from './config/webpack/ssr'
 
 import { createAllDatabases, deleteAllDatabases } from 'server/db'
-import { readFile } from 'server/utils'
-import { logError } from 'universal/utils'
+import { readFile, readRawFile } from 'server/utils'
+import { logError, resolveAllProperties } from 'universal/utils'
 import { serverPort } from 'project-root/config/app'
 
 //
@@ -47,6 +47,7 @@ const distVueDir = path.resolve(__dirname, 'dist/vue'),
   isDevelopment = process.env.NODE_ENV === 'development',
   webpackHotClientPort = 8086,
   templatePath = path.resolve(__dirname, 'index.template.html'),
+  faviconPath = path.resolve(__dirname, 'assets/images/favicon'),
   webpackConfigs = {
     client: _client,
     ssr: _ssr,
@@ -62,8 +63,15 @@ logUnhandledRejections()
 //------//
 
 maybeInitDevDatabase()
-  .then(() => {
-    return isDevelopment ? initDevServer() : initNonDevServer()
+  .then(() =>
+    resolveAllProperties({
+      ico: readRawFile(faviconPath + '.ico'),
+      png: readRawFile(faviconPath + '.png'),
+    })
+  )
+  .then(contents => {
+    const koaApp = createInitialKoaApp(contents)
+    return isDevelopment ? initDevServer(koaApp) : initNonDevServer(koaApp)
   })
   .then(({ getRenderer, koaApp }) => {
     const router = createRouter(getRenderer)
@@ -87,11 +95,29 @@ maybeInitDevDatabase()
 // Helper Functions //
 //------------------//
 
+function createInitialKoaApp(faviconContents) {
+  const koaApp = new Koa()
+
+  koaApp.use((ctx, next) => {
+    if (ctx.url === '/favicon.ico') {
+      ctx.body = faviconContents.ico
+      return
+    } else if (ctx.url === '/favicon.png') {
+      ctx.body = faviconContents.png
+      return
+    } else {
+      return next()
+    }
+  })
+
+  return koaApp
+}
+
 //
 // TODO: rename koa-vue-ssr_init-dev-server to be more generic so it can handle
 //   non-dev-server usage as well.  Some of this code is currently duplicated.
 //
-function initNonDevServer() {
+function initNonDevServer(koaApp) {
   return Promise.all([
     readFile(path.resolve(__dirname, 'dist/vue/vue-ssr-client-manifest.json')),
     readFile(path.resolve(__dirname, 'dist/vue/vue-ssr-server-bundle.json')),
@@ -113,15 +139,15 @@ function initNonDevServer() {
     })
 
     return {
-      koaApp: new Koa(),
+      koaApp,
       getRenderer: () => bundleRenderer,
     }
   })
 }
 
-function initDevServer() {
+function initDevServer(koaApp) {
   return koaVueSsr_initDevServer({
-    koaApp: new Koa(),
+    koaApp,
     webpackConfigs,
     webpackHotClientPort,
     templatePath,
@@ -143,23 +169,26 @@ function maybeInitDevDatabase() {
 }
 
 function createRouter(getRenderer) {
-  const rootRouter = new KoaRouter(),
-    api = createApiRouter(),
-    page = createPageRouter(getRenderer),
-    debug =
-      process.env.NODE_ENV === 'development'
-        ? createDebugRouter(fixtureNameCamel)
-        : undefined
-
-  rootRouter
-    .use('/api', api.routes(), api.allowedMethods())
-    .use(page.routes(), page.allowedMethods())
-
-  if (debug) {
-    rootRouter.use('/debug', debug.routes(), debug.allowedMethods())
+  const router = {
+    root: new KoaRouter(),
+    api: createApiRouter(),
+    page: createPageRouter(getRenderer),
   }
 
-  return rootRouter
+  router.root
+    .use('/api', router.api.routes(), router.api.allowedMethods())
+    .use(router.page.routes(), router.page.allowedMethods())
+
+  if (isDevelopment) {
+    router.debug = createDebugRouter(fixtureNameCamel)
+    router.root.use(
+      '/debug',
+      router.debug.routes(),
+      router.debug.allowedMethods()
+    )
+  }
+
+  return router.root
 }
 
 function logUnhandledRejections() {

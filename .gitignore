@@ -5,3 +5,5 @@
 /config/app.js
 /config/debug.js
 /lib/server/email/templates/*.inline.html
+/test.js
+/test

@@ -17,7 +17,7 @@ const { websocketUrl } = debug
 //------//
 
 const init = () => {
-  const debugWebsocket = new WebSocket(websocketUrl.debug)
+  const debugWebsocket = new WebSocket(websocketUrl)
 
   debugWebsocket.onmessage = event => {
     if (event.data === 'reload page') {
