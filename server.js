@@ -78,9 +78,11 @@ maybeInitDevDatabase()
     const router = createRouter(getRenderer)
 
     if (!isDevelopment) {
-      koaApp
-        .use(koaStatic(persistentStaticDir, { hidden: true }))
-        .use(koaStatic(distVueDir))
+      if (persistentStaticDir) {
+        koaApp.use(koaStatic(persistentStaticDir, { hidden: true }))
+      }
+
+      koaApp.use(koaStatic(distVueDir))
     }
 
     koaApp
@@ -101,19 +103,17 @@ maybeInitDevDatabase()
 function createInitialKoaApp(faviconContents) {
   const koaApp = new Koa()
 
-  koaApp
-    .use(koaCompress())
-    .use((ctx, next) => {
-      if (ctx.url === '/favicon.ico') {
-        ctx.body = faviconContents.ico
-        return
-      } else if (ctx.url === '/favicon.png') {
-        ctx.body = faviconContents.png
-        return
-      } else {
-        return next()
-      }
-    })
+  koaApp.use(koaCompress()).use((ctx, next) => {
+    if (ctx.url === '/favicon.ico') {
+      ctx.body = faviconContents.ico
+      return
+    } else if (ctx.url === '/favicon.png') {
+      ctx.body = faviconContents.png
+      return
+    } else {
+      return next()
+    }
+  })
 
   return koaApp
 }
