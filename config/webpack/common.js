@@ -11,9 +11,10 @@ import path from 'path'
 import TerserPlugin from 'terser-webpack-plugin'
 import webpack from 'webpack'
 
-import { _moduleAliases } from '../../package.json'
 import { VueLoaderPlugin } from 'vue-loader'
-import { map, mAppendAll, startsWith } from 'fes'
+import { mAppendAll } from 'fes'
+
+import { getModuleAliases } from './helpers'
 
 //
 //------//
@@ -59,17 +60,8 @@ const getCommonConfig = babelLoaderOptions => {
       hints: !!isProduction && 'warning',
     },
     resolve: {
-      alias: getFullPathAliases(_moduleAliases),
+      alias: getModuleAliases(),
       extensions: ['.js', '.json', '.vue'],
-      modules: [
-        //
-        // Also, dev-modules are necessary because things break when symlinks
-        //   are used
-        //
-        path.resolve(projectRootDir, 'dev-modules'),
-        path.resolve(projectRootDir, 'node_modules'),
-        path.resolve(projectRootDir, 'dev-modules/fes/node_modules'),
-      ],
     },
     plugins,
     module: {
@@ -82,20 +74,6 @@ const getCommonConfig = babelLoaderOptions => {
 //------------------//
 // Helper Functions //
 //------------------//
-
-//
-// During development the _moduleAliases will be relative because I don't feel
-//   like forking the `module-alias` project and preventing it from mutating the
-//   _moduleAliases package.json field
-//
-function getFullPathAliases() {
-  const firstValue = _moduleAliases[Object.keys(_moduleAliases)[0]],
-    aliasesAreAbsolute = startsWith('/')(firstValue)
-
-  return aliasesAreAbsolute
-    ? _moduleAliases
-    : map(resolvePath(projectRootDir))(_moduleAliases)
-}
 
 function getRules(babelLoaderOptions, extractOrStyleLoader) {
   return [
@@ -157,10 +135,6 @@ function getRules(babelLoaderOptions, extractOrStyleLoader) {
       ],
     },
   ]
-}
-
-function resolvePath(firstPart) {
-  return secondPart => path.resolve(firstPart, secondPart)
 }
 
 function getPlugins() {

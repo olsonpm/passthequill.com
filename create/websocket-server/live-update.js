@@ -11,6 +11,7 @@
 //---------//
 
 import fs from 'fs'
+import http from 'http'
 import https from 'https'
 import ws from 'ws'
 import log from 'server/log'
@@ -26,10 +27,8 @@ import { liveUpdateWebsocket } from 'project-root/config/app'
 const playerHashToClientSocket = {},
   clientSocketToPlayerHash = new Map()
 
-const httpsOptions = {
-  cert: fs.readFileSync(liveUpdateWebsocket.certPath),
-  key: fs.readFileSync(liveUpdateWebsocket.keyPath)
-}
+const isDevelopment = process.env.NODE_ENV === 'development',
+  httpsOptions = maybeGetHttpsOptions(isDevelopment)
 
 //
 //------//
@@ -37,8 +36,11 @@ const httpsOptions = {
 //------//
 
 const createWebsocketServer = () => {
-  const httpsServer = https.createServer(httpsOptions),
-    websocketServer = new ws.Server({ server: httpsServer })
+  const server = isDevelopment
+    ? http.createServer()
+    : https.createServer(httpsOptions)
+
+  const websocketServer = new ws.Server({ server })
 
   websocketServer.on('connection', ws => {
     ws.on('error', handleConnectionError)
@@ -61,7 +63,7 @@ const createWebsocketServer = () => {
     })
   })
 
-  httpsServer.listen(liveUpdateWebsocket.port)
+  server.listen(liveUpdateWebsocket.port)
 
   return {
     maybeUpdateClient,
@@ -76,6 +78,15 @@ const createWebsocketServer = () => {
 
 function handleConnectionError(error) {
   log.server.error('Error occurred in the liveUpdate websocket', error)
+}
+
+function maybeGetHttpsOptions() {
+  if (isDevelopment) return {}
+  else
+    return {
+      cert: fs.readFileSync(liveUpdateWebsocket.certPath),
+      key: fs.readFileSync(liveUpdateWebsocket.keyPath),
+    }
 }
 
 function maybeUpdateClient({ data, playerHash }) {

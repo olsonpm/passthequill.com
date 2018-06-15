@@ -30,7 +30,6 @@ build() {
 
   node node_modules/.bin/webpack \
     --config-register esm \
-    --config-register 'module-alias/register' \
     --config "${configFile}" \
     "$@"
 }
@@ -46,7 +45,7 @@ build_server() {
     build "config/webpack/server.js" "$@"
   else
     echo 'you need a ./config/debug.js file in order to do this' >&2
-    echo 'Hint: you can './run create-empty-debug-module' to create an empty one' >&2
+    echo "Hint: you can './run create-empty-debug-module' to create an empty one" >&2
   fi
 }
 

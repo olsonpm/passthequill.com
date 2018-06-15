@@ -15,7 +15,6 @@
     "bcryptjs": "^2.4.3",
     "camelcase": "^5.0.0",
     "chalk": "^2.4.1",
-    "clone-deep": "github:olsonpm/clone-deep",
     "couchdb-base64": "github:olsonpm/couchdb-base64#snapshot-for-passthequill",
     "debounce": "^1.1.0",
     "dedent": "github:olsonpm/dedent",
@@ -81,7 +80,6 @@
     "eslint-plugin-vue": "^4.5.0",
     "esm": "^3.0.39",
     "mini-css-extract-plugin": "^0.4.0",
-    "module-alias": "^2.0.6",
     "node-sass": "^4.9.0",
     "normalize-scss": "^7.0.1",
     "null-loader": "^0.1.1",
@@ -105,14 +103,5 @@
     "plugins": [
       "vue"
     ]
-  },
-  "_moduleAliases": {
-    "project-root": ".",
-    "server": "lib/server",
-    "client": "lib/client",
-    "universal": "lib/universal"
-  },
-  "_moduleDirectories": [
-    "dev-modules"
-  ]
+  }
 }

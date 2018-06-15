@@ -1,11 +1,3 @@
-//-------------//
-// Pre-Imports //
-//-------------//
-
-// mutates _moduleAliases to full paths
-import 'module-alias/register'
-
-//
 //---------//
 // Imports //
 //---------//
@@ -15,19 +7,18 @@ import path from 'path'
 import webpack from 'webpack'
 import webpackNodeExternals from 'webpack-node-externals'
 
-import createInlineTemplates from 'server/email/create-inline-templates'
+import createInlineTemplates from '../../lib/server/email/create-inline-templates'
 import babelConfig from '../babel/server'
 
-import { _moduleAliases } from '../../package.json'
-import { baseUrl } from 'project-root/config/app'
+import { baseUrl } from '../app'
+import { getModuleAliases, projectRootDirectory } from './helpers'
 
 //
 //------//
 // Init //
 //------//
 
-const projectRootDir = path.resolve(__dirname, '../../'),
-  isDevelopment = process.env.NODE_ENV === 'development'
+const isDevelopment = process.env.NODE_ENV === 'development'
 
 //
 //------//
@@ -37,30 +28,22 @@ const projectRootDir = path.resolve(__dirname, '../../'),
 const eventualConfig = createInlineTemplates().then(() => {
   return {
     mode: 'development',
-    context: projectRootDir,
-    entry: path.resolve(projectRootDir, 'server.js'),
+    context: projectRootDirectory,
+    entry: path.resolve(projectRootDirectory, 'server.js'),
     target: 'node',
     devtool: isDevelopment ? '#cheap-module-inline-source-map' : 'source-map',
     node: { __dirname: true },
     output: {
       libraryTarget: 'commonjs2',
       filename: 'server.bundle.js',
-      path: projectRootDir,
+      path: projectRootDirectory,
     },
     externals: webpackNodeExternals({
       whitelist: [/\.css$/, 'fes'],
     }),
     resolve: {
-      alias: _moduleAliases,
+      alias: getModuleAliases(),
       extensions: ['.js', '.json', '.vue'],
-      modules: [
-        //
-        // dev-modules are necessary because things break when symlinks are used
-        //
-        path.resolve(projectRootDir, 'dev-modules'),
-        path.resolve(projectRootDir, 'node_modules'),
-        path.resolve(projectRootDir, 'dev-modules/fes/node_modules'),
-      ],
     },
     plugins: [
       new webpack.optimize.ModuleConcatenationPlugin(),
