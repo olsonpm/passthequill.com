@@ -10,6 +10,8 @@
 // Imports //
 //---------//
 
+import fs from 'fs'
+import https from 'https'
 import ws from 'ws'
 import log from 'server/log'
 
@@ -24,15 +26,21 @@ import { liveUpdateWebsocket } from 'project-root/config/app'
 const playerHashToClientSocket = {},
   clientSocketToPlayerHash = new Map()
 
+const httpsOptions = {
+  cert: fs.readFileSync(liveUpdateWebsocket.certPath),
+  key: fs.readFileSync(liveUpdateWebsocket.keyPath)
+}
+
 //
 //------//
 // Main //
 //------//
 
 const createWebsocketServer = () => {
-  const server = new ws.Server({ port: liveUpdateWebsocket.port })
+  const httpsServer = https.createServer(httpsOptions),
+    websocketServer = new ws.Server({ server: httpsServer })
 
-  server.on('connection', ws => {
+  websocketServer.on('connection', ws => {
     ws.on('error', handleConnectionError)
 
     ws.on('close', () => {
@@ -53,9 +61,11 @@ const createWebsocketServer = () => {
     })
   })
 
+  httpsServer.listen(liveUpdateWebsocket.port)
+
   return {
     maybeUpdateClient,
-    server,
+    server: websocketServer,
   }
 }
 
