@@ -55,6 +55,7 @@
     "title-case": "^2.1.1",
     "trace": "^3.1.0",
     "type-detect": "^4.0.8",
+    "uglifyjs-webpack-plugin": "^1.2.5",
     "velocity-animate": "github:olsonpm/velocity#ee507394e2d5efe10d68cfd190aa1ccd5aff43a8",
     "vue": "^2.5.16",
     "vue-loader": "^15.2.2",

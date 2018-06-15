@@ -8,6 +8,7 @@ import focusWithin from 'postcss-focus-within'
 import FriendlyErrorsPlugin from 'friendly-errors-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import path from 'path'
+import UglifyjsPlugin from 'uglifyjs-webpack-plugin'
 import webpack from 'webpack'
 
 import { _moduleAliases } from '../../package.json'
@@ -38,6 +39,23 @@ const getCommonConfig = babelLoaderOptions => {
   return {
     mode: isDevelopment ? 'development' : 'production',
     devtool: isDevelopment ? 'cheap-module-eval-source-map' : 'source-map',
+    optimization: {
+      minimize: !isDevelopment,
+      minimizer: [
+        new UglifyjsPlugin({
+          cache: true,
+          parallel: true,
+          sourceMap: true,
+          uglifyOptions: {
+            compress: {
+              // inline is buggy as of uglify-es 3.3.7
+              // https://github.com/mishoo/UglifyJS2/issues/2842
+              inline: 1,
+            },
+          },
+        }),
+      ],
+    },
     output: {
       filename: '[name].[chunkhash].js',
       path: path.resolve(projectRootDir, 'dist/vue'),
@@ -170,4 +188,3 @@ function getPlugins() {
 //---------//
 
 export default getCommonConfig
-
