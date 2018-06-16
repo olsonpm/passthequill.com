@@ -10,7 +10,7 @@ import babelConfig from '../babel/client'
 import getCommonConfig from './common'
 
 import { appendAll } from 'fes'
-import { baseUrl } from 'project-root/config/app'
+import { baseUrl } from '../app'
 
 //
 //------//

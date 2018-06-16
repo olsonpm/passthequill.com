@@ -1,13 +1,13 @@
 <template>
-	<div>
+  <div>
     <div class="wrapper" ref="wrapperEl">
-  		<component class="sub-view"
-  			:class="subViewName"
-  			:is="subViewName"
+      <component class="sub-view"
+        :class="subViewName"
+        :is="subViewName"
         :transition-to="transitionTo"
       />
     </div>
-	</div>
+  </div>
 </template>
 
 <script>
@@ -70,6 +70,10 @@ export default {
             opacity: [1, 0],
             height: [newHeight, oldHeight],
           })
+        })
+        .then(() => {
+          wrapperEl.style.height = null
+          wrapperEl.style.opacity = null
         })
     },
   },

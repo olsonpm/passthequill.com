@@ -10,7 +10,7 @@ import webpack from 'webpack'
 import babelConfig from '../babel/server'
 import getCommonConfig from './common'
 
-import { baseUrl } from 'project-root/config/app'
+import { baseUrl } from '../app'
 import { append, appendAll } from 'fes'
 
 //

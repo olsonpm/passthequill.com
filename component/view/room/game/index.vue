@@ -523,7 +523,7 @@ function getLocalComputedProperties() {
   #app.game {
     text-align: center;
 
-    footer {
+    > footer {
       margin-top: 0;
     }
   }
