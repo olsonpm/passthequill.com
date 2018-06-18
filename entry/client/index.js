@@ -4,6 +4,8 @@
 
 import focusWithin from 'focus-within'
 
+import { initialize } from 'sourcemapped-stacktrace'
+
 import createApp from 'project-root/create/app'
 
 import { logError } from 'project-root/lib/universal/utils'
@@ -15,6 +17,8 @@ import initWebsocket from './init-websocket'
 //------//
 // Init //
 //------//
+
+initialize({ urlToMappingsWasm: '/mappings.wasm' })
 
 focusWithin(document)
 

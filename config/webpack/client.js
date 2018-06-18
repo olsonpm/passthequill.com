@@ -18,7 +18,8 @@ import { baseUrl } from '../app'
 //------//
 
 const commonConfig = getCommonConfig(babelConfig),
-  clientPlugins = getClientPlugins()
+  clientPlugins = getClientPlugins(),
+  projectRootDir = path.resolve(__dirname, '../..')
 
 //
 //------//
@@ -26,7 +27,7 @@ const commonConfig = getCommonConfig(babelConfig),
 //------//
 
 const clientConfig = Object.assign({}, commonConfig, {
-  entry: [path.resolve(__dirname, '../../entry/client/index.js')],
+  entry: [path.resolve(projectRootDir, 'entry/client/index.js')],
   optimization: {
     splitChunks: { chunks: 'all' },
   },
@@ -41,6 +42,7 @@ clientConfig.plugins = appendAll(clientPlugins)(clientConfig.plugins)
 
 function getClientPlugins() {
   return [
+    new webpack.IgnorePlugin(/^fs$/),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
       'process.env.VUE_ENV': '"client"',

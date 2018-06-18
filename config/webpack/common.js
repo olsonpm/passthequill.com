@@ -21,9 +21,11 @@ import { getModuleAliases } from './helpers'
 // Init //
 //------//
 
-const isDevelopment = process.env.NODE_ENV === 'development',
+const projectRootDir = path.resolve(__dirname, '../../')
+
+const distDir = path.resolve(projectRootDir, 'dist'),
+  isDevelopment = process.env.NODE_ENV === 'development',
   isProduction = process.env.NODE_ENV === 'production',
-  projectRootDir = path.resolve(__dirname, '../../'),
   screenSizeBreakpointsRe = /app\/screen-size-breakpoints\.scss$/
 
 //
@@ -52,7 +54,7 @@ const getCommonConfig = babelLoaderOptions => {
     },
     output: {
       filename: '[name].[chunkhash].js',
-      path: path.resolve(projectRootDir, 'dist/vue'),
+      path: distDir,
       publicPath: '/',
     },
     performance: {

@@ -2,6 +2,7 @@
 // Imports //
 //---------//
 
+import CleanPlugin from 'clean-webpack-plugin'
 import path from 'path'
 import VueSSRServerPlugin from 'vue-server-renderer/server-plugin'
 import webpackNodeExternals from 'webpack-node-externals'
@@ -18,7 +19,10 @@ import { append, appendAll } from 'fes'
 // Init //
 //------//
 
+const projectRootDir = path.resolve(__dirname, '../..')
+
 const commonConfig = getCommonConfig(babelConfig),
+  distDir = path.resolve(projectRootDir, 'dist'),
   replaceLoader = getReplaceLoader(),
   ssrPlugins = getSsrPlugins()
 
@@ -28,7 +32,7 @@ const commonConfig = getCommonConfig(babelConfig),
 //------//
 
 const ssrConfig = Object.assign({}, commonConfig, {
-  entry: path.resolve(__dirname, '../../entry/ssr.js'),
+  entry: path.resolve(projectRootDir, 'entry/ssr.js'),
   target: 'node',
   externals: webpackNodeExternals({
     whitelist: [/\.css$/, 'fes'],
@@ -47,6 +51,10 @@ ssrConfig.module.rules = append(replaceLoader)(ssrConfig.module.rules)
 
 function getSsrPlugins() {
   return [
+    new CleanPlugin([path.join(distDir, '*.js'), path.join(distDir, '*.map')], {
+      verbose: false,
+      watch: true,
+    }),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(
         process.env.NODE_ENV || 'development'

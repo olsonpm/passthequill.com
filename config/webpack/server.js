@@ -2,6 +2,7 @@
 // Imports //
 //---------//
 
+import CopyPlugin from 'copy-webpack-plugin'
 import FriendlyErrorsPlugin from 'friendly-errors-webpack-plugin'
 import path from 'path'
 import webpack from 'webpack'
@@ -18,7 +19,12 @@ import { getModuleAliases, projectRootDirectory } from './helpers'
 // Init //
 //------//
 
-const isDevelopment = process.env.NODE_ENV === 'development'
+const distDir = path.resolve(__dirname, 'dist'),
+  isDevelopment = process.env.NODE_ENV === 'development',
+  pathToMappingsWasm = path.resolve(
+    __dirname,
+    'node_modules/source-map/lib/mappings.wasm'
+  )
 
 //
 //------//
@@ -47,6 +53,7 @@ const eventualConfig = createInlineTemplates().then(() => {
     },
     plugins: [
       new webpack.optimize.ModuleConcatenationPlugin(),
+      new CopyPlugin([{ from: pathToMappingsWasm, to: distDir }]),
       new FriendlyErrorsPlugin(),
       new webpack.DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),

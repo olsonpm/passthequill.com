@@ -37,7 +37,6 @@ build() {
 build_server() {
   if [ -f "${debugFileName}" ]; then
     if [ "${NODE_ENV}" != 'development' ] && [ "${buildSsrAssets}" = 'true' ]; then
-      rm -rf dist
       build "config/webpack/ssr.js"
       build "config/webpack/client.js"
     fi

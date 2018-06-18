@@ -43,7 +43,7 @@ import { persistentStaticDir, serverPort } from 'project-root/config/app'
 // Init //
 //------//
 
-const distVueDir = path.resolve(__dirname, 'dist/vue'),
+const distDir = path.resolve(__dirname, 'dist/vue'),
   highlight = chalk.green,
   isDevelopment = process.env.NODE_ENV === 'development',
   webpackHotClientPort = 8086,
@@ -83,7 +83,7 @@ maybeInitDevDatabase()
         koaApp.use(koaStatic(persistentStaticDir, { hidden: true }))
       }
 
-      koaApp.use(koaStatic(distVueDir))
+      koaApp.use(koaStatic(distDir))
     }
 
     koaApp
