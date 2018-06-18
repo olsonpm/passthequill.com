@@ -55,6 +55,7 @@
     "sane": "^2.5.2",
     "sass-resources-loader": "^1.3.3",
     "source-map": "^0.7.3",
+    "source-map-loader": "^0.2.3",
     "sourcemapped-stacktrace": "github:olsonpm/sourcemapped-stacktrace",
     "string-replace-loader": "^2.1.1",
     "terser-webpack-plugin": "github:olsonpm/terser-webpack-plugin",

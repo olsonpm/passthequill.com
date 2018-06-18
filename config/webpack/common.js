@@ -136,6 +136,11 @@ function getRules(babelLoaderOptions, extractOrStyleLoader) {
         },
       ],
     },
+    {
+      test: /.js$/,
+      use: ['source-map-loader'],
+      enforce: 'pre',
+    },
   ]
 }
 

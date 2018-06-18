@@ -8,6 +8,7 @@ import createEmailSentRecords from './create-email-sent-records'
 import createGameAndPlayers from './create-game-and-players'
 import createSendEmails from './create-send-emails'
 import ifNotUnsubscribed from './if-not-unsubscribed'
+import * as rateLimit from './rate-limit'
 
 import { isLaden } from 'fes'
 import { encryptAllEmails } from 'server/email/encrypt'
@@ -31,7 +32,7 @@ const ifRequestIsValid = createIfRequestIsValid('createARoom'),
 // Main //
 //------//
 
-const post_createARoom = ifRequestIsValid(ctx => {
+const post = ifRequestIsValid(ctx => {
   const { player1Email, player2Email } = ctx.request.body,
     sendEmails = createSendEmails(player1Email, player2Email)
 
@@ -102,4 +103,4 @@ function createErrorMessage(player1Email, player2Email) {
 // Exports //
 //---------//
 
-export default post_createARoom
+export default { post, rateLimit }
