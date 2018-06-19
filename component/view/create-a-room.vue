@@ -65,13 +65,6 @@
         text="Create"
         type="submit" />
 
-      <notifier v-if="state.showNotification"
-        type="error"
-        :after-close="state.showNotification = false">
-
-        <p>Both emails are required</p>
-      </notifier>
-
       <loading-check ref="loadingCheckComponent"
         :loading="state.loading"
         :success="state.success"
@@ -180,7 +173,6 @@ export default {
         },
         loading: false,
         showFailureLink: false,
-        showNotification: false,
         showSuccessInfo: false,
         success: null,
         submitActive: false,
@@ -197,7 +189,7 @@ export default {
       }
     },
     onSubmit() {
-      const { $refs, formData, formObject, state } = this
+      const { $myStore, $refs, formData, formObject, state } = this
 
       if (state.showFailureLink) {
         state.success = null
@@ -208,8 +200,10 @@ export default {
       }
 
       if (!formObject.isValid()) {
-        state.showNotification = true
-        return
+        return $myStore.dispatch(
+          'notifyError/tryToShow',
+          { html: '<p>Both emails are required</p>' }
+        )
       }
 
       state.loading = true

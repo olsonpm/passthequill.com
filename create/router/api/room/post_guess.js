@@ -56,8 +56,11 @@ function createAddGuess(websocketServer) {
   )
 
   return ctx => {
+    const { body } = ctx.request
+    body.guess = body.guess.toLowerCase()
+
     const { playerHash, roomHash } = ctx.params,
-      { guess } = ctx.request.body,
+      guess = ctx.request.body,
       errorArgs = [playerHash, roomHash, guess],
       authorizeThenGetPlayerData = createAuthorizeThenGetPlayerData(
         ctx,

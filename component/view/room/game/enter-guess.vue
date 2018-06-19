@@ -15,13 +15,6 @@
           :disable-validation-indicator="true"
           :include-inline-submit-button="true"
           :parent-component="this" />
-
-        <notifier v-if="state.showNotification"
-          type="error"
-          :afterClose="afterNotificationClosed">
-
-          <p>Your guess must be 1 - 5 letters</p>
-        </notifier>
       </my-form>
     </li>
   </can-fade>
@@ -77,7 +70,6 @@ export default {
         clientErrorMessagesSnapshot: [],
         failureReason: '',
         showFailureIndicator: false,
-        showNotification: false,
         submitActive: false,
         success: null,
       },
@@ -85,9 +77,6 @@ export default {
   },
 
   methods: {
-    afterNotificationClosed() {
-      this.state.showNotification = false
-    },
     animateHide() {
       const { canFadeComponent } = this.$refs
       return canFadeComponent.animateHide()
@@ -101,14 +90,16 @@ export default {
       return this
     },
     onSubmit() {
-      const { $myStore, formData, formObject, state } = this
+      const { $myStore, formData, formObject } = this
 
       if (!formObject.isValid()) {
-        state.showNotification = true
-        return
+        return $myStore.dispatch(
+          'notifyError/tryToShow',
+          { html: '<p>Your guess must be 1 - 5 letters</p>' }
+        )
       }
 
-      const guess = formData.inputs.guess
+      const { guess } = formData.inputs
       return $myStore.dispatch('room/addGuess', { guess })
     },
     setSubmitActive(trueOrFalse) {

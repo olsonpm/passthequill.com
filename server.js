@@ -54,7 +54,7 @@ import {
 // Init //
 //------//
 
-const distDir = path.resolve(__dirname, 'dist/vue'),
+const distDir = path.resolve(__dirname, 'dist'),
   highlight = chalk.green,
   isDevelopment = process.env.NODE_ENV === 'development',
   webpackHotClientPort = 8086,
@@ -139,8 +139,8 @@ function createInitialKoaApp(faviconContents) {
 //
 function initNonDevServer(koaApp) {
   return Promise.all([
-    readFile(path.resolve(__dirname, 'dist/vue/vue-ssr-client-manifest.json')),
-    readFile(path.resolve(__dirname, 'dist/vue/vue-ssr-server-bundle.json')),
+    readFile(path.resolve(distDir, 'vue-ssr-client-manifest.json')),
+    readFile(path.resolve(distDir, 'vue-ssr-server-bundle.json')),
     readFile(templatePath),
   ]).then(([ssrClientManifest, ssrServerBundle, template]) => {
     const bundleRenderer = createBundleRenderer(JSON.parse(ssrServerBundle), {

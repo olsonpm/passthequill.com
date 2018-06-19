@@ -19,10 +19,10 @@ import { getModuleAliases, projectRootDirectory } from './helpers'
 // Init //
 //------//
 
-const distDir = path.resolve(__dirname, 'dist'),
+const distDir = path.resolve(projectRootDirectory, 'dist'),
   pathToMappingsWasm = path.resolve(
-    __dirname,
-    '../../node_modules/source-map/lib/mappings.wasm'
+    projectRootDirectory,
+    'node_modules/source-map/lib/mappings.wasm'
   )
 
 //

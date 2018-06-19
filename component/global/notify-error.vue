@@ -1,72 +1,94 @@
 <template>
-  <!--
-
-  TODO: rewrite this to be more like lightbox.vue, where consumers call it like
-    a service rather than declare it in their markup
-    
-  -->
-
   <div class="notification-wrapper">
-    <div class="notification"
-      :class="[type]"
+    <div class="notification error"
       @click="close"
       ref="notificationEl">
 
-      <slot />
+      <div v-html="html" />
       <close-x />
     </div>
   </div>
 </template>
 
 <script>
+//---------//
+// Imports //
+//---------//
+
 import animate from 'velocity-animate'
 import closeX from './close-x'
-import { durations, onKeyUp } from 'client/utils'
 
-const { normal } = durations
+import { durations, onKeyUp } from 'client/utils'
+import { createNamespacedHelpers } from 'vuex'
+
+//
+//------//
+// Init //
+//------//
+
+const { normal } = durations,
+  { mapState } = createNamespacedHelpers('notifyError')
+
+//
+//------//
+// Main //
+//------//
 
 export default {
-  name: 'notifier',
-  props: ['afterClose', 'type'],
+  name: 'notify-error',
   beforeMount() {
-    this.disposeKeyUp = onKeyUp('Escape', () => this.close())
+    const { $myStore } = this
+    this.disposeKeyUp = onKeyUp('Escape', () => {
+      $myStore.dispatch('notifyError/tryToHide')
+    })
+  },
+  subscribeTo: {
+    notifyError: {
+      isClosing() {
+        return this.close()
+      }
+    },
   },
   beforeDestroy() {
     this.disposeKeyUp()
   },
-  data: () => ({
-    state: { leave: false },
-  }),
   components: {
     'close-x': closeX,
   },
   mounted() {
-    const { notificationEl } = this.$refs
+    const { $refs, $store } = this
 
-    animate(
-      notificationEl,
+    return animate(
+      $refs.notificationEl,
       { opacity: [1, 0], transform: ['translateY(15px)', 'translateY(0px)'] },
       { duration: normal }
-    )
+    ).then(() => {
+      $store.commit('notifyError/setIsAnimating', false)
+    })
   },
+  computed: mapState(['html']),
   methods: {
     close() {
-      const { notificationEl } = this.$refs
+      const { $refs, $store } = this
 
-      animate(
-        notificationEl,
+      return animate(
+        $refs.notificationEl,
         {
           opacity: [0, 1],
           transform: ['translateY(30px)', 'translateY(15px)'],
         },
         { duration: normal }
-      ).then(this.afterClose)
+      ).then(() => {
+        $store.commit('notifyError/setHtml', '')
+        $store.commit('notifyError/setIsActive', false)
+        $store.commit('notifyError/setIsAnimating', false)
+      })
     },
   },
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .notification-wrapper {
   position: fixed;
   left: 0;
@@ -91,8 +113,8 @@ export default {
       background-color: $error-red;
     }
 
-    > p {
-      margin: 0;
+    p {
+      margin-top: 0;
       text-align: center;
     }
 

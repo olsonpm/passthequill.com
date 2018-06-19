@@ -35,16 +35,6 @@
         :disabled="formData.submitted && state.showSuccessInfo"
       />
 
-      <notifier v-if="state.showNotification"
-        type="error"
-        :afterClose="afterNotificationClosed">
-
-        <p v-for="message in state.clientErrorMessagesSnapshot"
-          :key="message"
-          v-html="message"
-        />
-      </notifier>
-
       <loading-check ref="loadingCheckComponent"
         :loading="state.loading"
         :success="state.success"
@@ -82,14 +72,13 @@
 import dedent from 'dedent'
 import validationInfo from 'universal/input-validation-info'
 import { createNamespacedHelpers } from 'vuex'
-import { settleAll, waitMs } from 'universal/utils'
+import { settleAll, waitMs, wrapIn } from 'universal/utils'
 import {
   createComputedFormData,
   createFormData,
   createFormObject,
 } from 'client/form-helpers'
 import {
-  clone,
   combineAll,
   getArrayOfKeys,
   isGreaterThan,
@@ -97,6 +86,7 @@ import {
   keep,
   keepWhen,
   mAppendTo,
+  map,
   mMap,
   mSet,
   passThrough,
@@ -139,9 +129,7 @@ export default {
     return {
       formData: createFormData(this.formObject),
       state: {
-        clientErrorMessagesSnapshot: [],
         loading: false,
-        showNotification: false,
         showSuccessInfo: false,
         submitActive: false,
         success: null,
@@ -151,16 +139,20 @@ export default {
   },
 
   methods: {
-    getClientErrorMessagesSnapshot() {
-      return this.clientErrorMessages
+    getErrorMessageHtml() {
+      return passThrough(this.clientErrorMessages, [
+        map(wrapIn('<p>', '</p>')),
+        join('')
+      ])
     },
     onSubmit() {
-      const { $refs, formData, formObject, state } = this
+      const { $myStore, $refs, formData, formObject, state } = this
 
       if (!formObject.isValid()) {
-        state.showNotification = true
-        state.clientErrorMessagesSnapshot = clone(this.clientErrorMessages)
-        return
+        return $myStore.dispatch(
+          'notifyError/tryToShow',
+          { html: this.getErrorMessageHtml() }
+        )
       }
 
       state.loading = true
@@ -194,9 +186,6 @@ export default {
     },
     okClicked() {
       this.transitionTo('game')
-    },
-    afterNotificationClosed() {
-      this.state.showNotification = false
     },
   },
 }

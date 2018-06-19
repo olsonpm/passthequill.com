@@ -1,34 +1,34 @@
 <template>
-	<div>
-		<h2>Manage your email unsubscriptions</h2>
+  <div>
+    <h2>Manage your email unsubscriptions</h2>
 
-		<form class="no-submit-form"
-			@submit.prevent.stop="global.noop">
+    <form class="no-submit-form"
+      @submit.prevent.stop="global.noop">
 
-			<ul class="unsubscriptions">
-				<li v-for="type in unsubscribeTypes"
+      <ul class="unsubscriptions">
+        <li v-for="type in unsubscribeTypes"
           :key="type">
 
           <help-circle @click.native="displayMoreInfo(type)" />
 
-					<my-checkbox :id="type"
-						:checked="thisComponent[type]"
-						:is-disabled="shouldDisable(type)"
-						:label="properlyCase(type)"
-						:on-click="() => toggleSubscription(type)" />
+          <my-checkbox :id="type"
+            :checked="thisComponent[type]"
+            :is-disabled="shouldDisable(type)"
+            :label="properlyCase(type)"
+            :on-click="() => toggleSubscription(type)" />
 
-					<!-- It's simpler to keep this hardcoded for now -->
-					<alert v-if="type === 'room-created'"
-						class="warn"
-						ref="alertComponent"
-						:show-initially="showWarning"
-						@click.native="explainConsequenceForUnsubscribing" />
-				</li>
-			</ul>
+          <!-- It's simpler to keep this hardcoded for now -->
+          <alert v-if="type === 'room-created'"
+            class="warn"
+            ref="alertComponent"
+            :show-initially="showWarning"
+            @click.native="explainConsequenceForUnsubscribing" />
+        </li>
+      </ul>
 
-		</form>
+    </form>
 
-	</div>
+  </div>
 </template>
 
 <script>

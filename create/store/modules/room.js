@@ -144,6 +144,8 @@ const room = {
     addGuess({ commit, rootState }, { eventManager, guess }) {
       const { playerHash, roomHash } = rootState.route.params
 
+      guess = guess.toLowerCase()
+
       return Promise.all([
         api.post(`/room/${roomHash}/player/${playerHash}/guess`, { guess }),
         eventManager.publish('room/beforeAddGuess'),

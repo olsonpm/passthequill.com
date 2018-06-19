@@ -1,13 +1,13 @@
 <template>
-	<div>
-		<h3>Successfully Unsubscribed From '{{ typeTitle }}' Emails</h3>
-		<h4 v-if="wasAlreadySubscribed">
-			Note: It seems you've unsubscribed from these emails before.  If you are
-			receiving emails when you shouldn't be then let me know at
-			{{ global.authorEmail }} so I can fix the problem. Spam is no
+  <div>
+    <h3>Successfully Unsubscribed From '{{ typeTitle }}' Emails</h3>
+    <h4 v-if="wasAlreadySubscribed">
+      Note: It seems you've unsubscribed from these emails before.  If you are
+      receiving emails when you shouldn't be then let me know at
+      {{ global.authorEmail }} so I can fix the problem. Spam is no
       fun <frown />
-		</h4>
-	</div>
+    </h4>
+  </div>
 </template>
 
 <script>

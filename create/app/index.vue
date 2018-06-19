@@ -1,55 +1,56 @@
 <template>
-	<div id="app"
-		:class="allAppClasses">
+  <div id="app"
+    :class="allAppClasses">
 
-		<!--
-			Some views need to modify site-wide styles (e.g. the mobile game view needs
-			to replace the footer margin with its own padding to allow a better swipe
-			experience).
-		-->
+    <!--
+      Some views need to modify site-wide styles (e.g. the mobile game view needs
+      to replace the footer margin with its own padding to allow a better swipe
+      experience).
+    -->
 
-		<lightbox />
+    <lightbox />
+    <notify-error v-if="isNotifyErrorActive" />
 
-		<header>
-			<div class="site-container">
-				<h1>Pass The Quill</h1>
-				<quill />
-				<nav ref="navEl">
-					<router-link to="/" class="link-to">
-						Home
-					</router-link>
+    <header>
+      <div class="site-container">
+        <h1>Pass The Quill</h1>
+        <quill />
+        <nav ref="navEl">
+          <router-link to="/" class="link-to">
+            Home
+          </router-link>
 
-					<router-link to="/create-a-room" class="link-to">
-						Begin
-					</router-link>
+          <router-link to="/create-a-room" class="link-to">
+            Begin
+          </router-link>
 
-					<router-link to="/how-to-play" class="link-to">
-						How To Play
-					</router-link>
-				</nav>
-			</div>
-		</header>
-		<main>
-			<div class="site-container">
-				<notFoundView v-if="showNotFoundView" />
-				<errorView v-else-if="showErrorView" />
-				<router-view v-else :class="'view ' + $route.name"></router-view>
-			</div>
-		</main>
-		<footer>
-			<div class="site-container">
-				<small-quill />
-				<span class="author">
-					{{ global.authorEmail }}
-				</span>
-				<link-to :url="global.url.github"
-					custom-focus="octicon-focus">
+          <router-link to="/how-to-play" class="link-to">
+            How To Play
+          </router-link>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <div class="site-container">
+        <notFoundView v-if="showNotFoundView" />
+        <errorView v-else-if="showErrorView" />
+        <router-view v-else :class="'view ' + $route.name"></router-view>
+      </div>
+    </main>
+    <footer>
+      <div class="site-container">
+        <small-quill />
+        <span class="author">
+          {{ global.authorEmail }}
+        </span>
+        <link-to :url="global.url.github"
+          custom-focus="octicon-focus">
 
-					<octicon />
-				</link-to>
-			</div>
-		</footer>
-	</div>
+          <octicon />
+        </link-to>
+      </div>
+    </footer>
+  </div>
 </template>
 
 <script>
@@ -62,8 +63,8 @@ import errorView from 'project-root/component/single-use/error'
 import lightbox from 'project-root/component/single-use/lightbox'
 import notFoundView from 'project-root/component/view/not-found'
 import { removeFocus } from 'client/utils'
-import { mapState } from 'vuex'
-import { append, combine } from 'fes'
+import { createNamespacedHelpers, mapState as mapRootState } from 'vuex'
+import { append, combineAll } from 'fes'
 import { locals } from './screen-size-breakpoints.scss'
 
 //
@@ -71,7 +72,8 @@ import { locals } from './screen-size-breakpoints.scss'
 // Init //
 //------//
 
-const { phoneMax, smallPhoneMax } = locals
+const { phoneMax, smallPhoneMax } = locals,
+  { mapState: mapNotifyErrorState } = createNamespacedHelpers('notifyError')
 
 //
 //------//
@@ -93,18 +95,18 @@ export default {
     //   Otherwise we'll get an unwanted rehydration
     //
     this.$nextTick().then(() => {
-			const initialSizes = {
-      	isPhoneOrSmaller: getIsPhoneOrSmaller(),
-				isSmallPhone: getIsSmallPhone()
-			}
+      const initialSizes = {
+        isPhoneOrSmaller: getIsPhoneOrSmaller(),
+        isSmallPhone: getIsSmallPhone()
+      }
       this.$store.commit(
-				'screenSize/setIsPhoneOrSmaller',
-				initialSizes.isPhoneOrSmaller
-			)
+        'screenSize/setIsPhoneOrSmaller',
+        initialSizes.isPhoneOrSmaller
+      )
       this.$store.commit(
-				'screenSize/setIsSmallPhone',
-				initialSizes.isSmallPhone
-			)
+        'screenSize/setIsSmallPhone',
+        initialSizes.isSmallPhone
+      )
 
       const maybeUpdateScreenSize = createMaybeUpdateScreenSize(this, initialSizes)
 
@@ -127,47 +129,58 @@ export default {
 //------------------//
 
 function createMaybeUpdateScreenSize(appInstance, initialSizes) {
-	const current = initialSizes
+  const current = initialSizes
 
   return function onWindowResize() {
     const updated = {
-			isPhoneOrSmaller: getIsPhoneOrSmaller(),
-			isSmallPhone: getIsSmallPhone(),
-		}
+      isPhoneOrSmaller: getIsPhoneOrSmaller(),
+      isSmallPhone: getIsSmallPhone(),
+    }
 
     if (updated.isPhoneOrSmaller !== current.updatedIsPhoneOrSmaller) {
-			current.isPhoneOrSmaller = updated.isPhoneOrSmaller
-			appInstance.$store.commit(
-	      'screenSize/setIsPhoneOrSmaller',
-	      current.isPhoneOrSmaller
-	    )
-		}
+      current.isPhoneOrSmaller = updated.isPhoneOrSmaller
+      appInstance.$store.commit(
+        'screenSize/setIsPhoneOrSmaller',
+        current.isPhoneOrSmaller
+      )
+    }
 
-		if (updated.isSmallPhone !== current.isSmallPhone) {
-			current.isSmallPhone = updated.isSmallPhone
-			appInstance.$store.commit(
-	      'screenSize/setIsSmallPhone',
-	      current.isSmallPhone
-	    )
-		}
+    if (updated.isSmallPhone !== current.isSmallPhone) {
+      current.isSmallPhone = updated.isSmallPhone
+      appInstance.$store.commit(
+        'screenSize/setIsSmallPhone',
+        current.isSmallPhone
+      )
+    }
   }
 }
 
 function getComputedProperties() {
-  const vuexState = mapState(['showNotFoundView', 'showErrorView']),
-    localComputedState = {
-      allAppClasses() {
-        return append(this.$route.name)(this.appClasses)
-      },
-      appClasses() {
-        return this.$store.state.appClasses
-      },
-      navLinks() {
-        return this.$refs.navEl.childNodes
-      },
-    }
+  const vuexRootState = mapRootState(['showNotFoundView', 'showErrorView']),
+    vuexNotifyErrorState = mapNotifyErrorState({
+      isNotifyErrorActive: 'isActive'
+    }),
+    localComputedState = getLocalComputedState()
 
-  return combine(vuexState)(localComputedState)
+  return combineAll.objects([
+    vuexRootState,
+    vuexNotifyErrorState,
+    localComputedState
+  ])
+}
+
+function getLocalComputedState() {
+  return {
+    allAppClasses() {
+      return append(this.$route.name)(this.appClasses)
+    },
+    appClasses() {
+      return this.$store.state.appClasses
+    },
+    navLinks() {
+      return this.$refs.navEl.childNodes
+    },
+  }
 }
 
 function getIsPhoneOrSmaller() {

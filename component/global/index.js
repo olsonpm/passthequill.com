@@ -22,7 +22,7 @@ import myForm from './my-form'
 import mySelectbox from './my-selectbox'
 import myTextInput from './my-text-input'
 import myTextSubmitButton from './my-text-submit-button'
-import notifier from './notifier'
+import notifyError from './notify-error'
 import octicon from './octicon'
 import pageMarker from './page-marker'
 import party from './party'
@@ -58,7 +58,7 @@ export default {
   mySelectbox,
   myTextInput,
   myTextSubmitButton,
-  notifier,
+  notifyError,
   octicon,
   pageMarker,
   party,

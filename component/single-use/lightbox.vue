@@ -1,16 +1,16 @@
 <template>
-	<div class="lightbox" :class="{ active: state.isActive }">
-		<div class="backlight"
-			ref="backlightEl"
-			@click="tryToHide" />
+  <div class="lightbox" :class="{ active: state.isActive }">
+    <div class="backlight"
+      ref="backlightEl"
+      @click="tryToHide" />
 
-		<div class="modal" ref="modalEl">
-			<close-x @click.native="tryToHide" />
-			<component v-if="componentName"
-				class="content"
-				:is="componentName" />
-		</div>
-	</div>
+    <div class="modal" ref="modalEl">
+      <close-x @click.native="tryToHide" />
+      <component v-if="componentName"
+        class="content"
+        :is="componentName" />
+    </div>
+  </div>
 </template>
 
 <script>
@@ -79,7 +79,7 @@ export default {
     },
     animateShow() {
       const { $refs, $el, $store, state } = this,
-				{ backlightEl, modalEl } = $refs,
+        { backlightEl, modalEl } = $refs,
         siblings = getSiblingElements($el),
         deblur = { filter: ['blur(3px)', 'blur(0px)'] },
         blurSiblings = map(siblingEl => [siblingEl, deblur])(siblings)
@@ -169,12 +169,12 @@ function getPossibleLightboxComponents() {
       'md'
     );
 
-		@include for-phones-and-up {
-			padding-right: 65px;
-		}
-		@include for-small-phones {
-			padding-right: 32px;
-		}
+    @include for-phones-and-up {
+      padding-right: 65px;
+    }
+    @include for-small-phones {
+      padding-right: 32px;
+    }
 
     background-color: $bg;
     border: 1px solid $bg-off;
