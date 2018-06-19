@@ -15,10 +15,11 @@
 // Imports //
 //---------//
 
+import dedent from 'dedent'
 import vue from 'vue'
 
 import { liveUpdateWebsocket } from 'project-root/config/app'
-import { noop } from 'universal/utils'
+import { logErrorToServer, noop } from 'universal/utils'
 import { assignOver, last, mSet, reduce } from 'fes'
 
 //
@@ -27,7 +28,8 @@ import { assignOver, last, mSet, reduce } from 'fes'
 //------//
 
 const idToMutatePayload = getIdToMutatePayload(),
-  liveUpdateIds = getLiveUpdateIds()
+  liveUpdateIds = getLiveUpdateIds(),
+  normalClosure = 1000
 
 //
 //------//
@@ -51,8 +53,30 @@ const init = ({ eventManager, store, playerHash, roomHash }) => {
   }
 
   liveUpdateWs.onerror = event => {
-    console.error('Error occurred in the liveUpdate WebSocket')
-    console.error(event)
+    logErrorToServer({
+      context: 'in liveUpdate WebSocket onerror event',
+      error: new Error(event.toString()),
+    })
+  }
+
+  liveUpdateWs.onclose = event => {
+    //
+    // not sure what to do if the 'code' property doesn't exist, so I'm ignoring
+    //   that case for now
+    //
+    if (event.code && event.code !== normalClosure) {
+      const message = dedent(`
+        abby-normal websocket close event received
+
+        code: ${event.code}
+        stringified event: ${event.toString()}
+      `)
+
+      logErrorToServer({
+        context: 'in liveUpdate WebSocket onclose event',
+        error: new Error(message),
+      })
+    }
   }
 
   liveUpdateWs.onmessage = event => {

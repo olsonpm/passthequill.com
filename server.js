@@ -1,3 +1,8 @@
+//
+// TODO: log all errors to server (couchdb) and only console.error when logging
+//   to the server fails
+//
+
 //-------------//
 // Pre-Imports //
 //-------------//
@@ -16,27 +21,33 @@ if (process.env.NODE_ENV !== 'production') {
 // Imports //
 //---------//
 
-import chalk from 'chalk'
-import createApiRouter from './create/router/api'
-import createDebugRouter from './create/router/debug'
-import createLruCache from 'lru-cache'
-import createPageRouter from './create/router/page'
-import fixtureNameToInstall from './dev/fixture-name-to-install'
 import Koa from 'koa'
-import koaCompress from 'koa-compress'
 import KoaRouter from 'koa-router'
+import chalk from 'chalk'
+import createLruCache from 'lru-cache'
+import dedent from 'dedent'
+import koaCompress from 'koa-compress'
 import koaStatic from 'koa-static'
 import koaVueSsr_initDevServer from 'koa-vue-ssr_init-dev-server'
 import path from 'path'
-import { createBundleRenderer } from 'vue-server-renderer'
 
 import _client from './config/webpack/client'
 import _ssr from './config/webpack/ssr'
+import createApiRouter from './create/router/api'
+import createDebugRouter from './create/router/debug'
+import createPageRouter from './create/router/page'
+import fixtureNameToInstall from './dev/fixture-name-to-install'
 
+import { createBundleRenderer } from 'vue-server-renderer'
 import { createAllDatabases, deleteAllDatabases } from 'server/db'
 import { readFile, readRawFile } from 'server/utils'
-import { logError, resolveAllProperties } from 'universal/utils'
 import { persistentStaticDir, serverPort } from 'project-root/config/app'
+import {
+  jstring,
+  logError,
+  logErrorToServer,
+  resolveAllProperties,
+} from 'universal/utils'
 
 //
 //------//
@@ -157,15 +168,14 @@ function initNonDevServer(koaApp) {
 function initDevServer(koaApp) {
   return koaVueSsr_initDevServer({
     koaApp,
+    koaWebpackOptions: {
+      devMiddleware: {
+        headers: { 'Access-Control-Allow-Origin': '*' },
+      },
+    },
     webpackConfigs,
     webpackHotClientPort,
     templatePath,
-
-    //
-    // currently this app assumes that development means live-reloading.  My
-    //   app my rules!
-    //
-    shouldWatch: isDevelopment,
   })
 }
 
@@ -202,7 +212,21 @@ function createRouter(getRenderer) {
 
 function logUnhandledRejections() {
   process.on('unhandledRejection', (reason, p) => {
-    // eslint-disable-next-line no-console
-    console.log('Unhandled Rejection at:', p, 'reason:', reason)
+    let error = reason
+
+    if (!(error instanceof Error)) {
+      error = new Error(jstring(reason))
+    }
+
+    error.message = dedent(`
+      ${error.message}
+
+      at promise: ${p}
+    `)
+
+    logErrorToServer({
+      context: '- node unhandledRejection',
+      error,
+    })
   })
 }

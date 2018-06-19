@@ -29,8 +29,11 @@
 // Imports //
 //---------//
 
+import dedentMacro from 'dedent/macro'
 import statusHelpContent from './status-help-content'
+
 import { createNamespacedHelpers } from 'vuex'
+import { logErrorToServer } from 'universal/utils'
 import {
   combineAll,
   containedIn,
@@ -197,7 +200,19 @@ function getLocalComputedState() {
         if (currentPlayerHasNotMatchedAnyletters) result += statusHelpContent.matchingLetterHint
         return result
       } else {
-        // TODO: log error to server when then endpoint is available
+        const error = new Error(
+          dedentMacro(`
+            helpContent called during an unsupported state
+
+            NOTE: if this actually ever gets logged then appropriate variables
+              to help debug will replace this note :)
+          `)
+        )
+
+        logErrorToServer({
+          context: 'when determining helpContent',
+          error
+        })
       }
     },
     message() {

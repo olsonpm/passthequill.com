@@ -56,11 +56,12 @@ function getSsrPlugins() {
       watch: true,
     }),
     new webpack.DefinePlugin({
+      'process.env.BASE_URL': `'${baseUrl.local}/'`,
+      'process.env.ENVIRONMENT': "'ssr'",
       'process.env.NODE_ENV': JSON.stringify(
         process.env.NODE_ENV || 'development'
       ),
       'process.env.VUE_ENV': '"ssr"',
-      'process.env.BASE_URL': `'${baseUrl.local}/'`,
     }),
     new VueSSRServerPlugin(),
   ]

@@ -2,27 +2,37 @@
 // Imports //
 //---------//
 
+import dedent from 'dedent'
 import focusWithin from 'focus-within'
 
-import { initialize } from 'sourcemapped-stacktrace'
-
 import createApp from 'project-root/create/app'
-
-import { logError } from 'project-root/lib/universal/utils'
-import { discardFirstWhile, first, passThrough } from 'fes'
-
 import initWebsocket from './init-websocket'
+
+import { initialize } from 'sourcemapped-stacktrace'
+import { auto as polyfillUnhandledRejection } from 'browser-unhandled-rejection'
+import { jstring, logErrorToServer } from 'universal/utils'
+import { logError } from 'universal/utils'
+import { discardFirstWhile, first, passThrough } from 'fes'
 
 //
 //------//
 // Init //
 //------//
 
-initialize({ urlToMappingsWasm: '/mappings.wasm' })
+const isDevelopment = process.env.NODE_ENV === 'development'
+
+polyfillUnhandledRejection()
+
+logUnhandledErrorsAndRejections()
+
+initialize({
+  ignoreWarning: isDevelopment,
+  urlToMappingsWasm: '/mappings.wasm',
+})
 
 focusWithin(document)
 
-if (process.env.NODE_ENV === 'development') initWebsocket.debug()
+if (isDevelopment) initWebsocket.debug()
 
 //
 //------//
@@ -79,10 +89,12 @@ function onBeforeResolve(to, from, next) {
     },
   ])
 
-  resolveAsyncData.then(next).catch(() => {
-    // TODO: provide server endpoint to send the error for logging
+  resolveAsyncData.then(next).catch(error => {
     store.commit('setShowErrorView', true)
-    return next()
+    return logErrorToServer({
+      context: 'resolving async data',
+      error,
+    }).then(() => next())
   })
 
   return
@@ -92,4 +104,37 @@ function onBeforeResolve(to, from, next) {
   function isSameAsPreviouslyMatched(matchedComponent, index) {
     return matchedComponent === previouslyMatched[index]
   }
+}
+
+//
+//------------------//
+// Helper Functions //
+//------------------//
+
+function logUnhandledErrorsAndRejections() {
+  window.addEventListener('unhandledrejection', (reason, p) => {
+    let error = reason
+
+    if (!(error instanceof Error)) {
+      error = new Error(jstring(reason))
+    }
+
+    error.message = dedent(`
+      ${error.message}
+
+      at promise: ${p}
+    `)
+
+    logErrorToServer({
+      context: '- unhandled rejection event',
+      error,
+    })
+  })
+
+  window.addEventListener('error', errorEvent => {
+    logErrorToServer({
+      context: '- unhandled error event',
+      error: new Error(jstring(errorEvent)),
+    })
+  })
 }

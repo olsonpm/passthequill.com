@@ -20,10 +20,9 @@ import { getModuleAliases, projectRootDirectory } from './helpers'
 //------//
 
 const distDir = path.resolve(__dirname, 'dist'),
-  isDevelopment = process.env.NODE_ENV === 'development',
   pathToMappingsWasm = path.resolve(
     __dirname,
-    'node_modules/source-map/lib/mappings.wasm'
+    '../../node_modules/source-map/lib/mappings.wasm'
   )
 
 //
@@ -37,7 +36,7 @@ const eventualConfig = createInlineTemplates().then(() => {
     context: projectRootDirectory,
     entry: path.resolve(projectRootDirectory, 'server.js'),
     target: 'node',
-    devtool: isDevelopment ? '#cheap-module-inline-source-map' : 'source-map',
+    devtool: 'source-map',
     node: { __dirname: true },
     output: {
       libraryTarget: 'commonjs2',
@@ -56,8 +55,10 @@ const eventualConfig = createInlineTemplates().then(() => {
       new CopyPlugin([{ from: pathToMappingsWasm, to: distDir }]),
       new FriendlyErrorsPlugin(),
       new webpack.DefinePlugin({
-        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
         'process.env.BASE_URL': `'${baseUrl.local}/'`,
+        'process.env.ENVIRONMENT': "'server'",
+        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+        'process.env.VUE_ENV': 'undefined',
       }),
     ],
     module: {

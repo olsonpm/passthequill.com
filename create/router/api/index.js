@@ -4,6 +4,7 @@
 
 import bodyparser from 'koa-bodyparser'
 import KoaRouter from 'koa-router'
+import koaUseragent from 'koa-useragent'
 
 import createEmailRouter from './email'
 import createRoomRouter from './room'
@@ -32,7 +33,13 @@ const createApiRouter = () => {
       createARoom.rateLimit.perIp,
       createARoom.post
     )
-    .post('/log', log.rateLimit.allRequests, log.rateLimit.perIp, log.post)
+    .post(
+      '/log',
+      log.rateLimit.allRequests,
+      log.rateLimit.perIp,
+      koaUseragent,
+      log.post
+    )
 }
 
 //

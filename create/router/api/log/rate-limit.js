@@ -24,7 +24,7 @@ const perIp = getLogIpRateLimiter()
 //------------------//
 
 function getLogIpRateLimiter() {
-  const max = 3,
+  const max = 10,
     interval = { min: 1 }
 
   return RateLimit.middleware({

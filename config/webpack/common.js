@@ -3,6 +3,7 @@
 //---------//
 
 import autoprefixer from 'autoprefixer'
+import childProcess from 'child_process'
 import clean from 'postcss-clean'
 import focusWithin from 'postcss-focus-within'
 import FriendlyErrorsPlugin from 'friendly-errors-webpack-plugin'
@@ -148,12 +149,24 @@ function getPlugins() {
   const plugins = [
       new webpack.optimize.ModuleConcatenationPlugin(),
       new VueLoaderPlugin(),
+      new webpack.DefinePlugin({
+        'process.env.CURRENT_COMMIT_HASH': getCurrentCommitHash(),
+      }),
     ],
     environmentDependentPlugins = isDevelopment
       ? [new FriendlyErrorsPlugin()]
       : [new MiniCssExtractPlugin()]
 
   return mAppendAll(environmentDependentPlugins)(plugins)
+}
+
+function getCurrentCommitHash() {
+  const currentCommitHash = childProcess
+    .execSync('git rev-parse HEAD', { cwd: projectRootDir })
+    .toString()
+    .trim()
+
+  return `'${currentCommitHash}'`
 }
 
 //

@@ -1,5 +1,8 @@
 //
 // TODO: handle errors
+// TODO: find a less copy/paste solution to error logging.  Either an option in
+//   the api object or a separate api object which automatically logs errors
+//   would be appropriate
 //
 
 //---------//
@@ -12,7 +15,7 @@ import api from 'universal/api'
 import game from 'project-root/component/view/room/game/index'
 import initPlayer from 'project-root/component/view/room/init-player/index'
 import { assignAllLeaves } from '../helpers'
-import { setShowNotFoundOrErrorView } from 'universal/utils'
+import { logErrorToServer, setShowNotFoundOrErrorView } from 'universal/utils'
 import {
   coerceTo,
   getValueAt,
@@ -155,6 +158,14 @@ const room = {
         .then(() => {
           commit('clearJustAdded', 'currentPlayer')
         })
+        .catch(error => {
+          logErrorToServer({
+            context: 'when adding a guess',
+            error,
+          })
+
+          return Promise.reject(error)
+        })
     },
     changeSubViewName({ commit }, { subViewName }) {
       if (subViewName === 'game') {
@@ -185,6 +196,14 @@ const room = {
         .then(currentAndOtherPlayer => {
           commit('updatePlayers', currentAndOtherPlayer)
         })
+        .catch(error => {
+          logErrorToServer({
+            context: 'when adding a guess',
+            error,
+          })
+
+          return Promise.reject(error)
+        })
     },
     markChosenLetter({ commit, rootState }, { letter: chosenLetter }) {
       const { playerHash, roomHash } = rootState.route.params,
@@ -196,6 +215,14 @@ const room = {
           postBody
         )
         .then(otherPlayerData => commit('updateOtherPlayer', otherPlayerData))
+        .catch(error => {
+          logErrorToServer({
+            context: 'when adding a guess',
+            error,
+          })
+
+          return Promise.reject(error)
+        })
     },
     markGuessAsInvalid({ commit, rootState }, { eventManager }) {
       const { playerHash, roomHash } = rootState.route.params,
@@ -210,6 +237,14 @@ const room = {
           return vue.nextTick()
         })
         .then(() => eventManager.publish('room/afterGuessMarkedAsInvalid'))
+        .catch(error => {
+          logErrorToServer({
+            context: 'when adding a guess',
+            error,
+          })
+
+          return Promise.reject(error)
+        })
     },
     markGuessAsValid({ commit, rootState }, { eventManager }) {
       const { playerHash, roomHash } = rootState.route.params,
@@ -224,6 +259,14 @@ const room = {
           return vue.nextTick()
         })
         .then(() => eventManager.publish('room/afterGuessMarkedAsValid'))
+        .catch(error => {
+          logErrorToServer({
+            context: 'when adding a guess',
+            error,
+          })
+
+          return Promise.reject(error)
+        })
     },
   },
   mutations: {

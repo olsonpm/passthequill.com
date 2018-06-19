@@ -8,6 +8,7 @@ import * as rateLimit from './rate-limit'
 
 import { dal } from 'server/db'
 import { createIfRequestIsValid } from 'server/utils'
+import { logError } from 'universal/utils'
 import { handleErrorDuringRoute } from '../helpers'
 import {
   applyAt,
@@ -32,23 +33,39 @@ const ifRequestIsValid = createIfRequestIsValid('log')
 //------//
 
 const post = ifRequestIsValid(ctx => {
-  const { commitHash, context } = ctx.request.body,
-    { ip } = ctx.request,
-    { message, stack } = passThrough(ctx.request.body, [
-      pickAll(['message', 'stack']),
-      map(truncate),
-    ]),
-    errorArguments = [commitHash, context, ip, message, stack]
+  try {
+    const { commitHash, context, environment } = ctx.request.body,
+      { ip } = ctx.request,
+      { userAgent } = ctx,
+      { message, stack } = passThrough(ctx.request.body, [
+        pickAll(['message', 'stack']),
+        map(truncate),
+      ]),
+      logRecord = {
+        commitHash,
+        context,
+        environment,
+        ip,
+        message,
+        stack,
+        userAgent,
+      },
+      errorArguments = [logRecord]
 
-  dal.clientLog
-    .create({ commitHash, context, ip, message, stack })
-    .then(() => {
-      ctx.status = 200
-      ctx.body = {
-        result: 'log created successfully',
-      }
-    })
-    .catch(handleErrorDuringRoute(ctx, createErrorMessage, errorArguments))
+    return dal.log
+      .create(logRecord)
+      .then(() => {
+        ctx.status = 200
+        ctx.body = {
+          result: 'log created successfully',
+        }
+      })
+      .catch(handleErrorDuringRoute(ctx, createErrorMessage, errorArguments))
+  } catch (e) {
+    // no need to throw errors if logging has an issue
+    logError(e)
+    return Promise.resolve()
+  }
 })
 
 //
@@ -65,15 +82,28 @@ function truncate(aString) {
   ])
 }
 
-function createErrorMessage(commitHash, context, ip, message, stack) {
+function createErrorMessage(logRecord) {
+  const {
+    commitHash,
+    context,
+    environment,
+    ip,
+    message,
+    stack,
+    userAgent,
+  } = logRecord
+
   const friendly = 'creating a log',
     detailed = dedent(`
       An error occurred while creating a log
+
       commitHash: ${commitHash}
       context: ${context}
+      environment: ${environment}
       ip: ${ip}
       message: ${message}
       stack: ${stack}
+      userAgent: ${userAgent}
     `)
 
   return { detailed, friendly }
@@ -84,4 +114,4 @@ function createErrorMessage(commitHash, context, ip, message, stack) {
 // Exports //
 //---------//
 
-export { post, rateLimit }
+export default { post, rateLimit }
