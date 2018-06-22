@@ -32,6 +32,7 @@ import createDebugRouter from './create/router/debug'
 import createPageRouter from './create/router/page'
 import fixtureNameToInstall from './dev/fixture-name-to-install'
 import directives from 'universal/directives'
+import debugConfig from 'project-root/config/debug'
 
 import { createBundleRenderer } from 'vue-server-renderer'
 import { createAllDatabases, deleteAllDatabases } from 'server/db'
@@ -49,10 +50,11 @@ import {
 // Init //
 //------//
 
+const { localHostIp, webpackHotClientPort } = debugConfig
+
 const distDir = path.resolve(__dirname, 'dist'),
   highlight = chalk.green,
   isDevelopment = process.env.NODE_ENV === 'development',
-  webpackHotClientPort = 8086,
   templatePath = path.resolve(__dirname, 'index.template.html'),
   faviconPath = path.resolve(__dirname, 'assets/images/favicon'),
   webpackConfigs = {
@@ -168,9 +170,12 @@ function initDevServer(koaApp) {
       devMiddleware: {
         headers: { 'Access-Control-Allow-Origin': '*' },
       },
+      hotClient: {
+        host: localHostIp,
+        port: webpackHotClientPort,
+      },
     },
     webpackConfigs,
-    webpackHotClientPort,
     templatePath,
   })
 }
