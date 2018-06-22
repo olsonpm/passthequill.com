@@ -10,12 +10,14 @@
 // Imports //
 //---------//
 
+import checkCertAndKeyDaily from 'server/check-cert-and-key-daily'
 import fs from 'fs'
 import http from 'http'
 import https from 'https'
 import ws from 'ws'
 import log from 'server/log'
 
+import { pickAll } from 'fes'
 import { liveUpdateWebsocket } from 'project-root/config/app'
 
 //
@@ -28,7 +30,7 @@ const playerHashToClientSocket = {},
   clientSocketToPlayerHash = new Map()
 
 const isDevelopment = process.env.NODE_ENV === 'development',
-  httpsOptions = maybeGetHttpsOptions(isDevelopment)
+  certAndKeyPaths = pickAll(['pathToCert', 'pathToKey'], liveUpdateWebsocket)
 
 //
 //------//
@@ -36,9 +38,13 @@ const isDevelopment = process.env.NODE_ENV === 'development',
 //------//
 
 const createWebsocketServer = () => {
+  const certAndKey = isDevelopment ? {} : getCertAndKey(certAndKeyPaths)
+
   const server = isDevelopment
     ? http.createServer()
-    : https.createServer(httpsOptions)
+    : https.createServer(certAndKey)
+
+  if (!isDevelopment) checkCertAndKeyDaily(server, certAndKeyPaths)
 
   const websocketServer = new ws.Server({ server })
 
@@ -71,6 +77,14 @@ const createWebsocketServer = () => {
   }
 }
 
+function maybeUpdateClient({ data, playerHash }) {
+  const clientSocket = playerHashToClientSocket[playerHash]
+
+  if (!clientSocket) return
+
+  clientSocket.send(JSON.stringify(data))
+}
+
 //
 //------------------//
 // Helper Functions //
@@ -80,21 +94,11 @@ function handleConnectionError(error) {
   log.server.error('Error occurred in the liveUpdate websocket', error)
 }
 
-function maybeGetHttpsOptions() {
-  if (isDevelopment) return {}
-  else
-    return {
-      cert: fs.readFileSync(liveUpdateWebsocket.certPath),
-      key: fs.readFileSync(liveUpdateWebsocket.keyPath),
-    }
-}
-
-function maybeUpdateClient({ data, playerHash }) {
-  const clientSocket = playerHashToClientSocket[playerHash]
-
-  if (!clientSocket) return
-
-  clientSocket.send(JSON.stringify(data))
+function getCertAndKey({ pathToCert, pathToKey }) {
+  return {
+    cert: fs.readFileSync(pathToCert),
+    key: fs.readFileSync(pathToKey),
+  }
 }
 
 //
