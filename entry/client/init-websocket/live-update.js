@@ -19,7 +19,7 @@ import dedent from 'dedent'
 import vue from 'vue'
 
 import { liveUpdateWebsocket } from 'project-root/config/app'
-import { logErrorToServer, noop } from 'universal/utils'
+import { capitalizeFirstLetter, logErrorToServer, noop } from 'universal/utils'
 import { assignOver, last, mSet, reduce } from 'fes'
 
 //
@@ -123,7 +123,7 @@ function getIdToHandleUpdate(eventManager, store) {
   // helper function scoped to 'getIdToHandleUpdate'
 
   function toHandlers(idToHandleUpdate, id) {
-    const upperFirstId = id[0].toUpperCase() + id.slice(1)
+    const upperFirstId = capitalizeFirstLetter(id)
 
     return mSet(id, handleUpdate)(idToHandleUpdate)
 

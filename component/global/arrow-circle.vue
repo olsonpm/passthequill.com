@@ -1,7 +1,7 @@
 <template>
-  <can-fade ref="canFadeComponent"
-    :show-initially="showInitially"
-    :always-render="alwaysRender">
+  <simple-button class="arrow-circle"
+    :on-click="onClick"
+    :show-initially="showInitially">
 
     <svg viewBox="0 0 24 24"
       width="24"
@@ -31,23 +31,20 @@
           stroke-width="2.7" />
       </template>
     </svg>
-  </can-fade>
+  </simple-button>
 </template>
 
 <script>
 export default {
   name: 'arrow-circle',
-  props: ['always-render', 'direction', 'pulsate', 'show-initially'],
-  methods: {
-    animateHide() {
-      const { canFadeComponent } = this.$refs
-      return canFadeComponent.animateHide()
+  props: {
+    direction: {},
+    onClick: {},
+    pulsate: {},
+    showInitially: {
+      default: true,
     },
-    animateShow() {
-      const { canFadeComponent } = this.$refs
-      return canFadeComponent.animateShow()
-    },
-  },
+  }
 }
 </script>
 
@@ -55,7 +52,6 @@ export default {
 svg.arrow-circle {
   -webkit-tap-highlight-color: transparent;
   color: $bg;
-  cursor: pointer;
   filter: drop-shadow(0 2px 2px $shadow-gray-default);
   overflow: visible;
 

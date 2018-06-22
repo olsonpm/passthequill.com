@@ -15,13 +15,30 @@ export default {
   name: 'my-form',
   props: ['form-object', 'on-submit', 'set-submit-active'],
   data: () => ({
-    state: { submitted: false },
+    state: {
+      isSubmitting: false,
+      submitted: false,
+    },
   }),
   methods: {
     submit() {
-      this.state.submitted = true
-      this.formObject.__setSubmitted(true)
-      this.onSubmit()
+      const { formObject, state } = this
+
+      if (state.isSubmitting) return
+      else state.isSubmitting = true
+
+      state.submitted = true
+      formObject.__setSubmitted(true)
+
+      return Promise.resolve()
+        .then(() => this.onSubmit())
+        // finally
+        .then(() => {
+          state.isSubmitting = false
+        })
+        .catch(() => {
+          state.isSubmitting = false
+        })
     },
   },
 }

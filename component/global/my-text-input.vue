@@ -2,8 +2,12 @@
   <div class="my-text-input"
     :class="{ readonly }">
 
-    <help-circle v-if="infoComponentName"
-      @click.native="displayInfo" />
+    <simple-button v-if="infoComponentName"
+      class="help"
+      :on-click="displayInfo">
+
+      <help-circle />
+    </simple-button>
 
     <label :for="id">{{ label }}</label>
     <div class="input-wrapper"
@@ -140,16 +144,17 @@ export default {
 
 <style lang="scss">
 .my-text-input {
-  > .help-circle {
+  button.help {
     @include res-aware-element-spacing('margin-right', 'sm');
-
-    color: $bg;
-    cursor: pointer;
-    fill: $quill-blue;
     vertical-align: middle;
 
     // this offsets the perceived vertical alignment caused by the shadow
     margin-top: -4px;
+
+    .help-circle {
+      color: $bg;
+      fill: $quill-blue;
+    }
   }
 
   > label {

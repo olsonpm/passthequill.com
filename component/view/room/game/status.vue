@@ -1,27 +1,21 @@
 <template>
-  <can-fade always-render
-    should-animate-slowly
-    ref="canFadeComponent">
+  <h5 class="status">
+    <clock v-if="showClock"
+      :onClick="showStatusHelp" />
 
-    <h5 class="status">
-      <clock v-if="showClock"
-        tabindex="0"
-        @click.native="showStatusHelp"
-        @keyup.space="showStatusHelp"
-        @keyup.enter="showStatusHelp" />
+    <simple-button v-if="isGameActive && isMyTurn && otherPlayerHasJoined"
+      class="help"
+      :on-click="showStatusHelp">
 
-      <help-circle v-if="isGameActive && isMyTurn"
-        tabindex="0"
-        @click.native="showStatusHelp"
-        @keyup.space="showStatusHelp"
-        @keyup.enter="showStatusHelp" />
+      <help-circle />
+    </simple-button>
 
-      <span class="message">
-        {{ message }}
-        <attention-circle ref="attentionCircleComponent" />
-      </span>
-    </h5>
-  </can-fade>
+    <span class="message">
+      {{ message }}
+      <attention-circle ref="attentionCircleComponent"
+        data-animate="{ duration: { opacity: 'slow' } }" />
+    </span>
+  </h5>
 </template>
 
 <script>
@@ -33,6 +27,7 @@ import dedentMacro from 'dedent/macro'
 import statusHelpContent from './status-help-content'
 
 import { createNamespacedHelpers } from 'vuex'
+import { animateHide, makeVisible } from 'client/utils'
 import { logErrorToServer } from 'universal/utils'
 import {
   combineAll,
@@ -71,35 +66,23 @@ export default {
   computed: getComputedProperties(),
 
   methods: {
-    animateHide() {
-      const { canFadeComponent } = this.$refs
-      return canFadeComponent.animateHide()
-    },
-    animateShow({ isLiveUpdate } = {}) {
-      const { $refs, message } = this,
+    maybeDrawAttentionUntilUserInteracts() {
+      const { $refs, $store, message, statusIsPulsating } = this,
         { myTurn } = statusToMessage
 
-      if (isLiveUpdate && message === myTurn) {
-        this.drawAttentionUntilUserInteracts()
-      }
+      if (message !== myTurn || statusIsPulsating) return
 
-      return $refs.canFadeComponent.animateShow()
-    },
-    drawAttentionUntilUserInteracts() {
-      const { $refs, $store, statusIsPulsating } = this
-
-      if (statusIsPulsating) return
-      else $store.commit('room/setStatusIsPulsating', true)
+      if (!statusIsPulsating) $store.commit('room/setStatusIsPulsating', true)
 
       const stopPulsating = () => {
         $store.commit('room/setStatusIsPulsating', false)
-        $refs.attentionCircleComponent.animateHide()
+        animateHide($refs.attentionCircleComponent)
         forEach(
           eventName => window.removeEventListener(eventName, stopPulsating)
         )(interactionEvents)
       }
 
-      $refs.attentionCircleComponent.setIsVisible(true)
+      makeVisible($refs.attentionCircleComponent)
       forEach(
         eventName => window.addEventListener(eventName, stopPulsating)
       )(interactionEvents)
@@ -136,6 +119,7 @@ function getComputedProperties() {
       'isGameActive',
       'isMyTurn',
       'iWon',
+      'otherPlayerHasJoined',
       'otherPlayerMustGuess',
       'otherPlayerMustJoin',
     ]),
@@ -271,20 +255,22 @@ h5.status {
   font-style: italic;
   font-weight: 500;
 
-  > .clock {
+  button.clock {
     @include res-aware-element-spacing('margin-right', 'xs');
   }
 
-  > .help-circle {
+  button.help {
     @include res-aware-element-spacing('margin-right', 'xs');
-
-    color: $bg;
-    cursor: pointer;
-    fill: $quill-blue;
     vertical-align: middle;
 
     // this offsets the perceived vertical alignment caused by the shadow
     margin-top: -4px;
+
+    .help-circle {
+
+      color: $bg;
+      fill: $quill-blue;
+    }
   }
 
   .attention-circle {

@@ -36,6 +36,7 @@
       />
 
       <loading-check ref="loadingCheckComponent"
+        data-animate="{ duration: { opacity: 'fast' } }"
         :loading="state.loading"
         :success="state.success"
       />
@@ -43,24 +44,22 @@
       <!--
         TODO: implement a failure-link
       -->
-
     </my-form>
 
-    <can-fade ref="fadeableInfoAfterSubmit"
-      :show-initially="false">
+    <div v-if="state.showSuccessInfo"
+      class="info-after-submit"
+      ref="infoAfterSubmitEl"
+      data-animate="{ duration: { opacity: 'fast' } }">
 
-      <div class="info-after-submit">
-        <h3>Got it<party /></h3>
+      <h3>Got it<party /></h3>
 
-        <p>{{ successStatusMessage }}</p>
+      <p>{{ successStatusMessage }}</p>
 
-        <my-button type="button"
-          text="Ok"
-          class="ok"
-          :on-click="okClicked"
-        />
-      </div>
-    </can-fade>
+      <my-button type="button"
+        text="Ok"
+        class="ok"
+        :on-click="okClicked" />
+    </div>
   </div>
 </template>
 
@@ -73,6 +72,7 @@ import dedent from 'dedent'
 import validationInfo from 'universal/input-validation-info'
 import { createNamespacedHelpers } from 'vuex'
 import { settleAll, waitMs, wrapIn } from 'universal/utils'
+import { animateShow } from 'client/utils'
 import {
   createComputedFormData,
   createFormData,
@@ -161,7 +161,7 @@ export default {
 
       return settleAll([
         this.$myStore.dispatch('room/initPlayer', formData.inputs),
-        $refs.loadingCheckComponent.animateShow(),
+        animateShow($refs.loadingCheckComponent),
         minimumAnimationTime,
       ])
         .then(([initPlayerResult]) => {
@@ -174,12 +174,13 @@ export default {
           // TODO: use javascript to animate loading-check so we can program
           //   a hook `onFinishedAnimating` or something.  This hardcoded wait
           //   is a hack in the meantime
-          waitMs(1300).then(() => {
-            state.showSuccessInfo = true
-            return $refs.fadeableInfoAfterSubmit.animateShow()
-          })
-          return
+          return waitMs(1300)
         })
+        .then(() => {
+          state.showSuccessInfo = true
+          return this.$nextTick()
+        })
+        .then(() => animateShow($refs.infoAfterSubmitEl))
     },
     setSubmitActive(trueOrFalse) {
       this.state.submitActive = trueOrFalse

@@ -1,6 +1,7 @@
 <template>
   <div :class="{ 'game-over': isGameOver }">
-    <status ref="statusComponent" />
+    <status ref="statusComponent"
+      data-animate="{ duration: { opacity: 'slow' } }" />
 
     <div v-if="isTabletOrLarger"
       class="board tablets-and-larger">
@@ -21,7 +22,9 @@
 
           <li v-else
             class="tbd"
-            ref="tabletsAndLarger_currentPlayerNoGuessesEl">
+            ref="tabletsAndLarger_currentPlayerNoGuessesEl"
+            data-animate="{ duration: { opacity: 'slow' } }">
+
             &lt;No guesses yet&gt;
           </li>
         </ul>
@@ -29,7 +32,9 @@
 
       <div class="column other-player">
         <h3 ref="tabletsAndLarger_otherPlayerDisplayNameEl"
+          data-animate="{ duration: { opacity: 'slow' } }"
           :class="{ tbd: !otherPlayer.displayName }">
+
           {{ otherPlayer.displayName || '&lt;not entered yet&gt;' }}
         </h3>
         <ul class="prior-guesses">
@@ -44,15 +49,17 @@
 
           <li v-else-if="showNoGuessesYet"
             class="tbd"
-            ref="tabletsAndLarger_otherPlayerNoGuessesEl">
+            ref="tabletsAndLarger_otherPlayerNoGuessesEl"
+            data-animate="{ duration: { opacity: 'slow' } }">
 
             &lt;No guesses yet&gt;
           </li>
 
           <li v-else-if="state.showPlaceholder" />
 
-          <enter-guess ref="tabletsAndLarger_enterGuessComponent"
-            :show-initially="state.showEnterGuess" />
+          <enter-guess v-if="state.showEnterGuess"
+            ref="tabletsAndLarger_enterGuessComponent"
+            data-animate="{ duration: { opacity: 'slow' } }" />
         </ul>
       </div>
     </div>
@@ -62,19 +69,21 @@
 
       <arrow-circle direction="left"
         ref="leftArrowComponent"
-        :always-render="true"
+        data-animate="{ duration: { opacity: 'fast' } }"
         :pulsate="currentPlayerMustReviewWord && !statusIsPulsating"
-        :show-initially="showLeftArrow"
-        @click.native="slide(-1)" />
+        :onClick="sliiiideToTheLeft"
+        :show-initially="showLeftArrow" />
 
       <arrow-circle direction="right"
         ref="rightArrowComponent"
-        :always-render="true"
+        data-animate="{ duration: { opacity: 'fast' } }"
         :pulsate="currentPlayerMustGuess && !statusIsPulsating"
-        :show-initially="showRightArrow"
-        @click.native="slide(1)" />
+        :onClick="sliiiideToTheRight"
+        :show-initially="showRightArrow" />
 
-      <ul class="player-view" ref="phonesAndSmaller_playerViewEl">
+      <ul class="player-view"
+        ref="phonesAndSmaller_playerViewEl">
+
         <li>
           <h4>{{ currentPlayer.displayName }}</h4>
           <ul class="prior-guesses">
@@ -91,7 +100,9 @@
 
             <li v-else
               class="tbd"
-              ref="phonesAndSmaller_currentPlayerNoGuessesEl">
+              ref="phonesAndSmaller_currentPlayerNoGuessesEl"
+              data-animate="{ duration: { opacity: 'slow' } }">
+
               &lt;No guesses yet&gt;
             </li>
           </ul>
@@ -99,6 +110,7 @@
 
         <li>
           <h4 ref="phonesAndSmaller_otherPlayerDisplayNameEl"
+            data-animate="{ duration: { opacity: 'slow' } }"
             :class="{ tbd: !otherPlayer.displayName }">
 
             {{ otherPlayer.displayName || '&lt;not entered yet&gt;' }}
@@ -115,32 +127,34 @@
 
             <li v-else-if="showNoGuessesYet"
               class="tbd"
-              ref="phonesAndSmaller_otherPlayerNoGuessesEl">
+              ref="phonesAndSmaller_otherPlayerNoGuessesEl"
+              data-animate="{ duration: { opacity: 'slow' } }">
 
               &lt;No guesses yet&gt;
             </li>
 
             <li v-else-if="state.showPlaceholder" />
 
-            <enter-guess ref="phonesAndSmaller_enterGuessComponent"
-              :show-initially="state.showEnterGuess" />
+            <enter-guess v-if="state.showEnterGuess"
+              ref="phonesAndSmaller_enterGuessComponent"
+              data-animate="{ duration: { opacity: 'slow' } }" />
           </ul>
         </li>
       </ul>
     </div>
-    <can-fade ref="fadeableGameOver"
-      :should-animate-slowly="true"
-      :show-initially="isGameOver">
-      <div class="game-over">
-        <p>
-          Thanks for playing and I hope you enjoyed&nbsp;it.
-        </p>
-        <p>
-          If you ran into an issue or were confused at any point please let me
-          know <span class="dont-wrap">at {{ global.authorEmail }}.</span>
-        </p>
-      </div>
-    </can-fade>
+    <div v-if="isGameOver"
+      class="game-over"
+      ref="gameOverEl"
+      data-animate="{ duration: { opacity: 'slow' } }">
+
+      <p>
+        Thanks for playing and I hope you enjoyed&nbsp;it.
+      </p>
+      <p>
+        If you ran into an issue or were confused at any point please let me
+        know <span class="dont-wrap">at {{ global.authorEmail }}.</span>
+      </p>
+    </div>
   </div>
 </template>
 
@@ -157,7 +171,7 @@ import priorGuess from './prior-guess'
 import status from './status'
 
 import { bindAll } from 'universal/utils'
-import { animate, animateHide, animateShow, durations } from 'client/utils'
+import { animate, animateHide, animateShow } from 'client/utils'
 import { createNamespacedHelpers } from 'vuex'
 import { combineAll, isEmpty, isLaden } from 'fes'
 
@@ -166,8 +180,7 @@ import { combineAll, isEmpty, isLaden } from 'fes'
 // Init //
 //------//
 
-const duration = durations.slow,
-  { mapState: mapScreenSizeState } = createNamespacedHelpers('screenSize'),
+const { mapState: mapScreenSizeState } = createNamespacedHelpers('screenSize'),
   {
     mapGetters: mapRoomGetters,
     mapState: mapRoomState,
@@ -181,43 +194,43 @@ const duration = durations.slow,
 export default {
   name: 'game',
 
+  //
+  // TODO: extract boilerplate in events
+  //
   subscribeTo: {
     room: {
       beforeAddGuess() {
         const { $refs, currentPlayer, state } = this
 
-        state.showEnterGuess = false
-
         return Promise.all([
-            this.getRef('enterGuessComponent').animateHide(),
-            $refs.statusComponent.animateHide(),
+            animateHide(this.getRef('enterGuessComponent')),
+            animateHide($refs.statusComponent),
           ])
           .then(() => {
+            state.showEnterGuess = false
             state.showPlaceholder = isEmpty(currentPlayer.guesses)
           })
       },
       afterAddGuess() {
         const { $refs, isGameOver, state } = this
 
-        const showGameOver = isGameOver
-          ? $refs.fadeableGameOver.animateShow()
+        const maybeShowGameOver = isGameOver
+          ? this.$nextTick().then(() => animateShow($refs.gameOverEl))
           : undefined
 
         return Promise.all([
-            $refs.statusComponent.animateShow(),
-            showGameOver,
+            animateShow($refs.statusComponent),
+            maybeShowGameOver,
           ])
           .then(() => {
             state.showPlaceholder = false
           })
       },
       beforeGuessMarkedAsInvalid() {
-        const { statusComponent } = this.$refs
-        return statusComponent.animateHide()
+        return animateHide(this.$refs.statusComponent)
       },
       afterGuessMarkedAsInvalid() {
-        const { statusComponent } = this.$refs
-        return statusComponent.animateShow()
+        return animateShow(this.$refs.statusComponent)
       },
       afterGuessMarkedAsValid() {
         return this.revealEnterGuess()
@@ -225,63 +238,69 @@ export default {
 
       liveUpdate: {
         beforeOtherPlayerInitialized() {
-          const { statusComponent } = this.$refs
-
           return Promise.all([
-            statusComponent.animateHide(),
-            animateHide(this.getRef('otherPlayerDisplayNameEl'), duration)
+            animateHide(this.$refs.statusComponent),
+            animateHide(this.getRef('otherPlayerDisplayNameEl'))
           ])
         },
         afterOtherPlayerInitialized() {
-          const { statusComponent } = this.$refs
+          const { $refs, currentPlayerMustGuess, state } = this,
+            { statusComponent } = $refs
+
+          statusComponent.maybeDrawAttentionUntilUserInteracts()
+          state.showEnterGuess = currentPlayerMustGuess
+
+          const maybeShowEnterGuess = state.showEnterGuess
+              ? this.$nextTick().then(() => animateShow(this.getRef('enterGuessComponent')))
+              : undefined
 
           return Promise.all([
-            statusComponent.animateShow({ isLiveUpdate: true }),
-            animateShow(this.getRef('otherPlayerDisplayNameEl'), duration),
+            animateShow(statusComponent),
+            animateShow(this.getRef('otherPlayerDisplayNameEl')),
+            maybeShowEnterGuess
           ])
         },
         beforeOtherPlayerGuessed() {
-          const { statusComponent } = this.$refs,
-            hideStatus = statusComponent.animateHide()
+          const { $refs, otherPlayerHasGuessed } = this
 
-          const hideNoGuessesEl = this.otherPlayerHasGuessed
+          const maybeHideNoGuessesEl = otherPlayerHasGuessed
             ? undefined
-            : animateHide(this.getRef('currentPlayerNoGuessesEl'), duration)
+            : animateHide(this.getRef('currentPlayerNoGuessesEl'))
 
           return Promise.all([
-            hideStatus,
-            hideNoGuessesEl
+            animateHide($refs.statusComponent),
+            maybeHideNoGuessesEl
           ])
         },
         afterOtherPlayerGuessed() {
-          const { $refs, currentPlayerMustGuess } = this
+          const { $refs, currentPlayerMustGuess, isGameOver } = this
 
-          const maybeShowGameOver = this.isGameOver
-              ? $refs.fadeableGameOver.animateShow()
+          const maybeShowGameOver = isGameOver
+              ? this.$nextTick().then(() => animateShow($refs.gameOverEl))
               : undefined
 
           const maybeShowEnterGuess = currentPlayerMustGuess
             ? this.revealEnterGuess()
             : undefined
 
+          $refs.statusComponent.maybeDrawAttentionUntilUserInteracts()
+
           return Promise.all([
-            $refs.statusComponent.animateShow({ isLiveUpdate: true }),
+            animateShow($refs.statusComponent),
             maybeShowEnterGuess,
             maybeShowGameOver,
           ])
         },
         beforeOtherPlayerMarkedGuessAsInvalid() {
-          const { $refs, state } = this
-
-          state.showEnterGuess = false
-          return $refs.statusComponent.animateHide()
+          return animateHide(this.$refs.statusComponent)
         },
         afterOtherPlayerMarkedGuessAsInvalid() {
-          const { $refs, state } = this
+          const { $refs } = this
 
-          state.showEnterGuess = true
+          $refs.statusComponent.maybeDrawAttentionUntilUserInteracts()
+
           return Promise.all([
-            $refs.statusComponent.animateShow({ isLiveUpdate: true }),
+            animateShow($refs.statusComponent),
             this.revealEnterGuess()
           ])
         },
@@ -307,12 +326,12 @@ export default {
       else this.destroyTouchManager()
     },
     showLeftArrow(value) {
-      const method = value ? 'Show' : 'Hide'
-      return this.$refs.leftArrowComponent['animate' + method]()
+      const animateShowOrHide = value ? animateShow : animateHide
+      return animateShowOrHide(this.$refs.leftArrowComponent)
     },
     showRightArrow(value) {
-      const method = value ? 'Show' : 'Hide'
-      return this.$refs.rightArrowComponent['animate' + method]()
+      const animateShowOrHide = value ? animateShow : animateHide
+      return animateShowOrHide(this.$refs.rightArrowComponent)
     },
   },
 
@@ -403,7 +422,7 @@ export default {
       //   are appreciated :)
       //
       const maybeHideOtherPlayerNoGuessesEl = (!currentPlayerHasGuessed && showNoGuessesYet)
-        ? animateHide(this.getRef('otherPlayerNoGuessesEl'), duration)
+        ? animateHide(this.getRef('otherPlayerNoGuessesEl'))
         : Promise.resolve()
 
       return maybeHideOtherPlayerNoGuessesEl
@@ -417,10 +436,20 @@ export default {
       }
     },
     revealEnterGuess() {
-      const enterGuessComponent = this.getRef('enterGuessComponent')
+      this.state.showEnterGuess = true
 
-      return enterGuessComponent.clearText()
-        .animateShow()
+      return this.$nextTick().then(() => {
+        const enterGuessComponent = this.getRef('enterGuessComponent')
+        enterGuessComponent.clearText()
+
+        return animateShow(enterGuessComponent)
+      })
+    },
+    sliiiideToTheLeft() {
+      return this.slide(-1)
+    },
+    sliiiideToTheRight() {
+      return this.slide(1)
     },
     slide(positionMoved) {
       const { state } = this
@@ -598,7 +627,7 @@ function getLocalComputedProperties() {
       position: relative;
       text-align: center;
 
-      > .arrow-circle {
+      button.arrow-circle {
         position: absolute;
         top: 4px;
         z-index: 2;

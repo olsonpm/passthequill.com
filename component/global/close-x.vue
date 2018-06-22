@@ -19,9 +19,3 @@ export default {
   name: 'close-x',
 }
 </script>
-
-<style lang="scss">
-svg.close-x {
-  cursor: pointer;
-}
-</style>

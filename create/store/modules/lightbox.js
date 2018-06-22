@@ -30,11 +30,13 @@ const lightbox = {
         commit('setShow', true)
         commit('setComponentName', componentName)
         commit('setContent', content)
+        commit('setIsAnimating', true)
         commit('setType', type)
       }
     },
     tryToHide({ commit, state }) {
       if (!state.isAnimating) {
+        commit('setIsAnimating', true)
         commit('setShow', false)
       }
     },

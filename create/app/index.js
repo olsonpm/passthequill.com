@@ -13,6 +13,7 @@ import createVueRouter from '../router/vue'
 import eventManagerPlugin from '../../lib/vue-plugins/event-manager'
 import myStorePlugin from '../../lib/vue-plugins/my-store'
 import globalComponents from 'project-root/component/global'
+import directives from 'universal/directives'
 
 import { noop } from 'universal/utils'
 import { authorEmail } from 'project-root/config/app'
@@ -27,6 +28,7 @@ const registerAll = forEach(register)
 
 exposeGlobalProperties()
 registerAll(globalComponents)
+registerGlobalDirectives()
 
 Vue.use(eventManagerPlugin)
 Vue.use(myStorePlugin)
@@ -102,6 +104,12 @@ function exposeGlobalProperties() {
       github: 'https://github.com/olsonpm/passthequill.com',
     },
   }
+}
+
+function registerGlobalDirectives() {
+  forEach((definition, name) => {
+    Vue.directive(name, definition)
+  })(directives.client)
 }
 
 //

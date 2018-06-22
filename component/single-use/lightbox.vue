@@ -5,7 +5,12 @@
       @click="tryToHide" />
 
     <div class="modal" ref="modalEl">
-      <close-x @click.native="tryToHide" />
+      <simple-button class="close"
+        :on-click="tryToHide">
+
+        <close-x />
+      </simple-button>
+
       <component v-if="componentName"
         class="content"
         :is="componentName" />
@@ -58,8 +63,6 @@ export default {
         deblur = { filter: ['blur(0px)', 'blur(3px)'] },
         deblurSiblings = map(siblingEl => [siblingEl, deblur])(siblings)
 
-      $store.commit('lightbox/setIsAnimating', true)
-
       animateAll([
         [backlightEl, { opacity: [0, 0.6] }],
         [
@@ -84,7 +87,6 @@ export default {
         deblur = { filter: ['blur(3px)', 'blur(0px)'] },
         blurSiblings = map(siblingEl => [siblingEl, deblur])(siblings)
 
-      $store.commit('lightbox/setIsAnimating', true)
       state.isActive = true
       modalEl.style.top = (Math.round(window.scrollY) + 20) + 'px'
 
@@ -188,13 +190,13 @@ function getPossibleLightboxComponents() {
     right: 0;
     z-index: 2;
 
-    > .close-x {
+    .close {
       @include res-aware-element-spacing(('top', 'right'), 'sm');
 
       position: absolute;
     }
 
-    > .content {
+    .content {
       @include per-screen-size('padding-left', 18, 21, 24, 24, 'px');
       @include res-aware-element-spacing(
         ('padding-top', 'padding-bottom'),

@@ -16,6 +16,7 @@ import api from 'server/api/couchdb'
 
 import bothPlayersInitialized from './both-players-initialized'
 import onlyPlayer1IsInitialized from './only-player1-is-initialized'
+import onlyPlayer2IsInitialized from './only-player2-is-initialized'
 import player2GuessedAndReview from './player2-guessed-and-review'
 import player2GuessedNoMatchNoReview from './player2-guessed-no-match-no-review'
 import player2GuessedNoReview from './player2-guessed-no-review'
@@ -70,6 +71,7 @@ function getFixtures() {
   return {
     bothPlayersInitialized,
     onlyPlayer1IsInitialized,
+    onlyPlayer2IsInitialized,
     player2GuessedAndReview,
     player2GuessedNoMatchNoReview,
     player2GuessedNoReview,

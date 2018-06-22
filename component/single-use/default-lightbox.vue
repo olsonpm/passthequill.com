@@ -15,10 +15,6 @@ export default {
 
 <style lang="scss">
 .default-lightbox {
-  svg.close-x {
-    cursor: pointer;
-  }
-
   text-align: left;
 
   p + ul {

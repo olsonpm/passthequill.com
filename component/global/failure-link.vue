@@ -1,14 +1,13 @@
 <template>
-  <can-fade ref="canFadeComponent"
-    :show-initially="showInitially">
+  <simple-button type="button"
+    class="failure-link link"
+    :on-click="explainFailure">
 
-    <button type="button" class="failure-link link" @click="explainFailure">
-      {{ text }}
-      <span class="wrapper">
-        <alert class="error" />
-      </span>
-    </button>
-  </can-fade>
+    {{ text }}
+    <span class="wrapper">
+      <alert class="error" />
+    </span>
+  </simple-button>
 </template>
 
 <script>
@@ -22,19 +21,9 @@ export default {
   props: [
     'reason-component-name',
     'reason-content',
-    'show-initially',
     'text',
-    'when-done-hiding',
   ],
   methods: {
-    animateHide() {
-      const { canFadeComponent } = this.$refs
-      return canFadeComponent.animateHide()
-    },
-    animateShow() {
-      const { canFadeComponent } = this.$refs
-      return canFadeComponent.animateShow()
-    },
     explainFailure() {
       warnIfIncorrectProps(this)
 

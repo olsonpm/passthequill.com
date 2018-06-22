@@ -13,3 +13,11 @@ export default {
   name: 'more-info_unsubscribe-all',
 }
 </script>
+
+<style lang="scss">
+.more-info_unsubscribe-all {
+  .teardrop {
+    @include res-aware-element-spacing('margin-top', 'xs');
+  }
+}
+</style>

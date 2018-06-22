@@ -1,12 +1,13 @@
 <template>
   <div class="notification-wrapper">
-    <div class="notification error"
-      @click="close"
-      ref="notificationEl">
+    <simple-button can-only-click-once
+      class="notification error"
+      ref="notificationComponent"
+      :on-click="close">
 
       <div v-html="html" />
       <close-x />
-    </div>
+    </simple-button>
   </div>
 </template>
 
@@ -18,7 +19,7 @@
 import animate from 'velocity-animate'
 import closeX from './close-x'
 
-import { durations, onKeyUp } from 'client/utils'
+import { durationEnum, onKeyUp } from 'client/utils'
 import { createNamespacedHelpers } from 'vuex'
 
 //
@@ -26,7 +27,7 @@ import { createNamespacedHelpers } from 'vuex'
 // Init //
 //------//
 
-const { normal } = durations,
+const duration = durationEnum.normal,
   { mapState } = createNamespacedHelpers('notifyError')
 
 //
@@ -36,18 +37,15 @@ const { normal } = durations,
 
 export default {
   name: 'notify-error',
-  beforeMount() {
-    const { $myStore } = this
-    this.disposeKeyUp = onKeyUp('Escape', () => {
-      $myStore.dispatch('notifyError/tryToHide')
-    })
-  },
-  subscribeTo: {
-    notifyError: {
-      isClosing() {
-        return this.close()
-      }
+  data: () => ({
+    state: {
+      isClosing: false
     },
+  }),
+  beforeMount() {
+    this.disposeKeyUp = onKeyUp('Escape', () => {
+      this.close()
+    })
   },
   beforeDestroy() {
     this.disposeKeyUp()
@@ -59,9 +57,9 @@ export default {
     const { $refs, $store } = this
 
     return animate(
-      $refs.notificationEl,
+      $refs.notificationComponent.$el,
       { opacity: [1, 0], transform: ['translateY(15px)', 'translateY(0px)'] },
-      { duration: normal }
+      { duration }
     ).then(() => {
       $store.commit('notifyError/setIsAnimating', false)
     })
@@ -69,19 +67,29 @@ export default {
   computed: mapState(['html']),
   methods: {
     close() {
-      const { $refs, $store } = this
+      const { $refs, $store, state } = this
+
+      if (state.isClosing) return
+      else state.isClosing = true
 
       return animate(
-        $refs.notificationEl,
+        $refs.notificationComponent.$el,
         {
           opacity: [0, 1],
           transform: ['translateY(30px)', 'translateY(15px)'],
         },
-        { duration: normal }
+        { duration }
       ).then(() => {
         $store.commit('notifyError/setHtml', '')
         $store.commit('notifyError/setIsActive', false)
         $store.commit('notifyError/setIsAnimating', false)
+      })
+      // finally
+      .then(() => {
+        state.isClosing = false
+      })
+      .catch(() => {
+        state.isClosing = false
       })
     },
   },
@@ -104,9 +112,9 @@ export default {
 
     border-radius: $radius-small;
     color: $bg;
-    cursor: pointer;
     display: inline-block;
     font-weight: 500;
+    line-height: $default-line-height;
     position: relative;
 
     &.error {

@@ -67,10 +67,13 @@ const room = {
         isMyTurn,
         otherPlayersLastGuessWasReviewed,
         otherPlayerHasGuessed,
+        otherPlayerHasJoined,
       } = getters
 
       return (
-        isMyTurn && (!otherPlayerHasGuessed || otherPlayersLastGuessWasReviewed)
+        isMyTurn &&
+        otherPlayerHasJoined &&
+        (!otherPlayerHasGuessed || otherPlayersLastGuessWasReviewed)
       )
     },
     currentPlayersLastGuessWasReviewed(state, getters) {
@@ -112,6 +115,9 @@ const room = {
     otherPlayerHasGuessed(state) {
       return isLaden(state.otherPlayer.guesses)
     },
+    otherPlayerHasJoined(_unused_state, getters) {
+      return !getters.otherPlayerMustJoin
+    },
     otherPlayerMustGuess(state, getters) {
       const { currentPlayer } = state,
         { currentPlayersLastGuessWasReviewed, isFriendsTurn } = getters
@@ -144,8 +150,6 @@ const room = {
     addGuess({ commit, rootState }, { eventManager, guess }) {
       const { playerHash, roomHash } = rootState.route.params
 
-      guess = guess.toLowerCase()
-
       return Promise.all([
         api.post(`/room/${roomHash}/player/${playerHash}/guess`, { guess }),
         eventManager.publish('room/beforeAddGuess'),
@@ -156,7 +160,9 @@ const room = {
           commit('updateCurrentPlayerAndRoom', currentPlayerAndRoom)
           return vue.nextTick()
         })
-        .then(() => eventManager.publish('room/afterAddGuess'))
+        .then(() => {
+          eventManager.publish('room/afterAddGuess')
+        })
         .then(() => {
           commit('clearJustAdded', 'currentPlayer')
         })

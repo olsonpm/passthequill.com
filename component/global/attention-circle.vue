@@ -1,32 +1,13 @@
 <template>
-  <span class="attention-circle"
-    ref="attentionCircleEl">
-
+  <span class="attention-circle">
     <span class="pulsating-circle" />
   </span>
 </template>
 
 <script>
-import { setValueAtPath } from 'universal/utils'
-import { animateHide, animateShow, durations } from 'client/utils'
-
-const duration = durations.slow
-
 export default {
   name: 'attention-circle',
   props: ['pulsate'],
-  methods: {
-    animateHide() {
-      return animateHide(this.$refs.attentionCircleEl, duration)
-    },
-    animateShow() {
-      return animateShow(this.$refs.attentionCircleEl, duration)
-    },
-    setIsVisible(value) {
-      const opacity = (value) ? 1 : 0
-      setValueAtPath(['style', 'opacity'], opacity)(this.$refs.attentionCircleEl)
-    }
-  },
 }
 </script>
 

@@ -2,7 +2,6 @@ import alert from './alert'
 import arrowCircle from './arrow-circle'
 import arrowRight from './arrow-right'
 import attentionCircle from './attention-circle'
-import canFade from './can-fade'
 import cancel from './cancel'
 import check from './check'
 import checkCircle from './check-circle'
@@ -19,7 +18,6 @@ import moreInfo from './more-info'
 import myButton from './my-button'
 import myCheckbox from './my-checkbox'
 import myForm from './my-form'
-import mySelectbox from './my-selectbox'
 import myTextInput from './my-text-input'
 import myTextSubmitButton from './my-text-submit-button'
 import notifyError from './notify-error'
@@ -27,6 +25,7 @@ import octicon from './octicon'
 import pageMarker from './page-marker'
 import party from './party'
 import quill from './quill'
+import simpleButton from './simple-button'
 import smallQuill from './small-quill'
 import smile from './smile'
 import spacingWrapper from './spacing-wrapper'
@@ -38,7 +37,6 @@ export default {
   arrowCircle,
   arrowRight,
   attentionCircle,
-  canFade,
   cancel,
   check,
   checkCircle,
@@ -55,7 +53,6 @@ export default {
   myButton,
   myCheckbox,
   myForm,
-  mySelectbox,
   myTextInput,
   myTextSubmitButton,
   notifyError,
@@ -63,6 +60,7 @@ export default {
   pageMarker,
   party,
   quill,
+  simpleButton,
   smallQuill,
   smile,
   spacingWrapper,

@@ -2,7 +2,6 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent'
 import focusWithin from 'focus-within'
 
 import createApp from 'project-root/create/app'
@@ -10,7 +9,7 @@ import initWebsocket from './init-websocket'
 
 import { initialize } from 'sourcemapped-stacktrace'
 import { auto as polyfillUnhandledRejection } from 'browser-unhandled-rejection'
-import { jstring, logErrorToServer } from 'universal/utils'
+import { logErrorToServer } from 'universal/utils'
 import { logError } from 'universal/utils'
 import { discardFirstWhile, first, passThrough } from 'fes'
 
@@ -112,18 +111,8 @@ function onBeforeResolve(to, from, next) {
 //------------------//
 
 function logUnhandledErrorsAndRejections() {
-  window.addEventListener('unhandledrejection', (reason, p) => {
-    let error = reason
-
-    if (!(error instanceof Error)) {
-      error = new Error(jstring(reason))
-    }
-
-    error.message = dedent(`
-      ${error.message}
-
-      at promise: ${p}
-    `)
+  window.addEventListener('unhandledrejection', promiseRejectionEvent => {
+    const error = new Error(promiseRejectionEvent.reason)
 
     logErrorToServer({
       context: '- unhandled rejection event',
@@ -132,9 +121,14 @@ function logUnhandledErrorsAndRejections() {
   })
 
   window.addEventListener('error', errorEvent => {
+    const error =
+      errorEvent.error instanceof Error
+        ? errorEvent.error
+        : new Error(errorEvent.message || '(no message)')
+
     logErrorToServer({
+      error,
       context: '- unhandled error event',
-      error: new Error(jstring(errorEvent)),
     })
   })
 }

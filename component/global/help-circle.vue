@@ -1,4 +1,7 @@
 <template>
+  <!--
+    TODO: set the default fill to quill-blue for :not(.with-border)
+  -->
   <svg viewBox="0 0 24 24"
     width="27"
     height="27"
@@ -46,8 +49,7 @@ export default {
 </script>
 
 <style lang="scss">
-.help-circle {
-  cursor: pointer;
+svg.help-circle {
   vertical-align: middle;
 
   &:not(.with-border) {

@@ -54,7 +54,11 @@ function createInitializePlayer(websocketServer) {
 
   return ctx => {
     const { playerHash, roomHash } = ctx.params,
-      { displayName, word } = ctx.request.body,
+      { body } = ctx.request
+
+    body.word = body.word.toLowerCase()
+
+    const { displayName, word } = body,
       errorArgs = [playerHash, roomHash, displayName, word],
       authorizeThenGetPlayerData = createAuthorizeThenGetPlayerData(
         ctx,

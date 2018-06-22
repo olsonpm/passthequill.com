@@ -1,68 +1,45 @@
 <template>
-  <svg viewBox="0 0 24 24"
-    width="24"
-    height="24"
-    fill="none"
-    stroke="currentColor"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    class="emoji clock"
-    :class="{ 'with-border': withBorder }">
+  <simple-button class="clock"
+    :on-click="onClick">
+    
+    <svg viewBox="0 0 24 24"
+      width="24"
+      height="24"
+      fill="none"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="emoji clock">
 
-    <!--
-      TODO: separate this into two components
-    -->
+      <circle cx="12" cy="12"
+        r="12"
+        stroke-width="0" />
 
-    <circle cx="12" cy="12"
-      :r="radius"
-      :stroke-width="borderWidth" />
-
-    <polyline :points="clockHandPoints"
-      :stroke-width="clockHandWidth" />
-  </svg>
+      <polyline points="12 5 12 12 17.5 14"
+        stroke-width="2.8" />
+    </svg>
+  </simple-button>
 </template>
 
 <script>
 export default {
   name: 'clock',
-  props: {
-    withBorder: {
-      type: Boolean,
-    },
-  },
-  computed: {
-    borderWidth() {
-      return this.withBorder ? 2 : 0
-    },
-    clockHandPoints() {
-      return this.withBorder ? '12 6 12 12 16 14'
-        : '12 5 12 12 17.5 14'
-    },
-    clockHandWidth() {
-      return this.withBorder ? 2 : 2.8
-    },
-    radius() {
-      return this.withBorder ? 10 : 12
-    },
-  },
+  props: ['on-click'],
 }
 </script>
 
 <style lang="scss">
 svg.clock {
+  cursor: pointer;
+  filter: drop-shadow(0 2px 2px $shadow-gray-default);
   vertical-align: middle;
 
-  &:not(.with-border) {
-    cursor: pointer;
-    filter: drop-shadow(0 2px 2px $shadow-gray-default);
+  > circle {
+    fill: $quill-blue;
+  }
 
-    > circle {
-      fill: $quill-blue;
-    }
-
-    > polyline {
-      stroke: $bg;
-    }
+  > polyline {
+    stroke: $bg;
   }
 }
 </style>

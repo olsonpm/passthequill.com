@@ -40,9 +40,9 @@
     <div class="page-control">
       <arrow-circle ref="leftArrowComponent"
         direction="left"
-        :always-render="true"
+        data-animate="{ duration: { opacity: 'fast' } }"
         :show-initially="false"
-        @click.native="slide(-1)" />
+        :onClick="slideLeft" />
 
       <page-marker :active-page="state.activePage"
         :number-of-pages="numberOfPages"
@@ -50,9 +50,9 @@
 
       <arrow-circle ref="rightArrowComponent"
         direction="right"
-        :always-render="true"
+        data-animate="{ duration: { opacity: 'fast' } }"
         :show-initially="true"
-        @click.native="slide(1)" />
+        :onClick="slideRight" />
     </div>
   </div>
 </template>
@@ -65,7 +65,7 @@
 import hammerjs from 'hammerjs'
 
 import { bindAll } from 'universal/utils'
-import { animate } from 'client/utils'
+import { animate, animateShow, animateHide } from 'client/utils'
 
 //
 //------//
@@ -114,6 +114,10 @@ export default {
 
       this.touchManager.on('swipeleft swiperight', this.onSwipe.bind(this))
     },
+    //
+    // TODO: figure out if there's a simpler yet still readable approach to
+    //   this problem
+    //
     maybeFadePageArrows() {
       const {
         $refs,
@@ -128,16 +132,16 @@ export default {
       const animations = []
 
       if (wasShowingLeftArrow && !showLeftArrow)
-        animations.push(leftArrowComponent.animateHide())
+        animations.push(animateHide(leftArrowComponent))
 
       if (wasShowingRightArrow && !showRightArrow)
-        animations.push(rightArrowComponent.animateHide())
+        animations.push(animateHide(rightArrowComponent))
 
       if (!wasShowingLeftArrow && showLeftArrow)
-        animations.push(leftArrowComponent.animateShow())
+        animations.push(animateShow(leftArrowComponent))
 
       if (!wasShowingRightArrow && showRightArrow)
-        animations.push(rightArrowComponent.animateShow())
+        animations.push(animateShow(rightArrowComponent))
 
       return animations
     },
@@ -148,6 +152,12 @@ export default {
       } else if (type === 'swiperight' && state.activePage > 1) {
         this.slide(-1)
       }
+    },
+    slideLeft() {
+      return this.slide(-1)
+    },
+    slideRight() {
+      return this.slide(1)
     },
     slide(positionMoved) {
       const { $refs, state } = this
@@ -213,12 +223,12 @@ export default {
     height: 40px;
     justify-content: space-between;
 
-    > .arrow-circle {
+    button.arrow-circle {
       display: flex;
     }
 
-    > .arrow-circle,
-    > .page-marker {
+    button.arrow-circle,
+    .page-marker {
       display: inline-block;
     }
   }

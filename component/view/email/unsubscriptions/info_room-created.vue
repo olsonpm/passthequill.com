@@ -2,11 +2,11 @@
   <div class="more-info_unsubscribe-room-created info">
     <h3>Room Created Email</h3>
     <p>
-      The email sent to the creator of the room after the room is&nbsp;created.
+      The email sent to the creator of the&nbsp;room.
     </p>
     <h4>Its purpose</h4>
     <ul class="bulleted">
-      <li>Sends the initial link to the game</li>
+      <li>Sends the initial link to the&nbsp;game</li>
       <li>
         Confirms you own the address so future emails (e.g. 'Your Turn') will
         reach&nbsp;you

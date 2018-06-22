@@ -15,8 +15,9 @@
 
     <h4>How Do I Start Playing?</h4>
     <p>
-      Click 'Begin' above to create a game room.  After entering in you and your
-      friends' emails, I'll send both of you a link and you'll go from there.
+      Click 'Begin' above to create a game room.  After entering in the emails
+      of you and your friend, I'll send both of you a link and you'll go
+      from there.
     </p>
     <p>
       If you have questions or get confused confused along the way please email

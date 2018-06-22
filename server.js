@@ -8,13 +8,7 @@
 //-------------//
 
 import 'source-map-support/register'
-
-// TODO: use null-loader to handle this instead.  It's supposed to run before
-//   other files are imported, but the dynamic require happens after imports due
-//   to hoisting
-if (process.env.NODE_ENV !== 'production') {
-  require('longjohn')
-}
+import 'longjohn'
 
 //
 //---------//
@@ -37,6 +31,7 @@ import createApiRouter from './create/router/api'
 import createDebugRouter from './create/router/debug'
 import createPageRouter from './create/router/page'
 import fixtureNameToInstall from './dev/fixture-name-to-install'
+import directives from 'universal/directives'
 
 import { createBundleRenderer } from 'vue-server-renderer'
 import { createAllDatabases, deleteAllDatabases } from 'server/db'
@@ -64,7 +59,7 @@ const distDir = path.resolve(__dirname, 'dist'),
     client: _client,
     ssr: _ssr,
   },
-  fixtureNameCamel = 'onlyPlayer1IsInitialized',
+  fixtureNameCamel = 'onlyPlayer2IsInitialized',
   installFixture = () => fixtureNameToInstall[fixtureNameCamel]()
 
 logUnhandledRejections()
@@ -167,6 +162,7 @@ function initNonDevServer(koaApp) {
 
 function initDevServer(koaApp) {
   return koaVueSsr_initDevServer({
+    directives: directives.ssr,
     koaApp,
     koaWebpackOptions: {
       devMiddleware: {

@@ -6,90 +6,92 @@
 
   -->
 
-  <can-fade always-render
-    ref="fadeableGuess"
-    :show-initially="!justAdded"
-    :should-animate-slowly="true">
+  <li v-show-initially="!justAdded"
+    data-animate="{ duration: { opacity: 'slow' } }">
 
-    <li>
-      <ul class="letters" ref="lettersEl">
-        <li v-for="(letter, index) in word"
-          :key="index"
-          :class="{
-            chosen: wasChosen(letter, index),
-            choosable: isChoosable(letter, index),
-          }">
+    <ul ref="lettersEl"
+      class="letters"
+      :class="lettersClasses">
 
-          <button v-if="isChoosable(letter, index)"
-            @click.once="chooseLetter(letter, index)">
+      <li v-for="(letter, index) in word"
+        data-animate="{ duration: { opacity: 'slow' } }"
+        :key="index"
+        :class="{
+          chosen: wasChosen(letter, index),
+          choosable: isChoosable(letter, index),
+        }">
 
-            {{ letter }}
-          </button>
+        <simple-button can-only-click-once
+          v-if="isChoosable(letter, index)"
+          :on-click="() => chooseLetter(letter, index)">
 
-          <span v-else>
-            {{ letter }}
-          </span>
-        </li>
+          {{ letter }}
+        </simple-button>
 
-        <li v-if="showLetterChooser"
-          class="mark-invalid">
+        <span v-else>
+          {{ letter }}
+        </span>
+      </li>
 
-          <cancel tabindex="0"
-            @click.native="showConfirmInvalidGuess"
-            @keyup.space="showConfirmInvalidGuess"
-            @keyup.enter="showConfirmInvalidGuess" />
-        </li>
+      <li v-if="!isValid && wasReviewed"
+        class="cross-out-line">
 
-        <li v-if="showLetterChooser && hasNoMatchingLetters"
-          class="mark-valid">
+        <svg width="100%"
+          height="100%">
 
-          <check-circle tabindex="0"
-            @click.native="selectWordIsValid"
-            @keyup.space="selectWordIsValid"
-            @keyup.enter="selectWordIsValid" />
-        </li>
+          <line x1="0"
+            y1="65%"
+            x2="100%"
+            y2="35%"
+            stroke-width="1" />
+        </svg>
+      </li>
+    </ul>
 
-        <li v-if="!isValid && wasReviewed"
-          class="cross-out-line">
+    <cancel v-if="showLetterChooser"
+      class="mark-invalid"
+      data-animate="{ duration: { opacity: 'slow' } }"
+      ref="cancelComponent"
+      :onClick="showConfirmInvalidGuess" />
 
-          <svg width="100%"
-            height="100%">
+    <check-circle v-if="showLetterChooser && hasNoMatchingLetters"
+      class="mark-valid"
+      data-animate="{ duration: { opacity: 'slow' } }"
+      ref="checkCircleComponent"
+      :onClick="selectWordIsValid" />
 
-            <line x1="0"
-              y1="65%"
-              x2="100%"
-              y2="35%"
-              stroke-width="1" />
-          </svg>
-        </li>
-      </ul>
+    <simple-button v-if="showInvalidWordIndicator"
+      :on-click="showInvalidWordHelp"
+      class="alert"
+      ref="alertButton"
+      data-animate="{
+        duration: {
+          opacity: 'slow',
+          size: 'fast'
+        },
+        shouldAnimate: { width: true }
+      }">
 
-      <alert class="warn"
-        ref="alertComponent"
-        tabindex="0"
-        should-animate-slowly
-        should-animate-width
-        :show-initially="showInvalidWordIndicator"
-        @click.native="showInvalidWordHelp"
-        @keyup.space="showInvalidWordHelp"
-        @keyup.enter="showInvalidWordHelp" />
+      <alert class="warn" />
+    </simple-button>
 
-      <party v-if="isCorrect && iWon" />
+    <party v-if="isCorrect && iWon" />
 
-      <frown v-if="isCorrect && friendWon" />
+    <frown v-if="isCorrect && friendWon" />
 
-      <can-fade v-if="showClock"
-        ref="fadeableClock"
-        should-animate-slowly
-        should-animate-width
-        @click.native="showStatusHelp"
-        @keyup.space="showStatusHelp"
-        @keyup.enter="showStatusHelp">
-
-        <clock />
-      </can-fade>
-    </li>
-  </can-fade>
+    <clock ref="clockComponent"
+      class="clock"
+      data-animate="{
+        duration: {
+          opacity: 'slow',
+          size: 'fast',
+        },
+        shouldAnimate: { width: true },
+        display: 'inline-block',
+      }"
+      :onClick="showStatusHelp"
+      :style="{ display: displayClock }" />
+  </li>
 </template>
 
 <script>
@@ -101,7 +103,7 @@ import confirmInvalidGuess from './confirm_invalid-guess'
 import infoInvalidGuess from './info_invalid-guess'
 import statusHelpContent from './status-help-content'
 import { noop, waitMs } from 'universal/utils'
-import { animateHide, animateShow, durations } from 'client/utils'
+import { animateHide, animateShow, makeVisible } from 'client/utils'
 import { createNamespacedHelpers } from 'vuex'
 import {
   combineAll,
@@ -110,7 +112,9 @@ import {
   findFirstWhen,
   forEach,
   keepWhen,
+  map,
   none,
+  passThrough,
 } from 'fes'
 
 //
@@ -119,8 +123,7 @@ import {
 //------//
 
 const { mapGetters, mapState } = createNamespacedHelpers('room'),
-  returnNoop = () => noop,
-  duration = durations.slow
+  returnNoop = () => noop
 
 //
 //------//
@@ -166,104 +169,96 @@ export default {
   subscribeTo: {
     room: {
       beforeAddGuess() {
-        if (this.showInvalidWordIndicator) {
-          return this.$refs.alertComponent.animateHide()
-        }
+        const { $refs, showInvalidWordIndicator } = this
+
+        if (showInvalidWordIndicator) return animateHide($refs.alertButton)
       },
       afterAddGuess() {
-        const { justAdded } = this
-        if (justAdded) {
-          return this.$refs.fadeableGuess.animateShow()
-        }
+        const { $el, justAdded } = this
+
+        if (justAdded) return animateShow($el)
       },
       beforeGuessMarkedAsInvalid() {
-        if (!this.wasReviewed) {
-          return this.$refs.fadeableGuess.animateHide()
-        }
+        const { $el, wasReviewed } = this
+
+        if (!wasReviewed) return animateHide($el)
       },
       beforeGuessMarkedAsValid() {
-        if (!this.wasReviewed) {
-          return this.$refs.fadeableGuess.animateHide()
-        }
+        const { $el, wasReviewed } = this
+
+        if (!wasReviewed) return animateHide($el)
       },
       afterGuessMarkedAsInvalid() {
         const {
-          $refs,
-          currentOrOtherPlayer,
+          $el,
+          isOtherPlayer,
           isValid,
           isLastGuess,
           wasReviewed
         } = this
 
         if (
-          currentOrOtherPlayer === 'otherPlayer' &&
+          isOtherPlayer &&
           !isValid &&
           wasReviewed &&
           isLastGuess
         ) {
-          return $refs.fadeableGuess.animateShow()
+          return animateShow($el)
         }
       },
       afterGuessMarkedAsValid() {
         const {
-          $refs,
-          currentOrOtherPlayer,
+          $el,
+          isOtherPlayer,
           isValid,
           isLastGuess,
           wasReviewed
         } = this
 
         if (
-          currentOrOtherPlayer === 'otherPlayer' &&
+          isOtherPlayer &&
           isValid &&
           wasReviewed &&
           isLastGuess
         ) {
-          return $refs.fadeableGuess.animateShow()
+          return animateShow($el)
         }
       },
 
       liveUpdate: {
         afterOtherPlayerGuessed() {
-          const { justAdded } = this
-          if (justAdded) {
-            return this.$refs.fadeableGuess.animateShow()
-          }
+          const { $el, justAdded } = this
+
+          if (justAdded) return animateShow($el)
         },
         beforeOtherPlayerChoseLetter() {
-          const { $refs, isLastGuess, currentOrOtherPlayer } = this
+          const { $el, isCurrentPlayer, isLastGuess } = this
 
-          if (currentOrOtherPlayer === 'currentPlayer' && isLastGuess) {
-            return $refs.fadeableGuess.animateHide()
-          }
+          if (isCurrentPlayer && isLastGuess) return animateHide($el)
         },
         afterOtherPlayerChoseLetter() {
-          const { $refs, isLastGuess, currentOrOtherPlayer } = this
+          const { $el, isCurrentPlayer, isLastGuess } = this
 
-          if (currentOrOtherPlayer === 'currentPlayer' && isLastGuess) {
-            return $refs.fadeableGuess.animateShow()
-          }
+          if (isCurrentPlayer && isLastGuess) return animateShow($el)
         },
         beforeOtherPlayerMarkedGuessAsInvalid() {
-          const { $refs, isLastGuess, currentOrOtherPlayer } = this
+          const { $el, isCurrentPlayer, isLastGuess } = this
 
-          if (currentOrOtherPlayer === 'currentPlayer' && isLastGuess) {
-            return $refs.fadeableGuess.animateHide()
-          }
+          if (isCurrentPlayer && isLastGuess) return animateHide($el)
         },
         afterOtherPlayerMarkedGuessAsInvalid() {
-          const { $refs, isLastGuess, currentOrOtherPlayer } = this
+          const { $el, $refs, isCurrentPlayer, isLastGuess } = this
 
-          if (currentOrOtherPlayer === 'currentPlayer' && isLastGuess) {
-            this.$refs.alertComponent.setIsVisible(true)
-            return $refs.fadeableGuess.animateShow()
+          if (isCurrentPlayer && isLastGuess) {
+            makeVisible($refs.alertButton)
+            return animateShow($el)
           }
         },
         beforeOtherPlayerMarkedGuessAsValid() {
-          const { $refs, isLastGuess, currentOrOtherPlayer } = this
+          const { $refs, isCurrentPlayer, isLastGuess } = this
 
-          if (currentOrOtherPlayer === 'currentPlayer' && isLastGuess) {
-            return $refs.fadeableClock.animateHide()
+          if (isCurrentPlayer && isLastGuess) {
+            return animateHide($refs.clockComponent)
           }
         },
       }
@@ -298,11 +293,21 @@ export default {
       //
       return waitMs(300)
         .then(() => {
-          const { lettersEl } = this.$refs,
-            nonChosenLetters = keepWhen(isNotChosen)(lettersEl.children)
+          const { cancelComponent, checkCircleComponent, lettersEl } = this.$refs
+
+          const hideNonChosenLetters = passThrough(lettersEl.children, [
+            keepWhen(isNotChosen),
+            map(animateHide)
+          ])
+
+          const maybeHideCheckCircle = checkCircleComponent
+            ? animateHide(checkCircleComponent)
+            : undefined
 
           return Promise.all([
-            animateHide(nonChosenLetters, duration),
+            hideNonChosenLetters,
+            animateHide(cancelComponent),
+            maybeHideCheckCircle,
             waitMs(600),
           ])
         })
@@ -311,7 +316,7 @@ export default {
             chosenLetter = findFirstWhen(isChosen)(lettersEl.children)
 
           return Promise.all([
-            animateHide(chosenLetter, duration),
+            animateHide(chosenLetter),
             this.maybeRemoveNoGuesses(),
             waitMs(600),
           ])
@@ -322,15 +327,21 @@ export default {
         .then(() => {
           const { lettersEl } = this.$refs
 
+          const animateChildren = map(animateShow)(lettersEl.children)
+
           return Promise.all([
-            animateShow(lettersEl.children, duration),
+            ...animateChildren,
             this.revealEnterGuess(),
           ])
         })
         .then(() => {
-          const { lettersEl } = this.$refs
+          const { cancelComponent, checkCircleComponent, lettersEl } = this.$refs
 
-          forEach(clearOpacity)(lettersEl.children)
+          forEach(maybeClearOpacity)([
+            cancelComponent,
+            checkCircleComponent,
+            ...lettersEl.children
+          ])
         })
     },
     chosenLetterMatchesState(letter, index) {
@@ -409,16 +420,35 @@ function getComputedProperties() {
 
 function getLocalComputedProperties() {
   return {
+    displayClock() {
+      return (this.showClock) ? 'inline-block' : 'none'
+    },
     hasNoMatchingLetters() {
       const { currentPlayer, word } = this
 
       return none(containedIn(currentPlayer.word))(word)
     },
+    isCurrentPlayer() {
+      return this.currentOrOtherPlayer === 'currentPlayer'
+    },
+    isOtherPlayer() {
+      return this.currentOrOtherPlayer === 'otherPlayer'
+    },
+    lettersClasses() {
+      const { isChoosable, word } = this
+
+      const lastLetterIndex = word.length - 1,
+        lastLetter = word[lastLetterIndex]
+
+      return {
+        'last-letter-is-choosable': isChoosable(lastLetter, lastLetterIndex)
+      }
+    },
     showClock() {
-      const { currentOrOtherPlayer, isCorrect, isFriendsTurn, wasReviewed } = this
+      const { isCorrect, isCurrentPlayer, isFriendsTurn, wasReviewed } = this
 
       return (
-        currentOrOtherPlayer === 'currentPlayer' &&
+        isCurrentPlayer &&
         isFriendsTurn &&
         !wasReviewed &&
         !isCorrect
@@ -426,23 +456,23 @@ function getLocalComputedProperties() {
     },
     showInvalidWordIndicator() {
       const {
-        currentOrOtherPlayer,
+        isCurrentPlayer,
         isLastGuess,
         isValid,
         isMyTurn,
       } = this
 
-      return currentOrOtherPlayer === 'currentPlayer' &&
+      return isCurrentPlayer &&
         isMyTurn &&
         isLastGuess &&
         !isValid
     },
     showLetterChooser() {
-      const { currentOrOtherPlayer, friendWon, wasReviewed } = this
+      const { friendWon, isOtherPlayer, wasReviewed } = this
 
       return (
         !friendWon &&
-        currentOrOtherPlayer === 'otherPlayer' &&
+        isOtherPlayer &&
         !wasReviewed
       )
     },
@@ -456,8 +486,11 @@ function isChosen(aLetter) {
   return aLetter.classList.contains('chosen')
 }
 
-function clearOpacity(letter) {
-  letter.style.opacity = null
+function maybeClearOpacity(ref) {
+  if (!ref) return
+
+  const element = ref.$el || ref
+  element.style.opacity = null
 }
 </script>
 
@@ -472,13 +505,17 @@ $matched-letter-color: #dcdcdc;
 //   class on every child.  Or figure out another option? hmmmmm
 //
 .prior-guesses > li {
-  > .clock,
-  > .alert,
-  > .frown {
+  button.clock,
+  button.alert,
+  .frown {
     @include res-aware-element-spacing('margin-left', 'sm');
   }
 
-  > .alert {
+  button.alert {
+    margin-top: -2px;
+    vertical-align: middle;
+  }
+  svg.alert {
     height: 24px;
     width: 24px;
   }
@@ -561,18 +598,18 @@ $matched-letter-color: #dcdcdc;
         transition-property: background-color, border-color, box-shadow;
         transition-timing-function: $easing-default;
       }
-
-      &:not(.choosable) + .mark-invalid {
-        @include res-aware-element-spacing('margin-left', 'lg');
-      }
-      &.choosable + .mark-invalid {
-        @include res-aware-element-spacing('margin-left', 'md');
-      }
-
-      &.mark-valid {
-        @include res-aware-element-spacing('margin-left', 'lg');
-      }
     }
+
+    &.last-letter-is-choosable + .mark-invalid {
+      @include res-aware-element-spacing('margin-left', 'md');
+    }
+    &:not(.last-letter-is-choosable) + .mark-invalid {
+      @include res-aware-element-spacing('margin-left', 'lg');
+    }
+  }
+
+  .mark-valid {
+    @include res-aware-element-spacing('margin-left', 'lg');
   }
 }
 </style>

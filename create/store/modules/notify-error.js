@@ -15,12 +15,7 @@ const notifyError = {
         commit('setIsActive', true)
         commit('setIsAnimating', true)
       }
-    },
-    tryToHide({ commit, state }, { eventManager }) {
-      if (state.isActive && !state.isAnimating) {
-        commit('setIsAnimating', true)
-        eventManager.publish('notifyError/isClosing')
-      }
+      return Promise.resolve()
     },
   },
   mutations: {

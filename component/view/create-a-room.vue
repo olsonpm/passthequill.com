@@ -65,56 +65,61 @@
         text="Create"
         type="submit" />
 
-      <loading-check ref="loadingCheckComponent"
+      <loading-check v-if="state.loading || state.success"
+        ref="loadingCheckComponent"
+        data-animate="{ duration: { opacity: 'fast' } }"
         :loading="state.loading"
-        :success="state.success"
-      />
+        :success="state.success" />
 
       <failure-link ref="failureLinkComponent"
         text="Sorry, I had trouble creating your room"
+        style="display: none;"
+        data-animate="{
+          duration: { opacity: 'fast' },
+          display: 'inline-block',
+        }"
         :reasonContent="state.failureReason.content"
         :reasonComponentName="state.failureReason.componentName"
-        :show-initially="false"
       />
 
     </my-form>
 
-    <can-fade ref="fadeableInfoAfterSubmit"
-      :show-initially="false">
+    <div v-if="state.showSuccessInfo"
+      class="info-after-submit"
+      ref="infoAfterSubmitEl"
+      data-animate="{ duration: { opacity: 'fast' } }">
 
-      <div class="info-after-submit">
-        <h3>Success<party /></h3>
+      <h3>Success<party /></h3>
 
-        <p>The emails sent successfully</p>
-        <p>Join your game by clicking on the link in your&nbsp;email</p>
-        <p>Good luck!</p>
+      <p>The emails sent successfully</p>
+      <p>Join your game by clicking on the link in your&nbsp;email</p>
+      <p>Good luck!</p>
 
-        <more-info>
-          <template slot="summary">
-            Emails not showing up?
-          </template>
-          <template slot="details">
-            <p>
-              Let's check a couple&nbsp;things
-            </p>
-            <ul class="bulleted">
-              <li>Did you type the emails above&nbsp;correctly?</li>
-              <li>Did the email go into your spam&nbsp;folder?</li>
-              <li>
-                Did you give it a few minutes?  Sometimes the email won't
-                transfer right away, though it shouldn't take longer than a
-                few&nbsp;minutes
-              </li>
-            </ul>
-            <p>
-              If everything looks good and you're still not seeing the emails
-              then let me know at {{ global.authorEmail }} so we can figure out
-              how to get things&nbsp;working.
-            </p>
-          </template>
-        </more-info>
-      </div>
-    </can-fade>
+      <more-info>
+        <template slot="summary">
+          Emails not showing up?
+        </template>
+        <template slot="details">
+          <p>
+            Let's check a couple&nbsp;things
+          </p>
+          <ul class="bulleted">
+            <li>Did you type the emails above&nbsp;correctly?</li>
+            <li>Did the email go into your spam&nbsp;folder?</li>
+            <li>
+              Did you give it a few minutes?  Sometimes the email won't
+              transfer right away, though it shouldn't take longer than a
+              few&nbsp;minutes
+            </li>
+          </ul>
+          <p>
+            If everything looks good and you're still not seeing the emails
+            then let me know at {{ global.authorEmail }} so we can figure out
+            how to get things&nbsp;working.
+          </p>
+        </template>
+      </more-info>
+    </div>
   </div>
 </template>
 
@@ -130,6 +135,7 @@ import api from 'universal/api'
 import { getValueAtPath, getValueFrom, isEmpty, join, map } from 'fes'
 import debug from 'project-root/config/debug'
 import { settleAll, waitMs } from 'universal/utils'
+import { animateHide, animateShow } from 'client/utils'
 import {
   createComputedFormData,
   createFormData,
@@ -185,7 +191,7 @@ export default {
 
       if (!state.success) {
         state.showFailureLink = true
-        $refs.failureLinkComponent.animateShow()
+        animateShow($refs.failureLinkComponent)
       }
     },
     onSubmit() {
@@ -194,8 +200,7 @@ export default {
       if (state.showFailureLink) {
         state.success = null
         state.showFailureLink = false
-        return $refs.failureLinkComponent
-          .animateHide()
+        return animateHide($refs.failureLinkComponent)
           .then(() => this.onSubmit())
       }
 
@@ -216,7 +221,7 @@ export default {
       //
       settleAll([
         api.post('create-a-room', formData.inputs),
-        $refs.loadingCheckComponent.animateShow(),
+        this.$nextTick().then(() => animateShow($refs.loadingCheckComponent)),
         minimumAnimationTime,
       ])
         .then(([createARoomResult]) => {
@@ -235,7 +240,7 @@ export default {
             //   is a hack in the meantime
             waitMs(1300).then(() => {
               state.showSuccessInfo = true
-              return $refs.fadeableInfoAfterSubmit.animateShow()
+              return this.$nextTick().then(() => animateShow($refs.infoAfterSubmitEl))
             })
             return
           }
@@ -246,8 +251,7 @@ export default {
             unsubscribedPlayers
           )
 
-          return $refs.loadingCheckComponent
-            .animateHide()
+          return animateHide($refs.loadingCheckComponent)
             .then(() => this.maybeDisplayError())
         })
         .catch(error => {
@@ -260,6 +264,7 @@ export default {
             'unexpectedError/setFriendlyMessage',
             friendlyMessage
           )
+          this.$store.commit('setShowErrorView', true)
         })
         .then(() => {
           state.loading = false

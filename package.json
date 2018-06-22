@@ -31,6 +31,7 @@
     "hammerjs": "^2.0.8",
     "handlebars": "^4.0.11",
     "hashids": "^1.1.4",
+    "json5": "^1.0.1",
     "juice": "^4.2.3",
     "koa": "^2.5.1",
     "koa-bodyparser": "^4.2.1",

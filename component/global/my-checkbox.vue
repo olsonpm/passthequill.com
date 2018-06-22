@@ -1,22 +1,26 @@
 <template>
-  <div class="my-checkbox"
+  <simple-button class="my-checkbox"
     :class="{ 'is-disabled': isDisabled }"
-    @click.prevent="maybeCallOnClick()">
+    :on-click="maybeCallOnClick">
 
     <label :for="id">{{ label }}</label>
-    <input :id="id"
-      type="checkbox"
+    <input type="checkbox"
+      tabindex="-1"
       :checked="checked"
-      :disabled="isDisabled" />
+      :disabled="isDisabled"
+      :id="id" />
 
     <div class="nice-looking-checkbox">
       <check ref="checkComponent"
+        data-animate="{ duration: { opacity: 'fast' } }"
         :show-initially="checked" />
     </div>
-  </div>
+  </simple-button>
 </template>
 
 <script>
+import { animateHide, animateShow } from 'client/utils'
+
 export default {
   name: 'my-checkbox',
   props: ['checked', 'is-disabled', 'id', 'label', 'on-click'],
@@ -32,8 +36,8 @@ export default {
   },
   watch: {
     checked(value) {
-      const method = value ? 'Show' : 'Hide'
-      return this.$refs.checkComponent['animate' + method]()
+      const animateShowOrHide = value ? animateShow : animateHide
+      return animateShowOrHide(this.$refs.checkComponent)
     },
   },
 }
@@ -42,7 +46,6 @@ export default {
 <style lang="scss">
 .my-checkbox {
   -webkit-tap-highlight-color: transparent;
-  cursor: pointer;
   display: inline-block;
 
   > input {
@@ -55,7 +58,6 @@ export default {
       margin-bottom: 0;
     }
 
-    cursor: pointer;
     display: inline-block;
     transition: color $duration-short $easing-default;
     vertical-align: middle;
@@ -85,7 +87,6 @@ export default {
     background-color: $bg;
     border-radius: $radius-small;
     border: 1px solid $fg-light;
-    cursor: pointer;
     display: inline-block;
     height: 30px;
     text-align: center;

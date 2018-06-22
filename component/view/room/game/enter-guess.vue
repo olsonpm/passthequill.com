@@ -1,23 +1,18 @@
 <template>
-  <can-fade ref="canFadeComponent"
-    :should-animate-slowly="true"
-    :show-initially="showInitially">
+  <li class="enter-guess">
+    <my-form class="guess-form"
+      :form-object="formObject"
+      :on-submit="onSubmit"
+      :set-submit-active="setSubmitActive">
 
-    <li class="enter-guess">
-      <my-form class="guess-form"
-        :form-object="formObject"
-        :on-submit="onSubmit"
-        :set-submit-active="setSubmitActive">
-
-        <my-text-input id="guess"
-          label="Your Guess"
-          maxlength="5"
-          :disable-validation-indicator="true"
-          :include-inline-submit-button="true"
-          :parent-component="this" />
-      </my-form>
-    </li>
-  </can-fade>
+      <my-text-input id="guess"
+        label="Your Guess"
+        maxlength="5"
+        :disable-validation-indicator="true"
+        :include-inline-submit-button="true"
+        :parent-component="this" />
+    </my-form>
+  </li>
 </template>
 
 <script>
@@ -44,7 +39,7 @@ const inputIdToInitialState = validationInfo.guess.body,
   { mapState } = createNamespacedHelpers('room')
 
 if (process.env.NODE_ENV === 'development') {
-  inputIdToInitialState.guess.initialValue = 'coast'
+  inputIdToInitialState.guess.initialValue = 'tacky'
 }
 
 //
@@ -58,8 +53,6 @@ export default {
   beforeCreate() {
     this.formObject = createFormObject(inputIdToInitialState, this)
   },
-
-  props: ['show-initially'],
 
   computed: getComputedProperties(),
 
@@ -77,14 +70,6 @@ export default {
   },
 
   methods: {
-    animateHide() {
-      const { canFadeComponent } = this.$refs
-      return canFadeComponent.animateHide()
-    },
-    animateShow() {
-      const { canFadeComponent } = this.$refs
-      return canFadeComponent.animateShow()
-    },
     clearText() {
       this.formData.inputs.guess = ''
       return this

@@ -1,22 +1,18 @@
 <template>
-  <can-fade ref="canFadeComponent"
-    :show-initially="false">
+  <spacing-wrapper type="previous sibling height">
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      class="loading-check"
+      :class="{
+        success,
+        loading: state.loading,
+      }">
 
-    <spacing-wrapper type="previous sibling height">
-      <svg xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        class="loading-check"
-        :class="{
-          success,
-          loading: state.loading,
-        }">
-
-        <circle cx="12" cy="12" r="12" />
-        <path d="M7,12L11,16L19,8" />
-      </svg>
-    </spacing-wrapper>
-  </can-fade>
+      <circle cx="12" cy="12" r="12" />
+      <path d="M7,12L11,16L19,8" />
+    </svg>
+  </spacing-wrapper>
 </template>
 
 <script>
@@ -47,16 +43,6 @@ export default {
     }
   },
   props: ['loading', 'success'],
-  methods: {
-    animateHide() {
-      const { canFadeComponent } = this.$refs
-      return canFadeComponent.animateHide()
-    },
-    animateShow() {
-      const { canFadeComponent } = this.$refs
-      return canFadeComponent.animateShow()
-    },
-  },
 }
 </script>
 

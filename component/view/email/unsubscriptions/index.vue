@@ -9,7 +9,11 @@
         <li v-for="type in unsubscribeTypes"
           :key="type">
 
-          <help-circle @click.native="displayMoreInfo(type)" />
+          <simple-button :on-click="() => displayMoreInfo(type)"
+            class="help">
+
+            <help-circle />
+          </simple-button>
 
           <my-checkbox :id="type"
             :checked="thisComponent[type]"
@@ -18,11 +22,15 @@
             :on-click="() => toggleSubscription(type)" />
 
           <!-- It's simpler to keep this hardcoded for now -->
-          <alert v-if="type === 'room-created'"
-            class="warn"
-            ref="alertComponent"
+          <simple-button v-if="type === 'room-created'"
+            class="alert"
+            ref="arrayOfAlertButtons"
+            data-animate="{ duration: { opacity: 'fast' } }"
             :show-initially="showWarning"
-            @click.native="explainConsequenceForUnsubscribing" />
+            :on-click="explainConsequenceForUnsubscribing">
+
+            <alert class="warn" />
+          </simple-button>
         </li>
       </ul>
 
@@ -35,6 +43,7 @@
 import titleCase from 'title-case'
 import { validEmailTypes } from 'universal/email/types'
 import { combine, first, mSet, reduce } from 'fes'
+import { animateHide, animateShow } from 'client/utils'
 
 export default {
   name: 'email-unsubscriptions',
@@ -54,12 +63,15 @@ export default {
 
   watch: {
     showWarning(value) {
-      const { alertComponent } = this.$refs,
-        method = value ? 'Show' : 'Hide'
+      //
+      // because alertComponent exists in a loop, we need to grab the first one
+      //   (currently only one component contains an alert, so there won't ever
+      //   be others)
+      //
+      const alertButton = first(this.$refs.arrayOfAlertButtons),
+        animate = value ? animateShow : animateHide
 
-      // because alertComponent exists in a loop, we need to grab the
-      //   first one
-      return first(alertComponent)['animate' + method]()
+      return animate(alertButton)
     },
   },
 
@@ -144,11 +156,18 @@ function toEachType(typeToUnsubscribeStatus, type) {
   }
 
   .unsubscriptions > li {
-    > .help-circle {
-      color: $bg;
-      cursor: pointer;
-      fill: $info-blue-dark;
+    button.alert {
+      margin-top: -2px;
       vertical-align: middle;
+    }
+
+    button.help {
+      vertical-align: middle;
+
+      .help-circle {
+        color: $bg;
+        fill: $quill-blue;
+      }
     }
   }
 }
