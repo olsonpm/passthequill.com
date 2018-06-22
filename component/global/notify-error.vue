@@ -104,6 +104,7 @@ export default {
   text-align: center;
   top: 0;
   width: 100%;
+  z-index: 1;
 
   .notification {
     @include per-screen-size('min-width', 100%, 70%, 500px, 500px);
@@ -130,6 +131,13 @@ export default {
       @include res-aware-element-spacing(('top', 'right'), 'sm');
 
       position: absolute;
+    }
+
+    // TODO: figure out a better scheme for font-sizes.  It seems
+    //   res-aware-font-size is only useful for headers.  For base fonts we need
+    //   a standard way to say "small phones get X, everything else gets Y"
+    @include for-small-phones {
+      font-size: 14px;
     }
   }
 }

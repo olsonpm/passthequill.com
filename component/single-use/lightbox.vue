@@ -175,7 +175,7 @@ function getPossibleLightboxComponents() {
       padding-right: 65px;
     }
     @include for-small-phones {
-      padding-right: 32px;
+      padding-right: 40px;
     }
 
     background-color: $bg;

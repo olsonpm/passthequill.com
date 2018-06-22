@@ -220,13 +220,29 @@ export default {
 
       border-bottom: none;
       border-left: none;
-      border-radius: $radius-small;
       border-right: 0 solid transparent;
       border-top: none;
       display: block;
       transition-duration: $duration-short;
       transition-property: border-right-color, border-right-width;
       transition-timing-function: $easing-default;
+
+      //
+      // the hardcoded "- 1" is to cover a visual affect I don't understand.  If
+      //   the border radius of the input element matches its wrapper then there
+      //   exists visible whitespace between the two borders at the radius.
+      //
+      border-radius: $radius-small - 1;
+
+      //
+      // This shouldn't be necessary because `display: block` should stretch the
+      //   element to the width of the container.  But browsers be browsers, and
+      //   input elements need to explicitly set width: 100%
+      //
+      // see https://stackoverflow.com/questions/1030793/input-with-displayblock-is-not-a-block-why-not
+      //   for more info
+      //
+      width: 100%;
     }
   }
 }
