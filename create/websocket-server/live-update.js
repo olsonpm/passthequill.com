@@ -30,7 +30,7 @@ const playerHashToClientSocket = {},
   clientSocketToPlayerHash = new Map()
 
 const isDevelopment = process.env.NODE_ENV === 'development',
-  certAndKeyPaths = pickAll(['pathToCert', 'pathToKey'], liveUpdateWebsocket)
+  certAndKeyPaths = pickAll(['pathToCert', 'pathToKey'])(liveUpdateWebsocket)
 
 //
 //------//
