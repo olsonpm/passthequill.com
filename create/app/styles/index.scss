@@ -3,9 +3,9 @@
 
 @import 'imported-by-all-components';
 
+@import 'custom-reset';
 @import 'fonts';
 @import 'forms';
-@import 'custom-reset';
 
 html,
 body {
@@ -69,7 +69,12 @@ footer {
   color: $bg;
 
   .author {
-    @include res-aware-element-spacing('margin-right', 'md');
+    @include res-aware-element-spacing('margin-right', 'lg');
+    @include res-aware-element-spacing('margin-left', 'xxs');
+
+    @include for-small-phones {
+      font-size: 15px;
+    }
   }
 
   .small-quill {
@@ -91,28 +96,13 @@ footer {
   }
 
   .octicon {
-    @include per-screen-size(('height', 'width'), 45, 45, 55, 55, 'px');
+    @include per-screen-size(('height', 'width'), 50, 50, 55, 55, 'px');
 
     color: $bg;
     vertical-align: middle;
 
     // firefox for some reason cuts off the svg by a pixel on the left.
     padding-left: 1px;
-  }
-
-  @include for-small-phones {
-    .author {
-      font-size: 15px;
-    }
-
-    .octicon {
-      height: 36px;
-    }
-
-    .small-quill {
-      height: 30px;
-      width: 30px;
-    }
   }
 }
 
@@ -216,6 +206,10 @@ button {
   &.link {
     background-color: transparent;
     text-decoration: underline;
+
+    p {
+      text-decoration: underline;
+    }
   }
 }
 

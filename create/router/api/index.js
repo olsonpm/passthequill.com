@@ -11,6 +11,7 @@ import createRoomRouter from './room'
 import createARoom from './create-a-room'
 import createWebsocketServer from '../../websocket-server'
 import log from './log'
+import debugConfig from 'project-root/config/debug'
 
 //
 //------//
@@ -23,16 +24,10 @@ const createApiRouter = () => {
     emailRouter = createEmailRouter(),
     roomRouter = createRoomRouter(websocketServer)
 
-  return apiRouter
+  apiRouter
     .use(bodyparser())
     .use('/email', emailRouter.routes(), emailRouter.allowedMethods())
     .use('/room', roomRouter.routes(), roomRouter.allowedMethods())
-    .post(
-      '/create-a-room',
-      createARoom.rateLimit.allRequests,
-      createARoom.rateLimit.perIp,
-      createARoom.post
-    )
     .post(
       '/log',
       log.rateLimit.allRequests,
@@ -40,6 +35,19 @@ const createApiRouter = () => {
       koaUseragent,
       log.post
     )
+
+  if (debugConfig.preventEmailFromSending)
+    apiRouter.post('/create-a-room', createARoom.post)
+  else {
+    apiRouter.post(
+      '/create-a-room',
+      createARoom.rateLimit.allRequests,
+      createARoom.rateLimit.perIp,
+      createARoom.post
+    )
+  }
+
+  return apiRouter
 }
 
 //

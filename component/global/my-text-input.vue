@@ -1,6 +1,9 @@
 <template>
   <div class="my-text-input"
-    :class="{ readonly }">
+    :class="{
+      readonly,
+      'has-inline-submit': includeInlineSubmitButton,
+    }">
 
     <simple-button v-if="infoComponentName"
       class="help"
@@ -72,6 +75,7 @@ export default {
     },
     disableValidationIndicator: {
       type: Boolean,
+      default: false,
     },
     id: {
       type: String,
@@ -79,6 +83,7 @@ export default {
       validator: isLaden,
     },
     includeInlineSubmitButton: {
+      type: Boolean,
       default: false,
     },
     infoComponentName: {
@@ -155,6 +160,10 @@ export default {
       color: $bg;
       fill: $quill-blue;
     }
+  }
+
+  &.has-inline-submit .input-wrapper {
+    margin-top: 0;
   }
 
   > label {

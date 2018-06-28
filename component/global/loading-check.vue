@@ -50,15 +50,9 @@ export default {
 $curve: cubic-bezier(0.65, 0, 0.45, 1);
 
 .loading-check {
-  @include for-small-phones {
-    vertical-align: top;
-  }
-  @include for-phones-and-up {
-    vertical-align: middle;
-  }
-
   border-radius: 50%;
   display: inline-block;
+  vertical-align: middle;
 
   &.success {
     animation: fill 0.4s $curve 0.4s forwards;

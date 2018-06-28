@@ -1,9 +1,9 @@
 <template>
   <simple-button type="button"
-    class="failure-link link"
+    class="failure-link link custom-focus"
     :on-click="explainFailure">
 
-    {{ text }}
+    <p v-html="text"></p>
     <span class="wrapper">
       <alert class="error" />
     </span>
@@ -66,16 +66,57 @@ function warnIfIncorrectProps({ reasonComponentName, reasonContent }) {
 
 <style lang="scss">
 .failure-link {
-  border: 1px solid transparent;
+  align-items: center;
   color: $error-red-dark;
+  flex-direction: row;
+
+  > * {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  > p {
+    flex-grow: 1;
+    margin-top: 0;
+  }
 
   > .wrapper {
     @include res-aware-element-spacing('margin-left', 'xs');
-    @include per-screen-size(('height', 'line-height'), 18, 18, 18, 18, 'px');
+  }
 
+  //
+  // TODO: extract the common focus code between here, simple-button,
+  //   and link-to
+  //
+  &::before {
+    background-color: transparent;
+    bottom: 0;
+    box-shadow: 0 0 0 transparent;
+    content: '';
     display: inline-block;
-    margin-top: -3px;
-    vertical-align: middle;
+    left: 0;
+    right: 0;
+    position: absolute;
+    top: 0;
+    transition-duration: $duration-tiny;
+    transition-property: background-color, box-shadow;
+    transition-timing-function: $easing-default;
+
+    // TODO: find a better way to style focus when using the keyboard but not
+    //   a mouse.  This transition delay fixes a flash of focus styling before
+    //   focus is removed upon a mouse click.
+    transition-delay: 50ms;
+  }
+
+  &:focus::before {
+    bottom: 0;
+    box-shadow: 0 0 5px $info-blue-focus;
+    content: '';
+    display: inline-block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
   }
 }
 </style>

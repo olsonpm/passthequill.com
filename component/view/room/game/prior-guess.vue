@@ -81,16 +81,15 @@
 
     <clock ref="clockComponent"
       class="clock"
+      v-initial-classes="{ exists: showClock }"
       data-animate="{
         duration: {
           opacity: 'slow',
           size: 'fast',
         },
         shouldAnimate: { width: true },
-        display: 'inline-block',
       }"
-      :onClick="showStatusHelp"
-      :style="{ display: displayClock }" />
+      :onClick="showStatusHelp" />
   </li>
 </template>
 
@@ -420,9 +419,6 @@ function getComputedProperties() {
 
 function getLocalComputedProperties() {
   return {
-    displayClock() {
-      return (this.showClock) ? 'inline-block' : 'none'
-    },
     hasNoMatchingLetters() {
       const { currentPlayer, word } = this
 
@@ -505,6 +501,14 @@ $matched-letter-color: #dcdcdc;
 //   class on every child.  Or figure out another option? hmmmmm
 //
 .prior-guesses > li {
+  button.clock {
+    display: none;
+
+    &.exists {
+      display: inline-block;
+    }
+  }
+
   button.clock,
   button.alert,
   .frown {

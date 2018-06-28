@@ -65,8 +65,12 @@ export default {
   }
 
   > button {
-    @include per-screen-size(('padding-left', 'padding-right'), 28, 28, 28, 32, 'px');
-    @include per-screen-size(('padding-top', 'padding-bottom'), 18, 18, 18, 20, 'px');
+    @include for-tablets-and-down {
+      padding: $button-vertical-padding-tablets-and-smaller $button-horizontal-padding-tablets-and-smaller;
+    }
+    @include for-desktops {
+      padding: $button-vertical-padding-desktops $button-horizontal-padding-desktops;
+    }
 
     background-color: $green;
     border: 1px solid $green;

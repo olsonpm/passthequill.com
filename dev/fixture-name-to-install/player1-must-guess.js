@@ -33,7 +33,7 @@ const test1EncryptedEmail =
 // Main //
 //------//
 
-const name = 'player2-guessed-and-review'
+const name = 'player1-must-guess'
 
 const install = () => {
   return Promise.all([

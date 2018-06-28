@@ -72,12 +72,8 @@
         :success="state.success" />
 
       <failure-link ref="failureLinkComponent"
-        text="Sorry, I had trouble creating your room"
-        style="display: none;"
-        data-animate="{
-          duration: { opacity: 'fast' },
-          display: 'inline-block',
-        }"
+        text="Sorry, I had trouble creating your&nbsp;room"
+        data-animate="{ duration: { opacity: 'fast' } }"
         :reasonContent="state.failureReason.content"
         :reasonComponentName="state.failureReason.componentName"
       />
@@ -114,8 +110,8 @@
           </ul>
           <p>
             If everything looks good and you're still not seeing the emails
-            then let me know at {{ global.authorEmail }} so we can figure out
-            how to get things&nbsp;working.
+            then let me know at {{ global.authorEmail }} so we can get
+            things&nbsp;working.
           </p>
         </template>
       </more-info>
@@ -219,7 +215,7 @@ export default {
       // regardless whether an error occurs, we want the animation to show for
       //   the minimum amount of time for a smooth experience
       //
-      settleAll([
+      return settleAll([
         api.post('create-a-room', formData.inputs),
         this.$nextTick().then(() => animateShow($refs.loadingCheckComponent)),
         minimumAnimationTime,
@@ -238,11 +234,11 @@ export default {
             // TODO: use javascript to animate loading-check so we can program
             //   a hook `onFinishedAnimating` or something.  This hardcoded wait
             //   is a hack in the meantime
-            waitMs(1300).then(() => {
+            return waitMs(1300).then(() => {
+              state.loading = false
               state.showSuccessInfo = true
               return this.$nextTick().then(() => animateShow($refs.infoAfterSubmitEl))
             })
-            return
           }
 
           // otherwise someone was unsubscribed so we need to show

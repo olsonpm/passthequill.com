@@ -69,6 +69,11 @@ export default {
   line-height: 0;
   position: relative;
 
+  label,
+  p {
+    line-height: $default-line-height;
+  }
+
   &:not(.custom-focus)::before {
     background-color: transparent;
     bottom: 0;
@@ -87,10 +92,11 @@ export default {
     //   a mouse.  This transition delay fixes a flash of focus styling before
     //   focus is removed upon a mouse click.
     transition-delay: 50ms;
-  }
 
+  }
   &:not(.custom-focus):focus::before {
     bottom: 0;
+    box-shadow: 0 0 5px $info-blue-focus;
     content: '';
     display: inline-block;
     position: absolute;
@@ -98,12 +104,6 @@ export default {
     right: 0;
     top: 0;
     transform: scale(1.2);
-  }
-
-  &:not(.custom-focus):focus {
-    &::before {
-      box-shadow: 0 0 5px $info-blue-focus;
-    }
   }
 }
 </style>

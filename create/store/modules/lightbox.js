@@ -2,6 +2,10 @@
 // TODO: figure out a clean way to expose componentName and content - right now
 //       it feels dirty.
 //
+// TODO: don't leave it up to the consumer to setIsAnimating appropriately.
+//   This module should publish an event and when that event is finished this
+//   should setIsAnimating to false
+//
 
 //---------//
 // Imports //
@@ -35,7 +39,7 @@ const lightbox = {
       }
     },
     tryToHide({ commit, state }) {
-      if (!state.isAnimating) {
+      if (state.show && !state.isAnimating) {
         commit('setIsAnimating', true)
         commit('setShow', false)
       }

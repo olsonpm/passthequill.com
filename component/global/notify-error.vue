@@ -128,7 +128,12 @@ export default {
     }
 
     > .close-x {
-      @include per-screen-size(('right', 'top'), 14, 16, 16, 17, 'px');
+      @include per-screen-size(('right', 'top'), 15, 16, 16, 17, 'px');
+
+      @include for-small-phones {
+        height: 12px;
+        width: 12px;
+      }
 
       position: absolute;
     }

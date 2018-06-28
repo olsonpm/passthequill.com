@@ -8,8 +8,8 @@
       <my-text-input id="guess"
         label="Your Guess"
         maxlength="5"
-        :disable-validation-indicator="true"
-        :include-inline-submit-button="true"
+        disable-validation-indicator
+        include-inline-submit-button
         :parent-component="this" />
     </my-form>
   </li>

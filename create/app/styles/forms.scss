@@ -9,14 +9,15 @@ form {
     display: inline-block;
   }
 
-  .help-circle + label {
-    @include for-phones-and-down {
-      @include res-aware-element-spacing('margin-bottom', 'sm');
+  @include for-phones-and-down {
+    button.help + label + .input-wrapper {
+      @include res-aware-element-spacing('margin-top', 'xs');
     }
   }
-  label:first-child {
-    @include for-phones-and-down {
-      @include res-aware-element-spacing('margin-bottom', 'xxs');
+
+  @include for-phones-and-down {
+    label:first-child + .input-wrapper {
+      @include res-aware-element-spacing('margin-top', 'xxs');
     }
   }
 }
