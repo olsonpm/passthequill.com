@@ -1,17 +1,22 @@
 <template>
   <div class="more-info"
+    :class="{ expanded: state.expanded }"
     ref="moreInfoEl"
     @keyup.space="showOrHide"
     @keyup.enter="showOrHide"
     tabindex="0">
 
-    <div class="summary" @click="showOrHide">
-      <help-circle with-border />
+    <simple-button tabindex="-1"
+      class="summary"
+      has-custom-styled-focus
+      :on-click="showOrHide">
+
+      <help-circle />
       <p>
         <slot name="summary" />
       </p>
       <chevron-down ref="chevronDownComponent" />
-    </div>
+    </simple-button>
 
     <div class="details" ref="detailsEl">
       <slot name="details" />
@@ -72,6 +77,8 @@ export default {
         detailsEl.style.display = 'block'
         const newHeight = moreInfoEl.offsetHeight + 'px'
 
+        state.expanded = true
+
         animate(chevronDownEl, {
           transform: ['rotate(180deg)', 'rotate(0deg)'],
         })
@@ -79,7 +86,6 @@ export default {
         animate(moreInfoEl, { height: [newHeight, oldHeight] }).then(() => {
           moreInfoEl.style.height = null
           state.animating = false
-          state.expanded = true
         })
       }
     },
@@ -90,10 +96,9 @@ export default {
 <style lang="scss">
 .more-info {
   @include res-aware-element-spacing('margin-top', 'md');
-  @include shadow-normal($with-focus: true);
+  @include shadow-normal;
 
-  background-color: $info-blue;
-  border: 1px solid $info-blue;
+  border: 1px solid $quill-blue;
   border-radius: $radius-small;
   overflow: hidden;
   transition-property: border-color;
@@ -101,14 +106,18 @@ export default {
   transition-timing-function: $easing-default;
 
   &:focus {
-    border-color: $info-blue-focus;
+    border-color: $orange;
+    box-shadow: 0 0 10px $orange;
     outline: 0;
+  }
+
+  &.expanded .summary {
+    border-bottom: 1px solid $shadow-gray-default;
   }
 
   .details {
     @include res-aware-element-spacing('padding', 'sm');
 
-    background-color: $info-blue-light;
     display: none;
 
     > :first-child {
@@ -121,13 +130,20 @@ export default {
 
   .summary {
     @include res-aware-element-spacing('padding', 'sm');
-    @include shadow-small;
 
     cursor: pointer;
+    display: block;
     position: relative;
+    text-align: left;
+
+    //
+    // again, I'm not sure why  this is necessary.  'block' just doesn't seem to
+    //   work as I think it should on form elements.
+    //
+    width: 100%;
 
     > .help-circle {
-      color: $info-blue-focus;
+      filter: none;
     }
 
     > * {
@@ -143,15 +159,9 @@ export default {
     .chevron-down {
       @include res-aware-element-spacing('margin-right', 'sm');
 
+      color: $quill-blue;
       position: absolute;
       right: 0;
-    }
-  }
-
-  a.custom-focus:focus {
-    &::before {
-      background-color: white;
-      box-shadow: 0 0 5px darken($shadow-gray-default, 40%);
     }
   }
 }

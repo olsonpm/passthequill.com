@@ -128,7 +128,7 @@ export default {
     }
 
     > .close-x {
-      @include res-aware-element-spacing(('top', 'right'), 'sm');
+      @include per-screen-size(('right', 'top'), 14, 16, 16, 17, 'px');
 
       position: absolute;
     }

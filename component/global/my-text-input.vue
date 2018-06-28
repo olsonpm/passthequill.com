@@ -182,7 +182,7 @@ export default {
   }
 
   > .input-wrapper {
-    @include for-phones-and-up {
+    @include for-tablets-and-up {
       display: inline-block;
       width: $default-textbox-width + 2;
     }
@@ -214,9 +214,6 @@ export default {
         ('padding-top', 'padding-bottom'),
         'xs'
       );
-      @include for-phones-and-up {
-        width: $default-textbox-width;
-      }
 
       border-bottom: none;
       border-left: none;

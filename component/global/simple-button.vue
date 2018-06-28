@@ -1,6 +1,7 @@
 <template>
   <button type="button"
     class="simple-button"
+    :class="{ 'custom-focus': hasCustomStyledFocus }"
     @click.capture.stop.prevent="onClickWrapper"
     v-show-initially="showInitially">
 
@@ -39,6 +40,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    hasCustomStyledFocus: {
+      type: Boolean,
+      default: false,
+    },
     onClick: {},
     showInitially: {
       type: Boolean,
@@ -64,7 +69,7 @@ export default {
   line-height: 0;
   position: relative;
 
-  &::before {
+  &:not(.custom-focus)::before {
     background-color: transparent;
     bottom: 0;
     box-shadow: 0 0 0 transparent;
@@ -84,7 +89,7 @@ export default {
     transition-delay: 50ms;
   }
 
-  &:focus::before {
+  &:not(.custom-focus):focus::before {
     bottom: 0;
     content: '';
     display: inline-block;

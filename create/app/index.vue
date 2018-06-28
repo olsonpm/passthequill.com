@@ -3,9 +3,9 @@
     :class="allAppClasses">
 
     <!--
-      Some views need to modify site-wide styles (e.g. the mobile game view needs
-      to replace the footer margin with its own padding to allow a better swipe
-      experience).
+      Some views need to modify site-wide styles (e.g. the mobile game view
+      needs to replace the footer margin with its own padding to allow a better
+      swipe experience).
     -->
 
     <lightbox />

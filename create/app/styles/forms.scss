@@ -14,9 +14,9 @@ form {
       @include res-aware-element-spacing('margin-bottom', 'sm');
     }
   }
-  :not(.help-circle) + label {
+  label:first-child {
     @include for-phones-and-down {
-      @include res-aware-element-spacing('margin-bottom', 'xs');
+      @include res-aware-element-spacing('margin-bottom', 'xxs');
     }
   }
 }

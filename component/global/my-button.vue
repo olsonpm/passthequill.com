@@ -65,11 +65,8 @@ export default {
   }
 
   > button {
-    @include res-aware-element-spacing(('padding-left', 'padding-right'), 'lg');
-    @include res-aware-element-spacing(
-      ('padding-top', 'padding-bottom'),
-      $button-vertical-padding-size
-    );
+    @include per-screen-size(('padding-left', 'padding-right'), 28, 28, 28, 32, 'px');
+    @include per-screen-size(('padding-top', 'padding-bottom'), 18, 18, 18, 20, 'px');
 
     background-color: $green;
     border: 1px solid $green;
@@ -81,7 +78,6 @@ export default {
     //   causes a blank row of pixels on the bottom in firefox (didn't test
     //   other browsers)
     //
-    // transform: translateY(1px);
     transition-duration: $duration-tiny;
     transition-property: background-color, border-color, box-shadow, transform;
     transition-timing-function: $easing-default;
