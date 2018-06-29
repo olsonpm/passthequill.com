@@ -121,14 +121,18 @@ function logUnhandledErrorsAndRejections() {
   })
 
   window.addEventListener('error', errorEvent => {
-    const error =
-      errorEvent.error instanceof Error
-        ? errorEvent.error
-        : new Error(errorEvent.message || '(no message)')
+    try {
+      const error =
+        errorEvent.error instanceof Error
+          ? errorEvent.error
+          : new Error(errorEvent.message || '(no message)')
 
-    logErrorToServer({
-      error,
-      context: '- unhandled error event',
-    })
+      logErrorToServer({
+        error,
+        context: '- unhandled error event',
+      })
+    } catch (_unused_error) {
+      // don't cause an infinite loop
+    }
   })
 }
