@@ -1,7 +1,8 @@
 <template>
   <simple-button class="clock"
-    :on-click="onClick">
-    
+    :on-click="onClick"
+    :initial-classes="initialClasses">
+
     <svg viewBox="0 0 24 24"
       width="24"
       height="24"
@@ -24,7 +25,7 @@
 <script>
 export default {
   name: 'clock',
-  props: ['on-click'],
+  props: ['initial-classes', 'on-click'],
 }
 </script>
 

@@ -3,6 +3,7 @@
     class="simple-button"
     :class="{ 'custom-focus': hasCustomStyledFocus }"
     @click.capture.stop.prevent="onClickWrapper"
+    v-initial-classes="initialClasses"
     v-show-initially="showInitially">
 
     <slot />
@@ -43,6 +44,9 @@ export default {
     hasCustomStyledFocus: {
       type: Boolean,
       default: false,
+    },
+    initialClasses: {
+      default: () => ({})
     },
     onClick: {},
     showInitially: {

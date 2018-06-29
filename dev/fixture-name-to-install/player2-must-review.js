@@ -117,7 +117,12 @@ function createPlayers([roomData]) {
 
       player1Data.guesses = [{ word: 'coast' }]
       player2Data.guesses = [
-        { word: 'blast', wasReviewed: true, chosenLetter: 'a' },
+        {
+          word: 'blast',
+          isValid: true,
+          wasReviewed: true,
+          chosenLetter: 'a',
+        },
       ]
 
       return Promise.all([

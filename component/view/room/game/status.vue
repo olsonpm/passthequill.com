@@ -1,11 +1,27 @@
 <template>
   <h5 class="status">
-    <clock v-if="showClock"
-      :onClick="showStatusHelp" />
+    <clock ref="clockComponent"
+      :onClick="showStatusHelp"
+      :initialClasses="{ exists: showClock }"
+      data-animate="{
+        duration: {
+          opacity: 'slow',
+          size: 'fast',
+        },
+        shouldAnimate: { width: true },
+      }" />
 
-    <simple-button v-if="isGameActive && isMyTurn && otherPlayerHasJoined"
+    <simple-button ref="helpButton"
       class="help"
-      :on-click="showStatusHelp">
+      :on-click="showStatusHelp"
+      :initialClasses="{ exists: shouldShowHelpButton }"
+      data-animate="{
+        duration: {
+          opacity: 'slow',
+          size: 'fast',
+        },
+        shouldAnimate: { width: true },
+      }" >
 
       <help-circle />
     </simple-button>
@@ -27,8 +43,14 @@ import dedentMacro from 'dedent/macro'
 import statusHelpContent from './status-help-content'
 
 import { createNamespacedHelpers } from 'vuex'
-import { animateHide, makeVisible } from 'client/utils'
 import { logErrorToServer } from 'universal/utils'
+import {
+  addClass,
+  animateHide,
+  animateShow,
+  makeVisible,
+  removeClass,
+} from 'client/utils'
 import {
   combineAll,
   containedIn,
@@ -60,10 +82,53 @@ const statusToMessage = getStatusToMessage(),
 // Main //
 //------//
 
+//
+// TODO: create meaningful group events e.g. beforeTurnGoesToOtherPlayer.  That
+//   will remove a lot of the copy/paste below.
+//
+
 export default {
   name: 'status',
 
   computed: getComputedProperties(),
+
+  subscribeTo: {
+    room: {
+      afterAddGuess() {
+        const { $refs, showClock } = this
+
+        removeClass('exists', $refs.helpButton)
+        if (showClock) addClass($refs.clockComponent)
+      },
+      afterGuessMarkedAsInvalid() {
+        const { $refs } = this
+
+        removeClass('exists', $refs.helpButton)
+        addClass('exists', $refs.clockComponent)
+      },
+
+      liveUpdate: {
+        afterOtherPlayerChoseLetter() {
+          return animateShow(this.$refs.clockComponent)
+        },
+        afterOtherPlayerMarkedGuessAsValid() {
+          return animateShow(this.$refs.clockComponent)
+        },
+        afterOtherPlayerGuessed() {
+          const { $refs } = this
+
+          addClass('exists', $refs.helpButton)
+          removeClass('exists', $refs.clockComponent)
+        },
+        afterOtherPlayerMarkedGuessAsInvalid() {
+          const { $refs } = this
+
+          addClass('exists', $refs.helpButton)
+          removeClass('exists', $refs.clockComponent)
+        },
+      }
+    }
+  },
 
   methods: {
     maybeDrawAttentionUntilUserInteracts() {
@@ -210,6 +275,11 @@ function getLocalComputedState() {
 
       return otherPlayerMustJoin || otherPlayerMustGuess
     },
+    shouldShowHelpButton() {
+      const { isGameActive, isMyTurn, otherPlayerHasJoined } = this
+
+      return isGameActive && isMyTurn && otherPlayerHasJoined
+    },
     status() {
       const { friendWon, isMyTurn, iWon, otherPlayerMustJoin } = this
 
@@ -257,14 +327,25 @@ h5.status {
 
   button.clock {
     @include res-aware-element-spacing('margin-right', 'xs');
+
+    display: none;
+
+    &.exists {
+      display: inline-block;
+    }
   }
 
   button.help {
     @include res-aware-element-spacing('margin-right', 'xs');
+    display: none;
     vertical-align: middle;
 
     // this offsets the perceived vertical alignment caused by the shadow
     margin-top: -4px;
+
+    &.exists {
+      display: inline-block;
+    }
 
     .help-circle {
 

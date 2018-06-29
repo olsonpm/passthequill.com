@@ -114,7 +114,12 @@ function createPlayers([roomData]) {
         player2Data = removeCouchdbProperties(player2)
 
       player2Data.guesses = [
-        { word: 'blast', wasReviewed: true, chosenLetter: 'a' },
+        {
+          word: 'blast',
+          isValid: true,
+          wasReviewed: true,
+          chosenLetter: 'a',
+        },
       ]
 
       return dal.player

@@ -116,10 +116,20 @@ function createPlayers([roomData]) {
         player2Data = removeCouchdbProperties(player2)
 
       player1Data.guesses = [
-        { word: 'coast', wasReviewed: true, chosenLetter: 's' },
+        {
+          word: 'coast',
+          isValid: true,
+          wasReviewed: true,
+          chosenLetter: 's',
+        },
       ]
       player2Data.guesses = [
-        { word: 'blast', wasReviewed: true, chosenLetter: 'a' },
+        {
+          word: 'blast',
+          isValid: true,
+          wasReviewed: true,
+          chosenLetter: 'a',
+        },
       ]
 
       return Promise.all([

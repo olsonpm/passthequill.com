@@ -80,8 +80,7 @@
     <frown v-if="isCorrect && friendWon" />
 
     <clock ref="clockComponent"
-      class="clock"
-      v-initial-classes="{ exists: showClock }"
+      :initial-classes="{ exists: showClock }"
       data-animate="{
         duration: {
           opacity: 'slow',
@@ -102,8 +101,13 @@ import confirmInvalidGuess from './confirm_invalid-guess'
 import infoInvalidGuess from './info_invalid-guess'
 import statusHelpContent from './status-help-content'
 import { noop, waitMs } from 'universal/utils'
-import { animateHide, animateShow, makeVisible } from 'client/utils'
 import { createNamespacedHelpers } from 'vuex'
+import {
+  animateHide,
+  animateShow,
+  makeVisible,
+  removeClass,
+} from 'client/utils'
 import {
   combineAll,
   containedIn,
@@ -236,9 +240,12 @@ export default {
           if (isCurrentPlayer && isLastGuess) return animateHide($el)
         },
         afterOtherPlayerChoseLetter() {
-          const { $el, isCurrentPlayer, isLastGuess } = this
+          const { $el, $refs, isCurrentPlayer, isLastGuess } = this
 
-          if (isCurrentPlayer && isLastGuess) return animateShow($el)
+          if (isCurrentPlayer && isLastGuess) {
+            removeClass('exists', $refs.clockComponent)
+            return animateShow($el)
+          }
         },
         beforeOtherPlayerMarkedGuessAsInvalid() {
           const { $el, isCurrentPlayer, isLastGuess } = this
@@ -249,6 +256,7 @@ export default {
           const { $el, $refs, isCurrentPlayer, isLastGuess } = this
 
           if (isCurrentPlayer && isLastGuess) {
+            removeClass('exists', $refs.clockComponent)
             makeVisible($refs.alertButton)
             return animateShow($el)
           }
