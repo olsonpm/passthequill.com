@@ -111,6 +111,14 @@ export default {
         afterOtherPlayerChoseLetter() {
           return animateShow(this.$refs.clockComponent)
         },
+        afterOtherPlayerInitialized() {
+          const { $refs, isMyTurn } = this
+
+          if (isMyTurn) {
+            addClass('exists', $refs.helpButton)
+            removeClass('exists', $refs.clockComponent)
+          }          
+        },
         afterOtherPlayerMarkedGuessAsValid() {
           return animateShow(this.$refs.clockComponent)
         },
