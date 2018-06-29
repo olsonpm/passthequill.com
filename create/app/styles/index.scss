@@ -104,6 +104,17 @@ footer {
     // firefox for some reason cuts off the svg by a pixel on the left.
     padding-left: 1px;
   }
+
+  // hack for super small screens on the test environment needed because of a
+  //   longer test email
+  @media (max-width: 340px) {
+    .small-quill {
+      margin-left: -8px;
+    }
+    .author {
+      margin-right: 10px;
+    }
+  }
 }
 
 h1,
