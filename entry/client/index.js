@@ -112,12 +112,20 @@ function onBeforeResolve(to, from, next) {
 
 function logUnhandledErrorsAndRejections() {
   window.addEventListener('unhandledrejection', promiseRejectionEvent => {
-    const error = new Error(promiseRejectionEvent.reason)
+    try {
+      const error = new Error(promiseRejectionEvent.reason)
 
-    logErrorToServer({
-      context: '- unhandled rejection event',
-      error,
-    })
+      logErrorToServer({
+        context: '- unhandled rejection event',
+        error,
+      })
+    } catch (_unused_error) {
+      // prevent a possible infinite loop caused by:
+      //   unhandled rejection
+      //   -> unhandled error
+      //   -> unhandled rejection
+      //   -> ...
+    }
   })
 
   window.addEventListener('error', errorEvent => {
