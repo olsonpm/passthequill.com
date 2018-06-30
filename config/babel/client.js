@@ -12,7 +12,7 @@ export default {
   ],
   plugins: [
     'macros',
-    'syntax-dynamic-import',
+    '@babel/syntax-dynamic-import',
     '@babel/plugin-proposal-object-rest-spread',
   ],
 }

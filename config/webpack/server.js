@@ -51,13 +51,11 @@ const eventualConfig = createInlineTemplates().then(() => {
       extensions: ['.js', '.json', '.vue'],
     },
     plugins: [
-      new webpack.optimize.ModuleConcatenationPlugin(),
       new CopyPlugin([{ from: pathToMappingsWasm, to: distDir }]),
       new FriendlyErrorsPlugin(),
       new webpack.DefinePlugin({
         'process.env.BASE_URL': `'${baseUrl.local}/'`,
         'process.env.ENVIRONMENT': "'server'",
-        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
         'process.env.VUE_ENV': 'undefined',
       }),
     ],

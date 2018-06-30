@@ -147,7 +147,6 @@ function getRules(babelLoaderOptions, extractOrStyleLoader) {
 
 function getPlugins() {
   const plugins = [
-      new webpack.optimize.ModuleConcatenationPlugin(),
       new VueLoaderPlugin(),
       new webpack.DefinePlugin({
         'process.env.CURRENT_COMMIT_HASH': getCurrentCommitHash(),

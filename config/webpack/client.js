@@ -46,7 +46,6 @@ function getClientPlugins() {
     new webpack.DefinePlugin({
       'process.env.BASE_URL': `'${baseUrl.external}/'`,
       'process.env.ENVIRONMENT': "'client'",
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
       'process.env.VUE_ENV': '"client"',
     }),
     new VueSSRClientPlugin(),

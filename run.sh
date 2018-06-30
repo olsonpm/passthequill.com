@@ -16,8 +16,18 @@
 command="${1}"
 shift
 
-buildSsrAssets='true'
-if [ "${1}" = "--skip-ssr-assets" ]; then
+buildSsrAssets=''
+
+if [ "${command}" = "build-dev" ]; then
+  if [ "${1}" = "--include-ssr-assets" ]; then
+    buildSsrAssets='true'
+    shift
+  else
+    buildSsrAssets='false'
+  fi
+fi
+
+if [ "${1}" = "--exclude-ssr-assets" ]; then
   buildSsrAssets='false'
   shift
 fi
@@ -36,7 +46,7 @@ build() {
 
 build_server() {
   if [ -f "${debugFileName}" ]; then
-    if [ "${NODE_ENV}" != 'development' ] && [ "${buildSsrAssets}" = 'true' ]; then
+    if [ "${buildSsrAssets}" = 'true' ]; then
       build "config/webpack/ssr.js"
       build "config/webpack/client.js"
     fi
