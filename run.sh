@@ -16,7 +16,7 @@
 command="${1}"
 shift
 
-buildSsrAssets=''
+buildSsrAssets='true'
 
 if [ "${command}" = "build-dev" ]; then
   if [ "${1}" = "--include-ssr-assets" ]; then

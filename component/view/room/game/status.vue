@@ -117,7 +117,7 @@ export default {
           if (isMyTurn) {
             addClass('exists', $refs.helpButton)
             removeClass('exists', $refs.clockComponent)
-          }          
+          }
         },
         afterOtherPlayerMarkedGuessAsValid() {
           return animateShow(this.$refs.clockComponent)

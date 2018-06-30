@@ -55,7 +55,7 @@
             &lt;No guesses yet&gt;
           </li>
 
-          <li v-else-if="state.showPlaceholder" />
+          <li v-if="state.showPlaceholder" />
 
           <enter-guess v-if="state.showEnterGuess"
             ref="tabletsAndLarger_enterGuessComponent"
@@ -133,7 +133,7 @@
               &lt;No guesses yet&gt;
             </li>
 
-            <li v-else-if="state.showPlaceholder" />
+            <li v-if="state.showPlaceholder" />
 
             <enter-guess v-if="state.showEnterGuess"
               ref="phonesAndSmaller_enterGuessComponent"
@@ -173,7 +173,7 @@ import status from './status'
 import { bindAll } from 'universal/utils'
 import { animate, animateHide, animateShow } from 'client/utils'
 import { createNamespacedHelpers } from 'vuex'
-import { combineAll, isEmpty, isLaden } from 'fes'
+import { combineAll, isLaden } from 'fes'
 
 //
 //------//
@@ -200,7 +200,7 @@ export default {
   subscribeTo: {
     room: {
       beforeAddGuess() {
-        const { $refs, currentPlayer, state } = this
+        const { $refs, state } = this
 
         return Promise.all([
             animateHide(this.getRef('enterGuessComponent')),
@@ -208,7 +208,7 @@ export default {
           ])
           .then(() => {
             state.showEnterGuess = false
-            state.showPlaceholder = isEmpty(currentPlayer.guesses)
+            state.showPlaceholder = true
           })
       },
       afterAddGuess() {
@@ -218,13 +218,12 @@ export default {
           ? this.$nextTick().then(() => animateShow($refs.gameOverEl))
           : undefined
 
+        state.showPlaceholder = false
+
         return Promise.all([
             animateShow($refs.statusComponent),
             maybeShowGameOver,
           ])
-          .then(() => {
-            state.showPlaceholder = false
-          })
       },
       beforeGuessMarkedAsInvalid() {
         return animateHide(this.$refs.statusComponent)

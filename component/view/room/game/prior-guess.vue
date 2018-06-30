@@ -60,10 +60,10 @@
       ref="checkCircleComponent"
       :onClick="selectWordIsValid" />
 
-    <simple-button v-if="showInvalidWordIndicator"
-      :on-click="showInvalidWordHelp"
+    <simple-button ref="alertButton"
       class="alert"
-      ref="alertButton"
+      :on-click="showInvalidWordHelp"
+      :initial-classes="{ exists: showInvalidWordIndicator }"
       data-animate="{
         duration: {
           opacity: 'slow',
@@ -103,9 +103,9 @@ import statusHelpContent from './status-help-content'
 import { noop, waitMs } from 'universal/utils'
 import { createNamespacedHelpers } from 'vuex'
 import {
+  addClass,
   animateHide,
   animateShow,
-  makeVisible,
   removeClass,
 } from 'client/utils'
 import {
@@ -257,7 +257,7 @@ export default {
 
           if (isCurrentPlayer && isLastGuess) {
             removeClass('exists', $refs.clockComponent)
-            makeVisible($refs.alertButton)
+            addClass('exists', $refs.alertButton)
             return animateShow($el)
           }
         },
@@ -509,6 +509,7 @@ $matched-letter-color: #dcdcdc;
 //   class on every child.  Or figure out another option? hmmmmm
 //
 .prior-guesses > li {
+  button.alert,
   button.clock {
     display: none;
 

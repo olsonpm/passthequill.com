@@ -20,6 +20,7 @@ import { getModuleAliases, projectRootDirectory } from './helpers'
 //------//
 
 const distDir = path.resolve(projectRootDirectory, 'dist'),
+  isDevelopment = process.env.NODE_ENV === 'development',
   pathToMappingsWasm = path.resolve(
     projectRootDirectory,
     'node_modules/source-map/lib/mappings.wasm'
@@ -32,12 +33,15 @@ const distDir = path.resolve(projectRootDirectory, 'dist'),
 
 const eventualConfig = createInlineTemplates().then(() => {
   return {
-    mode: 'development',
+    mode: isDevelopment ? 'development' : 'production',
     context: projectRootDirectory,
     entry: path.resolve(projectRootDirectory, 'server.js'),
     target: 'node',
     devtool: 'source-map',
     node: { __dirname: true },
+    optimization: {
+      minimize: false,
+    },
     output: {
       libraryTarget: 'commonjs2',
       filename: 'server.bundle.js',
