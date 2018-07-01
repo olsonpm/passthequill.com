@@ -287,11 +287,11 @@ function createFailureReasonContent(unsubscribedPlayers) {
       Both ${join(' and ')(familiarNames)} are unsubscribed so the room
       wasn't&nbsp;created.
     `)
-  } else if (familiarNames === 'you') {
+  } else if (familiarNames[0] === 'you') {
     content +=
       "You are unsubscribed to this email so the room wasn't&nbsp;created."
   } else {
-    // familiarNames === 'your friend'
+    // familiarNames[0] === 'your friend'
     content += dedentMacro(`
       Your friend is unsubscribed to this email.  Currently the only way to get
       a link to the game is through email, so the room wasn't&nbsp;created.
