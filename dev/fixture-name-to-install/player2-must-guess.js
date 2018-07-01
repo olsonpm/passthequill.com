@@ -118,16 +118,14 @@ function createPlayers([roomData]) {
       player1Data.guesses = [
         {
           word: 'coast',
-          isValid: true,
-          wasReviewed: true,
+          hasAnyMatchingLetters: true,
           chosenLetter: 's',
         },
       ]
       player2Data.guesses = [
         {
           word: 'blast',
-          isValid: true,
-          wasReviewed: true,
+          hasAnyMatchingLetters: true,
           chosenLetter: 'a',
         },
       ]

@@ -22,8 +22,10 @@
 
 import validationInfo from 'universal/input-validation-info'
 
+import setOfValidWords from 'universal/set-of-valid-words'
+
 import { createNamespacedHelpers } from 'vuex'
-import { combineAll } from 'fes'
+import { combineAll, isBetweenInclusive } from 'fes'
 import {
   createComputedFormData,
   createFormData,
@@ -78,9 +80,20 @@ export default {
       const { $myStore, formData, formObject } = this
 
       if (!formObject.isValid()) {
+        const currentGuess = this.formData.inputs.guess
+
+        let errorMessage
+
+        if (!isBetweenInclusive(1, 5)(currentGuess.length)) {
+          errorMessage = 'Your guess must be 1 - 5 letters'
+        }
+        else if (!setOfValidWords.has(currentGuess)) {
+          errorMessage = 'That word is not in my dictionary'
+        }
+
         return $myStore.dispatch(
           'notifyError/tryToShow',
-          { html: '<p>Your guess must be 1 - 5 letters</p>' }
+          { html: `<p>${errorMessage}</p>` }
         )
       }
 

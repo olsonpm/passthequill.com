@@ -17,10 +17,10 @@ import api from 'server/api/couchdb'
 import bothPlayersInitialized from './both-players-initialized'
 import onlyPlayer1IsInitialized from './only-player1-is-initialized'
 import onlyPlayer2IsInitialized from './only-player2-is-initialized'
-import player1MustGuess from './player1-must-guess'
-import player1MustReviewWithMatch from './player1-must-review-with-match'
-import player1MustReviewNoMatch from './player1-must-review-no-match'
-import player2MustReview from './player2-must-review'
+import player1MustGuessNoMatch from './player1-must-guess-no-match'
+import player1MustGuessWithMatch from './player1-must-guess-with-match'
+import player1MustRevealALetter from './player1-must-reveal-a-letter'
+import player2MustRevealALetter from './player2-must-reveal-a-letter'
 import player2MustGuess from './player2-must-guess'
 import roomExists from './room-exists'
 import unsubscriptionExists from './unsubscription-exists'
@@ -72,10 +72,10 @@ function getFixtures() {
     bothPlayersInitialized,
     onlyPlayer1IsInitialized,
     onlyPlayer2IsInitialized,
-    player1MustGuess,
-    player1MustReviewNoMatch,
-    player1MustReviewWithMatch,
-    player2MustReview,
+    player1MustGuessNoMatch,
+    player1MustGuessWithMatch,
+    player1MustRevealALetter,
+    player2MustRevealALetter,
     player2MustGuess,
     roomExists,
     unsubscriptionExists,

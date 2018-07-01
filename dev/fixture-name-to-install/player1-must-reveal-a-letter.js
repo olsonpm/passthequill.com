@@ -33,7 +33,7 @@ const test1EncryptedEmail =
 // Main //
 //------//
 
-const name = 'player1-must-review-with-match'
+const name = 'player1-must-reveal-a-letter'
 
 const install = () => {
   return Promise.all([
@@ -113,7 +113,13 @@ function createPlayers([roomData]) {
       const idAndRev = pickIdAndRev(player2),
         player2Data = removeCouchdbProperties(player2)
 
-      player2Data.guesses = [{ word: 'blast' }]
+      player2Data.guesses = [
+        {
+          isCorrect: false,
+          hasAnyMatchingLetters: true,
+          word: 'blast',
+        },
+      ]
 
       return dal.player
         .update(combine(idAndRev)(player2Data))

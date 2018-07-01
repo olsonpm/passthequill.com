@@ -10,6 +10,7 @@ import emailUnsubscribe from 'project-root/component/view/email/unsubscribe'
 import emailUnsubscriptions from 'project-root/component/view/email/unsubscriptions'
 import home from 'project-root/component/view/home'
 import howToPlay from 'project-root/component/view/how-to-play'
+import listOfValidWords from 'project-root/component/view/list-of-valid-words'
 import notFound from 'project-root/component/view/not-found'
 import room from 'project-root/component/view/room/index'
 
@@ -29,6 +30,7 @@ const routes = map(createRoute)([
   emailUnsubscriptions,
   room,
   howToPlay,
+  listOfValidWords,
   notFound,
 ])
 

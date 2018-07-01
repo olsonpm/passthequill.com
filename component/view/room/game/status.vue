@@ -98,13 +98,7 @@ export default {
         const { $refs, showClock } = this
 
         removeClass('exists', $refs.helpButton)
-        if (showClock) addClass($refs.clockComponent)
-      },
-      afterGuessMarkedAsInvalid() {
-        const { $refs } = this
-
-        removeClass('exists', $refs.helpButton)
-        addClass('exists', $refs.clockComponent)
+        if (showClock) addClass('exists', $refs.clockComponent)
       },
 
       liveUpdate: {
@@ -119,19 +113,10 @@ export default {
             removeClass('exists', $refs.clockComponent)
           }
         },
-        afterOtherPlayerMarkedGuessAsValid() {
-          return animateShow(this.$refs.clockComponent)
-        },
         afterOtherPlayerGuessed() {
-          const { $refs } = this
+          const { $refs, shouldShowHelpButton } = this
 
-          addClass('exists', $refs.helpButton)
-          removeClass('exists', $refs.clockComponent)
-        },
-        afterOtherPlayerMarkedGuessAsInvalid() {
-          const { $refs } = this
-
-          addClass('exists', $refs.helpButton)
+          if (shouldShowHelpButton) addClass('exists', $refs.helpButton)
           removeClass('exists', $refs.clockComponent)
         },
       }
@@ -185,8 +170,7 @@ function getComputedProperties() {
     vuexGetters = mapGetters([
       'currentPlayerHasNotMatchedAnyletters',
       'currentPlayerMustGuess',
-      'currentPlayerMustReviewWord',
-      'currentPlayersLastGuessWasReviewed',
+      'currentPlayerMustRevealALetter',
       'friendWon',
       'isFriendsTurn',
       'isGameActive',
@@ -218,7 +202,7 @@ function getLocalComputedState() {
         currentPlayer,
         currentPlayerHasNotMatchedAnyletters,
         currentPlayerMustGuess,
-        currentPlayerMustReviewWord,
+        currentPlayerMustRevealALetter,
         otherPlayer,
         otherPlayerMustGuess,
         otherPlayerMustJoin,
@@ -247,10 +231,10 @@ function getLocalComputedState() {
       //
       if (otherPlayerMustJoin) return statusHelpContent.otherPlayerMustJoin
       else if (currentPlayerMustGuess) return statusHelpContent.guessAWord
-      else if (currentPlayerMustReviewWord) {
-        if (numberOfMatchingLetters === 1) return statusHelpContent.revealOnlyLetter
-        if (numberOfMatchingLetters > 1) return statusHelpContent.revealOneOfTheLetters
-        else return statusHelpContent.validateWord
+      else if (currentPlayerMustRevealALetter) {
+        return (numberOfMatchingLetters === 1)
+          ? statusHelpContent.revealOnlyLetter
+          : statusHelpContent.revealOneOfTheLetters
       }
       else if (otherPlayerMustGuess) {
         let result = statusHelpContent.otherPlayerIsGuessing

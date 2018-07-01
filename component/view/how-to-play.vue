@@ -34,17 +34,15 @@
       <dt>Secret Word</dt>
       <dd>
         <p>
-          A 5 letter word with no repeating characters.  For example, you could
-          use "grape" but not "apple" because apple has two&nbsp;p's.  Secret
-          words are not&nbsp;case&#8209;sensitive.
+          A 5 letter word with no repeating characters found in
+          <link-to url="/list-of-valid-words">
+            this list
+          </link-to>.
+          For example, you could use "grape" but not "apple" because apple has
+          two p's.  Secret words and guesses in this game are
+          not&nbsp;case&#8209;sensitive.
         </p>
-        <p class="sidenote">
-          Note: this game does not validate words against a dictionary because I
-          wanted people to discuss beforehand what words they allowed.  Some
-          people for instance may include proper nouns.  I also suggest using
-          words that both players are familiar with because trying to guess an
-          obscure word you've never seen before just isn't&nbsp;fun.
-        </p>
+        <p class="sidenote" v-html="funGameNote" />
       </dd>
     </dl>
 
@@ -76,9 +74,9 @@
     <p>
       After she submits her guess, the screen will show an updated status: "It's
       your friend's turn".  There will also be a clock icon next to the guess
-      which just means Batman hasn't validated the word yet nor chosen a
-      matching letter to reveal.  The clock will disappear and the matching
-      letter will be revealed once he's done&nbsp;so.
+      which just means Batman hasn't chosen a matching letter to reveal.  The
+      clock will disappear and the matching letter will be revealed once he's
+      done&nbsp;so.
     </p>
 
     <h4>Now It's Batman's Turn</h4>
@@ -89,7 +87,10 @@
     <p>Batman reveals the letter "i" then guesses the word&nbsp;"cat".</p>
 
     <h4>Wonder Woman's Turn Again</h4>
-    <p>First she confirms Batman's guess "cat" is valid</p>
+    <p>
+      Batman didn't match any letters so wonder woman is prompted to guess
+      a&nbsp;word
+    </p>
     <p>
       The game just got a little tougher for Wonder Woman because from now on
       she should guess words without the letter "i".  If she uses "i" in her
@@ -107,39 +108,30 @@
       Woman's secret word.  Also note Batman would have been better off guessing
       a five letter word because that's two more chances to get a&nbsp;match.
     </p>
-    <p>
+    <p class="sidenote">
       Sometimes it's hard to think of a five letter word while avoiding all the
       letters you're supposed to.  When that happens don't stress out!  Just use
       a smaller word and keep playing.  The game is more fun that
       <span class="dont-wrap">way <smile /></span>.
     </p>
-    <p>Batman guesses "mouse".</p>
-
-    <h4>Wonder Woman's Turn</h4>
-    <p>Wonder woman reveals "e" and clumsily guesses&nbsp;"hezrt"</p>
-
-    <h4>Batman's Turn</h4>
-    <p>
-      Batman double checks to make sure "hezrt" is not a word before flagging
-      it&nbsp;invalid.
-    </p>
-
-    <h4>Wonder Woman's Turn</h4>
-    <p>
-      "By the goddess!" she embarassingly mutters at her iphone.  Of course she
-      meant to guess "heart", but deceivingly changes her guess to "robin"
-      because their mutual friend Alfred spoiled the&nbsp;fun.
-    </p>
+    <p>Through a stroke of luck Batman guesses "power".</p>
 
     <h4>Game Over</h4>
-    <p>Wonder Woman wins! <party /></p>
+    <p>Batman wins! <party /></p>
   </div>
 </template>
 
 <script>
+import funGameNote from 'universal/fun-game-note'
+
 export default {
   name: 'how-to-play',
   path: '/how-to-play',
+  computed: {
+    funGameNote() {
+      return funGameNote
+    }
+  }
 }
 </script>
 

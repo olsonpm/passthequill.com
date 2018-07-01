@@ -1,7 +1,3 @@
-//
-// TODO: update friend's client via web sockets
-//
-
 //---------//
 // Imports //
 //---------//
@@ -29,7 +25,7 @@ import {
 // Init //
 //------//
 
-const ifRequestIsValid = createIfRequestIsValid('markChosenLetter'),
+const ifRequestIsValid = createIfRequestIsValid('revealLetter'),
   optionsForGet = {
     allow404: true,
     returnRawResponse: true,
@@ -40,19 +36,19 @@ const ifRequestIsValid = createIfRequestIsValid('markChosenLetter'),
 // Main //
 //------//
 
-function createPostMarkChosenLetter(arg) {
+function createPostRevealLetter(arg) {
   const { router, websocketServer } = arg,
-    markChosenLetter = createMarkChosenLetter(websocketServer)
+    revealLetter = createRevealLetter(websocketServer)
 
   router.post(
     '/:roomHash/player/:playerHash/mark-chosen-letter',
-    ifRequestIsValid(markChosenLetter)
+    ifRequestIsValid(revealLetter)
   )
 
   return arg
 }
 
-function createMarkChosenLetter(websocketServer) {
+function createRevealLetter(websocketServer) {
   return ctx => {
     const { playerHash, roomHash } = ctx.params,
       { chosenLetter } = ctx.request.body,
@@ -60,14 +56,14 @@ function createMarkChosenLetter(websocketServer) {
       authorizeThenGetOtherPlayerData = createAuthorizeThenGetOtherPlayerData(
         ctx
       ),
-      markChosenLetterAndReturnOtherPlayer = createMarkChosenLetterAndReturnOtherPlayer(
+      revealLetterAndReturnOtherPlayer = createRevealLetterAndReturnOtherPlayer(
         websocketServer
       )
 
     return dal.activeRoom
       .get({ _id: hashToDocid(roomHash) }, optionsForGet)
       .then(ifResponseIsNot404(ctx, authorizeThenGetOtherPlayerData))
-      .then(ifStatusIsNot404(markChosenLetterAndReturnOtherPlayer))
+      .then(ifStatusIsNot404(revealLetterAndReturnOtherPlayer))
       .catch(handleErrorDuringRoute(ctx, createErrorMessage, errorArgs))
   }
 }
@@ -97,7 +93,7 @@ function createAuthorizeThenGetOtherPlayerData(ctx) {
   }
 }
 
-function createMarkChosenLetterAndReturnOtherPlayer(websocketServer) {
+function createRevealLetterAndReturnOtherPlayer(websocketServer) {
   return ([ctx, couchdbOtherPlayerData]) => {
     const playerIdAndRev = pickIdAndRev(couchdbOtherPlayerData),
       otherPlayerData = removeCouchdbProperties(couchdbOtherPlayerData),
@@ -106,8 +102,6 @@ function createMarkChosenLetterAndReturnOtherPlayer(websocketServer) {
 
     mAssignOver(lastGuess)({
       chosenLetter,
-      isValid: true,
-      wasReviewed: true,
     })
 
     return dal.player
@@ -152,4 +146,4 @@ function createErrorMessage(playerHash, roomHash, chosenLetter) {
 // Exports //
 //---------//
 
-export default createPostMarkChosenLetter
+export default createPostRevealLetter

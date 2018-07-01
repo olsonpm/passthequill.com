@@ -13,27 +13,18 @@
 
         <h5>In depth</h5>
         <p>
-          To be clear, the only hard constraint here is that you type five
-          unique letters. The word is not case sensitive and there is no check
-          against a dictionary to&nbsp;validate.
+          Your 5 letter word must use unique letters and be found in
+          <link-to url="/list-of-valid-words">
+            this list of valid words
+          </link-to>.
+        </p>
+        <p class="sidenote">
+          The list is intended to make the game flow smooth'lier, not for you to
+          find some obscure five-vowel&nbsp;word!
         </p>
       </li>
       <li>
-        <p>
-          <span class="important">For a fun game however</span>, you should pick
-          a word both you and your friend are familiar with.  This game is about
-          deducing your friend's word, so if you have no idea a word exists then
-          you just end up guessing in the end which isn't very&nbsp;enjoyable.
-        </p>
-      </li>
-      <li>
-        <p>
-          Finally, make sure you and your friend are on the same page with what
-          words are okay.  A lot of people for instance don't allow proper
-          nouns, or maybe you only want to allow words from a certain
-          "words with friends" dictionary.  Being on the same page will make the
-          game more&nbsp;fun.
-        </p>
+        <p v-html="funGameNote" />
       </li>
     </ul>
 
@@ -64,6 +55,8 @@
 
 import hammerjs from 'hammerjs'
 
+import funGameNote from 'universal/fun-game-note'
+
 import { bindAll } from 'universal/utils'
 import { animate, animateShow, animateHide } from 'client/utils'
 
@@ -85,8 +78,11 @@ export default {
     this.createTouchManager()
   },
   computed: {
+    funGameNote() {
+      return funGameNote
+    },
     numberOfPages() {
-      return 3
+      return 2
     },
     showLeftArrow() {
       return this.state.activePage > 1

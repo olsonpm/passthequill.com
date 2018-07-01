@@ -3,6 +3,10 @@
 // TODO: find a less copy/paste solution to error logging.  Either an option in
 //   the api object or a separate api object which automatically logs errors
 //   would be appropriate
+// TODO: find a sensible name for functions which share the logic between
+//   between 'current' and 'other' player, or find a way to restructure the data
+//   to prevent this duplicate code.
+//
 //
 
 //---------//
@@ -16,15 +20,7 @@ import game from 'project-root/component/view/room/game/index'
 import initPlayer from 'project-root/component/view/room/init-player/index'
 import { assignAllLeaves } from '../helpers'
 import { logErrorToServer, setShowNotFoundOrErrorView } from 'universal/utils'
-import {
-  coerceTo,
-  getValueAt,
-  isEmpty,
-  isLaden,
-  last,
-  none,
-  passThrough,
-} from 'fes'
+import { getValueAt, isLaden, last, none } from 'fes'
 
 //
 //------//
@@ -41,60 +37,61 @@ const hasTruthyValue = getValueAt
 const room = {
   state: getInitialState,
   getters: {
+    bothPlayersHaveJoined(state) {
+      const { currentPlayer, otherPlayer } = state
+
+      return (
+        otherPlayer.hasWord &&
+        otherPlayer.displayName &&
+        currentPlayer.word &&
+        currentPlayer.displayName
+      )
+    },
     currentPlayerHasGuessed(state) {
       return isLaden(state.currentPlayer.guesses)
     },
     currentPlayerHasNotMatchedAnyletters(state) {
       return none(hasTruthyValue('chosenLetter'))(state.currentPlayer.guesses)
     },
-    currentPlayerMustReviewWord(_unused_state, getters) {
-      const {
-        isGameActive,
-        isMyTurn,
-        otherPlayersLastGuessWasReviewed,
-        otherPlayerHasGuessed,
-      } = getters
+    currentPlayerMustRevealALetter(_unused_state, getters) {
+      const { isMyTurn, otherPlayerHasGuessed, otherPlayersLastGuess } = getters
 
       return (
-        isGameActive &&
         isMyTurn &&
         otherPlayerHasGuessed &&
-        !otherPlayersLastGuessWasReviewed
+        otherPlayersLastGuess.hasAnyMatchingLetters &&
+        !otherPlayersLastGuess.chosenLetter
       )
     },
     currentPlayerMustGuess(_unused_state, getters) {
-      const {
-        isMyTurn,
-        otherPlayersLastGuessWasReviewed,
-        otherPlayerHasGuessed,
-        otherPlayerHasJoined,
-      } = getters
+      const { isMyTurn, otherPlayerHasGuessed, otherPlayersLastGuess } = getters
 
+      // prettier-ignore
       return (
         isMyTurn &&
-        otherPlayerHasJoined &&
-        (!otherPlayerHasGuessed || otherPlayersLastGuessWasReviewed)
+        (
+          !otherPlayerHasGuessed
+          || !otherPlayersLastGuess.hasAnyMatchingLetters
+          || (
+            otherPlayersLastGuess.hasAnyMatchingLetters
+            && otherPlayersLastGuess.chosenLetter
+          )
+        )
       )
     },
-    currentPlayersLastGuessWasReviewed(state, getters) {
-      const { currentPlayer } = state,
-        { currentPlayerHasGuessed } = getters
+    currentPlayersLastGuess(state) {
+      const { currentPlayer } = state
 
-      return (
-        currentPlayerHasGuessed &&
-        passThrough(currentPlayer.guesses, [
-          last,
-          getValueAt('wasReviewed'),
-          coerceTo(Boolean),
-        ])
-      )
+      return last(currentPlayer.guesses)
     },
     friendWon: state => {
       const lastGuess = last(state.otherPlayer.guesses) || {}
       return !!lastGuess.isCorrect
     },
-    isFriendsTurn: (_unused_state, { isGameActive, isMyTurn }) =>
-      isGameActive && !isMyTurn,
+    isFriendsTurn: (_unused_state, getters) => {
+      const { bothPlayersHaveJoined, isGameActive, isMyTurn } = getters
+      return isGameActive && bothPlayersHaveJoined && !isMyTurn
+    },
     //
     // TODO: come up with a better name than 'isGameActive' because it's too
     //   similar to 'activeRoom', and the concept of active and closed rooms is
@@ -104,9 +101,13 @@ const room = {
     isGameOver: (_unused_state, { friendWon, iWon }) => friendWon || iWon,
     isMyTurn: (state, getters) => {
       const { currentPlayer, room } = state,
-        { isGameActive } = getters
+        { bothPlayersHaveJoined, isGameActive } = getters
 
-      return isGameActive && room.playerNumberTurn === currentPlayer.number
+      return (
+        isGameActive &&
+        bothPlayersHaveJoined &&
+        room.playerNumberTurn === currentPlayer.number
+      )
     },
     iWon: state => {
       const lastGuess = last(state.currentPlayer.guesses) || {}
@@ -118,13 +119,24 @@ const room = {
     otherPlayerHasJoined(_unused_state, getters) {
       return !getters.otherPlayerMustJoin
     },
-    otherPlayerMustGuess(state, getters) {
-      const { currentPlayer } = state,
-        { currentPlayersLastGuessWasReviewed, isFriendsTurn } = getters
+    otherPlayerMustGuess(_unused_state, getters) {
+      const {
+        currentPlayerHasGuessed,
+        currentPlayersLastGuess,
+        isFriendsTurn,
+      } = getters
 
+      // prettier-ignore
       return (
         isFriendsTurn &&
-        (currentPlayersLastGuessWasReviewed || isEmpty(currentPlayer.guesses))
+        (
+          !currentPlayerHasGuessed
+          || !currentPlayersLastGuess.hasAnyMatchingLetters
+          || (
+            currentPlayersLastGuess.hasAnyMatchingLetters
+            && currentPlayersLastGuess.chosenLetter
+          )
+        )
       )
     },
     otherPlayerMustJoin(state) {
@@ -132,18 +144,24 @@ const room = {
 
       return !otherPlayer.hasWord || !otherPlayer.displayName
     },
-    otherPlayersLastGuessWasReviewed(state, getters) {
-      const { otherPlayer } = state,
-        { otherPlayerHasGuessed } = getters
+    otherPlayerMustRevealALetter(_unused_state, getters) {
+      const {
+        isFriendsTurn,
+        currentPlayerHasGuessed,
+        currentPlayersLastGuess,
+      } = getters
 
       return (
-        otherPlayerHasGuessed &&
-        passThrough(otherPlayer.guesses, [
-          last,
-          getValueAt('wasReviewed'),
-          coerceTo(Boolean),
-        ])
+        isFriendsTurn &&
+        currentPlayerHasGuessed &&
+        currentPlayersLastGuess.hasAnyMatchingLetters &&
+        !currentPlayersLastGuess.chosenLetter
       )
+    },
+    otherPlayersLastGuess(state) {
+      const { otherPlayer } = state
+
+      return last(otherPlayer.guesses)
     },
   },
   actions: {
@@ -155,8 +173,7 @@ const room = {
         eventManager.publish('room/beforeAddGuess'),
       ])
         .then(([currentPlayerAndRoom]) => {
-          const { currentPlayer } = currentPlayerAndRoom
-          last(currentPlayer.guesses).justAdded = true
+          last(currentPlayerAndRoom.currentPlayer.guesses).justAdded = true
           commit('updateCurrentPlayerAndRoom', currentPlayerAndRoom)
           return vue.nextTick()
         })
@@ -206,70 +223,33 @@ const room = {
         })
         .catch(error => {
           logErrorToServer({
-            context: 'when adding a guess',
+            context: 'when initializing a player',
             error,
           })
 
           return Promise.reject(error)
         })
     },
-    markChosenLetter({ commit, rootState }, { letter: chosenLetter }) {
-      const { playerHash, roomHash } = rootState.route.params,
+    revealLetter({ commit, rootState }, argObject) {
+      const { eventManager, letter: chosenLetter } = argObject,
+        { playerHash, roomHash } = rootState.route.params,
         postBody = chosenLetter ? { chosenLetter } : {}
 
-      return api
-        .post(
+      return Promise.all([
+        api.post(
           `/room/${roomHash}/player/${playerHash}/mark-chosen-letter`,
           postBody
-        )
-        .then(otherPlayerData => commit('updateOtherPlayer', otherPlayerData))
-        .catch(error => {
-          logErrorToServer({
-            context: 'when adding a guess',
-            error,
-          })
-
-          return Promise.reject(error)
-        })
-    },
-    markGuessAsInvalid({ commit, rootState }, { eventManager }) {
-      const { playerHash, roomHash } = rootState.route.params,
-        url = `/room/${roomHash}/player/${playerHash}/mark-guess-as-invalid`
-
-      return Promise.all([
-        api.post(url),
-        eventManager.publish('room/beforeGuessMarkedAsInvalid'),
+        ),
+        eventManager.publish('room/beforeRevealLetter'),
       ])
-        .then(([otherPlayerAndRoomData]) => {
-          commit('updateOtherPlayerAndRoom', otherPlayerAndRoomData)
+        .then(([otherPlayerData]) => {
+          commit('updateOtherPlayer', otherPlayerData)
           return vue.nextTick()
         })
-        .then(() => eventManager.publish('room/afterGuessMarkedAsInvalid'))
+        .then(() => eventManager.publish('room/afterRevealLetter'))
         .catch(error => {
           logErrorToServer({
-            context: 'when adding a guess',
-            error,
-          })
-
-          return Promise.reject(error)
-        })
-    },
-    markGuessAsValid({ commit, rootState }, { eventManager }) {
-      const { playerHash, roomHash } = rootState.route.params,
-        url = `/room/${roomHash}/player/${playerHash}/mark-guess-as-valid`
-
-      return Promise.all([
-        api.post(url),
-        eventManager.publish('room/beforeGuessMarkedAsValid'),
-      ])
-        .then(([otherPlayer]) => {
-          commit('updateOtherPlayer', otherPlayer)
-          return vue.nextTick()
-        })
-        .then(() => eventManager.publish('room/afterGuessMarkedAsValid'))
-        .catch(error => {
-          logErrorToServer({
-            context: 'when adding a guess',
+            context: 'when revealing a letter',
             error,
           })
 

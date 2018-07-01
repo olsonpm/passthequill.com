@@ -14,7 +14,6 @@
               :guess-index="index"
               :is-last-guess="index === otherPlayer.guesses.length - 1"
               :key="index"
-              :maybe-remove-no-guesses="maybeRemoveNoGuesses"
               :reveal-enter-guess="revealEnterGuess"
               current-or-other-player="otherPlayer"
               v-bind="theGuess" />
@@ -70,7 +69,7 @@
       <arrow-circle direction="left"
         ref="leftArrowComponent"
         data-animate="{ duration: { opacity: 'fast' } }"
-        :pulsate="currentPlayerMustReviewWord && !statusIsPulsating"
+        :pulsate="currentPlayerMustRevealALetter && !statusIsPulsating"
         :onClick="sliiiideToTheLeft"
         :show-initially="showLeftArrow" />
 
@@ -92,7 +91,6 @@
                 :guess-index="index"
                 :is-last-guess="index === otherPlayer.guesses.length - 1"
                 :key="index"
-                :maybe-remove-no-guesses="maybeRemoveNoGuesses"
                 :reveal-enter-guess="revealEnterGuess"
                 current-or-other-player="otherPlayer"
                 v-bind="theGuess" />
@@ -166,14 +164,13 @@
 import hammerjs from 'hammerjs'
 
 import enterGuess from './enter-guess'
-import initWebsocket from 'project-root/entry/client/init-websocket'
 import priorGuess from './prior-guess'
 import status from './status'
 
 import { bindAll } from 'universal/utils'
 import { animate, animateHide, animateShow } from 'client/utils'
 import { createNamespacedHelpers } from 'vuex'
-import { combineAll, isLaden } from 'fes'
+import { combineAll, isLaden, last } from 'fes'
 
 //
 //------//
@@ -225,14 +222,10 @@ export default {
             maybeShowGameOver,
           ])
       },
-      beforeGuessMarkedAsInvalid() {
-        return animateHide(this.$refs.statusComponent)
-      },
-      afterGuessMarkedAsInvalid() {
-        return animateShow(this.$refs.statusComponent)
-      },
-      afterGuessMarkedAsValid() {
-        return this.revealEnterGuess()
+      beforeRevealLetter() {
+        return (this.currentPlayerHasGuessed)
+          ? undefined
+          : animateHide(this.getRef('otherPlayerNoGuessesEl'))
       },
 
       liveUpdate: {
@@ -259,16 +252,14 @@ export default {
             maybeShowEnterGuess
           ])
         },
-        beforeOtherPlayerGuessed() {
-          const { $refs, otherPlayerHasGuessed } = this
-
-          const maybeHideNoGuessesEl = otherPlayerHasGuessed
-            ? undefined
-            : animateHide(this.getRef('currentPlayerNoGuessesEl'))
+        beforeOtherPlayerGuessed({ payload }) {
+          const { $refs } = this,
+            maybeHideNoGuesses = this.getMaybeHideNoGuesses(payload)
 
           return Promise.all([
             animateHide($refs.statusComponent),
-            maybeHideNoGuessesEl
+            maybeHideNoGuesses.currentPlayer,
+            maybeHideNoGuesses.otherPlayer,
           ])
         },
         afterOtherPlayerGuessed() {
@@ -288,19 +279,6 @@ export default {
             animateShow($refs.statusComponent),
             maybeShowEnterGuess,
             maybeShowGameOver,
-          ])
-        },
-        beforeOtherPlayerMarkedGuessAsInvalid() {
-          return animateHide(this.$refs.statusComponent)
-        },
-        afterOtherPlayerMarkedGuessAsInvalid() {
-          const { $refs } = this
-
-          $refs.statusComponent.maybeDrawAttentionUntilUserInteracts()
-
-          return Promise.all([
-            animateShow($refs.statusComponent),
-            this.revealEnterGuess()
           ])
         },
       },
@@ -332,20 +310,6 @@ export default {
       const animateShowOrHide = value ? animateShow : animateHide
       return animateShowOrHide(this.$refs.rightArrowComponent)
     },
-  },
-
-  beforeMount() {
-    const { $eventManager, $store, $route } = this,
-      { playerHash, roomHash } = $route.params
-
-    // it doesn't really matter which life-cycle event the websocket is created,
-    //   just as long as it only fires on the client
-    this.closeLiveUpdateWebSocket = initWebsocket.liveUpdate({
-      playerHash,
-      roomHash,
-      eventManager: $eventManager,
-      store: $store,
-    })
   },
 
   mounted() {
@@ -405,26 +369,37 @@ export default {
       this.touchManager.destroy()
       delete this.touchManager
     },
+    getMaybeHideNoGuesses(payload) {
+      const {
+        currentPlayerHasGuessed,
+        otherPlayerHasGuessed
+      } = this
+
+      const mostRecentGuess = last(payload.otherPlayer.guesses),
+        currentPlayerMustRevealLetter = mostRecentGuess.hasAnyMatchingLetters
+
+      const currentPlayer = otherPlayerHasGuessed
+        ? undefined
+        : animateHide(this.getRef('currentPlayerNoGuessesEl'))
+
+      const otherPlayer = (
+        currentPlayerHasGuessed
+        || currentPlayerMustRevealLetter
+      )
+        ? undefined
+        : animateHide(this.getRef('otherPlayerNoGuessesEl'))
+
+      return {
+        currentPlayer,
+        otherPlayer
+      }
+    },
     getRef(name) {
       const prefix = this.isPhoneOrSmaller
         ? 'phonesAndSmaller_'
         : 'tabletsAndLarger_'
 
       return this.$refs[prefix + name]
-    },
-    maybeRemoveNoGuesses() {
-      const { currentPlayerHasGuessed, showNoGuessesYet } = this
-
-      //
-      // note 'otherPlayer' here refers to the otherPlayer column.  It does not
-      //   refer to the other player's guesses.  Suggestions for better naming
-      //   are appreciated :)
-      //
-      const maybeHideOtherPlayerNoGuessesEl = (!currentPlayerHasGuessed && showNoGuessesYet)
-        ? animateHide(this.getRef('otherPlayerNoGuessesEl'))
-        : Promise.resolve()
-
-      return maybeHideOtherPlayerNoGuessesEl
     },
     onSwipe({ type }) {
       const { slidePosition } = this.state
@@ -490,7 +465,7 @@ function getComputedProperties() {
     ]),
     vuexRoomGetters = mapRoomGetters([
       'currentPlayerMustGuess',
-      'currentPlayerMustReviewWord',
+      'currentPlayerMustRevealALetter',
       'friendWon',
       'isGameOver',
       'isFriendsTurn',
@@ -528,10 +503,10 @@ function getLocalComputedProperties() {
     // this property is only called if no guesses exist for the relevant player
     //
     showNoGuessesYet() {
-      const { currentPlayerMustReviewWord, friendWon, isFriendsTurn } = this
+      const { currentPlayerMustRevealALetter, friendWon, isFriendsTurn } = this
 
       return isFriendsTurn ||
-        currentPlayerMustReviewWord ||
+        currentPlayerMustRevealALetter ||
         friendWon
     },
     showRightArrow() {

@@ -17,6 +17,7 @@
 
 import game from './game/index'
 import initPlayer from './init-player/index'
+import initWebsocket from 'project-root/entry/client/init-websocket'
 import { createNamespacedHelpers } from 'vuex'
 import { animate } from 'client/utils'
 
@@ -44,6 +45,20 @@ export default {
   components: subViews,
 
   computed: mapState(['currentPlayer', 'otherPlayer', 'room', 'subViewName']),
+
+  beforeMount() {
+    const { $eventManager, $store, $route } = this,
+      { playerHash, roomHash } = $route.params
+
+    // it doesn't really matter which life-cycle event the websocket is created,
+    //   just as long as it only fires on the client
+    this.closeLiveUpdateWebSocket = initWebsocket.liveUpdate({
+      playerHash,
+      roomHash,
+      eventManager: $eventManager,
+      store: $store,
+    })
+  },
 
   methods: {
     transitionTo(newSubViewName) {

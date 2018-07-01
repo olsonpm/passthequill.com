@@ -32,48 +32,7 @@
           {{ letter }}
         </span>
       </li>
-
-      <li v-if="!isValid && wasReviewed"
-        class="cross-out-line">
-
-        <svg width="100%"
-          height="100%">
-
-          <line x1="0"
-            y1="65%"
-            x2="100%"
-            y2="35%"
-            stroke-width="1" />
-        </svg>
-      </li>
     </ul>
-
-    <cancel v-if="showLetterChooser"
-      class="mark-invalid"
-      data-animate="{ duration: { opacity: 'slow' } }"
-      ref="cancelComponent"
-      :onClick="showConfirmInvalidGuess" />
-
-    <check-circle v-if="showLetterChooser && hasNoMatchingLetters"
-      class="mark-valid"
-      data-animate="{ duration: { opacity: 'slow' } }"
-      ref="checkCircleComponent"
-      :onClick="selectWordIsValid" />
-
-    <simple-button ref="alertButton"
-      class="alert"
-      :on-click="showInvalidWordHelp"
-      :initial-classes="{ exists: showInvalidWordIndicator }"
-      data-animate="{
-        duration: {
-          opacity: 'slow',
-          size: 'fast'
-        },
-        shouldAnimate: { width: true }
-      }">
-
-      <alert class="warn" />
-    </simple-button>
 
     <party v-if="isCorrect && iWon" />
 
@@ -93,17 +52,20 @@
 </template>
 
 <script>
+//
+// TODO: standardize some of these waitMs times - I'm just eyeballing it atm
+// TODO: Some of this logic was written prior to implementing eventManager, and
+//   should be refactored to utilize it instead.
+//
+
 //---------//
 // Imports //
 //---------//
 
-import confirmInvalidGuess from './confirm_invalid-guess'
-import infoInvalidGuess from './info_invalid-guess'
 import statusHelpContent from './status-help-content'
 import { noop, waitMs } from 'universal/utils'
 import { createNamespacedHelpers } from 'vuex'
 import {
-  addClass,
   animateHide,
   animateShow,
   removeClass,
@@ -150,9 +112,6 @@ export default {
   props: {
     guessIndex: {},
     isLastGuess: {},
-    maybeRemoveNoGuesses: {
-      default: returnNoop,
-    },
     revealEnterGuess: {
       default: returnNoop,
     },
@@ -160,79 +119,57 @@ export default {
     // from vuex
     chosenLetter: {},
     currentOrOtherPlayer: {},
+    hasAnyMatchingLetters: {},
     isCorrect: {},
-    isValid: {},
     justAdded: {
       default: false,
     },
-    wasReviewed: {},
     word: {},
   },
 
   subscribeTo: {
     room: {
-      beforeAddGuess() {
-        const { $refs, showInvalidWordIndicator } = this
-
-        if (showInvalidWordIndicator) return animateHide($refs.alertButton)
-      },
       afterAddGuess() {
         const { $el, justAdded } = this
 
         if (justAdded) return animateShow($el)
       },
-      beforeGuessMarkedAsInvalid() {
-        const { $el, wasReviewed } = this
+      beforeRevealLetter() {
+        const { $refs, showLetterChooser } = this
 
-        if (!wasReviewed) return animateHide($el)
+        if (!showLetterChooser) return
+
+        const chosenLetter = findFirstWhen(isChosen)($refs.lettersEl.children)
+
+        return animateHide(chosenLetter)
       },
-      beforeGuessMarkedAsValid() {
-        const { $el, wasReviewed } = this
+      afterRevealLetter() {
+        const { $refs, isCurrentPlayer, isLastGuess } = this
 
-        if (!wasReviewed) return animateHide($el)
-      },
-      afterGuessMarkedAsInvalid() {
-        const {
-          $el,
-          isOtherPlayer,
-          isValid,
-          isLastGuess,
-          wasReviewed
-        } = this
+        if (isCurrentPlayer || !isLastGuess) return
 
-        if (
-          isOtherPlayer &&
-          !isValid &&
-          wasReviewed &&
-          isLastGuess
-        ) {
-          return animateShow($el)
-        }
-      },
-      afterGuessMarkedAsValid() {
-        const {
-          $el,
-          isOtherPlayer,
-          isValid,
-          isLastGuess,
-          wasReviewed
-        } = this
+        const showChildren = map(animateShow)($refs.lettersEl.children)
 
-        if (
-          isOtherPlayer &&
-          isValid &&
-          wasReviewed &&
-          isLastGuess
-        ) {
-          return animateShow($el)
-        }
+        return Promise.all([
+            ...showChildren,
+            this.revealEnterGuess(),
+          ])
+          .then(() => {
+            const { lettersEl } = this.$refs
+
+            forEach(maybeClearOpacity)(lettersEl.children)
+          })
       },
 
       liveUpdate: {
-        afterOtherPlayerGuessed() {
-          const { $el, justAdded } = this
+        afterOtherPlayerGuessed({ payload }) {
+          const { $el, guessIndex, isOtherPlayer } = this,
+            lastGuessIndex = payload.otherPlayer.guesses.length - 1
 
-          if (justAdded) return animateShow($el)
+          if (
+            isOtherPlayer
+            && guessIndex === lastGuessIndex
+          ) return animateShow($el)
         },
         beforeOtherPlayerChoseLetter() {
           const { $el, isCurrentPlayer, isLastGuess } = this
@@ -245,27 +182,6 @@ export default {
           if (isCurrentPlayer && isLastGuess) {
             removeClass('exists', $refs.clockComponent)
             return animateShow($el)
-          }
-        },
-        beforeOtherPlayerMarkedGuessAsInvalid() {
-          const { $el, isCurrentPlayer, isLastGuess } = this
-
-          if (isCurrentPlayer && isLastGuess) return animateHide($el)
-        },
-        afterOtherPlayerMarkedGuessAsInvalid() {
-          const { $el, $refs, isCurrentPlayer, isLastGuess } = this
-
-          if (isCurrentPlayer && isLastGuess) {
-            removeClass('exists', $refs.clockComponent)
-            addClass('exists', $refs.alertButton)
-            return animateShow($el)
-          }
-        },
-        beforeOtherPlayerMarkedGuessAsValid() {
-          const { $refs, isCurrentPlayer, isLastGuess } = this
-
-          if (isCurrentPlayer && isLastGuess) {
-            return animateHide($refs.clockComponent)
           }
         },
       }
@@ -292,63 +208,19 @@ export default {
         letter,
       }
 
-      //
-      // TODO: standardize some of these waitMs times - I'm just eyeballing
-      //   it atm
-      //
-      // TODO: Separate this logic into an action and events
-      //
       return waitMs(300)
         .then(() => {
-          const { cancelComponent, checkCircleComponent, lettersEl } = this.$refs
+          const { lettersEl } = this.$refs
 
           const hideNonChosenLetters = passThrough(lettersEl.children, [
             keepWhen(isNotChosen),
             map(animateHide)
           ])
 
-          const maybeHideCheckCircle = checkCircleComponent
-            ? animateHide(checkCircleComponent)
-            : undefined
-
-          return Promise.all([
-            hideNonChosenLetters,
-            animateHide(cancelComponent),
-            maybeHideCheckCircle,
-            waitMs(600),
-          ])
+          return Promise.all(hideNonChosenLetters)
         })
         .then(() => {
-          const { lettersEl } = this.$refs,
-            chosenLetter = findFirstWhen(isChosen)(lettersEl.children)
-
-          return Promise.all([
-            animateHide(chosenLetter),
-            this.maybeRemoveNoGuesses(),
-            waitMs(600),
-          ])
-        })
-        .then(() => {
-          return this.$myStore.dispatch('room/markChosenLetter', { letter })
-        })
-        .then(() => {
-          const { lettersEl } = this.$refs
-
-          const animateChildren = map(animateShow)(lettersEl.children)
-
-          return Promise.all([
-            ...animateChildren,
-            this.revealEnterGuess(),
-          ])
-        })
-        .then(() => {
-          const { cancelComponent, checkCircleComponent, lettersEl } = this.$refs
-
-          forEach(maybeClearOpacity)([
-            cancelComponent,
-            checkCircleComponent,
-            ...lettersEl.children
-          ])
+          return this.$myStore.dispatch('room/revealLetter', { letter })
         })
     },
     chosenLetterMatchesState(letter, index) {
@@ -358,11 +230,6 @@ export default {
     chosenLetterMatchesProp(letter, index) {
       const { chosenLetter, word } = this
       return chosenLetter === letter && word.indexOf(letter) === index
-    },
-    showInvalidWordHelp() {
-      return this.$myStore.dispatch('lightbox/tryToShow', {
-        componentName: infoInvalidGuess.name,
-      })
     },
     isChoosable(letter, index) {
       const { currentPlayer, showLetterChooser, word: guessedWord } = this
@@ -375,25 +242,9 @@ export default {
         guessedWord.indexOf(letter) === index
       )
     },
-    showConfirmInvalidGuess() {
-      this.$myStore.dispatch('lightbox/tryToShow', {
-        componentName: confirmInvalidGuess.name,
-      })
-    },
-    selectWordIsValid() {
-      this.$myStore.dispatch('room/markGuessAsValid')
-    },
     showStatusHelp() {
-      const { $myStore, currentPlayerHasNotMatchedAnyletters } = this
-
-      let content = statusHelpContent.otherPlayerIsReviewing
-
-      if (currentPlayerHasNotMatchedAnyletters) {
-        content += statusHelpContent.matchingLetterHint
-      }
-
-      return $myStore.dispatch('lightbox/tryToShow', {
-        content,
+      return this.$myStore.dispatch('lightbox/tryToShow', {
+        content: statusHelpContent.otherPlayerIsChoosingALetter,
         type: 'info',
       })
     },
@@ -414,11 +265,12 @@ export default {
 function getComputedProperties() {
   const vuexState = mapState(['currentPlayer', 'otherPlayer']),
     vuexGetters = mapGetters([
-      'currentPlayerHasNotMatchedAnyletters',
+      'currentPlayerMustRevealALetter',
       'friendWon',
       'isFriendsTurn',
       'isMyTurn',
-      'iWon'
+      'iWon',
+      'otherPlayerMustRevealALetter',
     ]),
     local = getLocalComputedProperties()
 
@@ -449,36 +301,26 @@ function getLocalComputedProperties() {
       }
     },
     showClock() {
-      const { isCorrect, isCurrentPlayer, isFriendsTurn, wasReviewed } = this
-
-      return (
-        isCurrentPlayer &&
-        isFriendsTurn &&
-        !wasReviewed &&
-        !isCorrect
-      )
-    },
-    showInvalidWordIndicator() {
       const {
         isCurrentPlayer,
         isLastGuess,
-        isValid,
-        isMyTurn,
+        otherPlayerMustRevealALetter,
       } = this
 
-      return isCurrentPlayer &&
-        isMyTurn &&
+      return (
+        isCurrentPlayer &&
         isLastGuess &&
-        !isValid
+        otherPlayerMustRevealALetter
+      )
     },
     showLetterChooser() {
-      const { friendWon, isOtherPlayer, wasReviewed } = this
+      const {
+        currentPlayerMustRevealALetter,
+        isLastGuess,
+        isOtherPlayer,
+      } = this
 
-      return (
-        !friendWon &&
-        isOtherPlayer &&
-        !wasReviewed
-      )
+      return isOtherPlayer && isLastGuess && currentPlayerMustRevealALetter
     },
   }
 }
@@ -509,7 +351,6 @@ $matched-letter-color: #dcdcdc;
 //   class on every child.  Or figure out another option? hmmmmm
 //
 .prior-guesses > li {
-  button.alert,
   button.clock {
     display: none;
 
@@ -519,18 +360,8 @@ $matched-letter-color: #dcdcdc;
   }
 
   button.clock,
-  button.alert,
   .frown {
     @include res-aware-element-spacing('margin-left', 'sm');
-  }
-
-  button.alert {
-    margin-top: -2px;
-    vertical-align: middle;
-  }
-  svg.alert {
-    height: 24px;
-    width: 24px;
   }
 
   > .letters {
@@ -612,17 +443,6 @@ $matched-letter-color: #dcdcdc;
         transition-timing-function: $easing-default;
       }
     }
-
-    &.last-letter-is-choosable + .mark-invalid {
-      @include res-aware-element-spacing('margin-left', 'md');
-    }
-    &:not(.last-letter-is-choosable) + .mark-invalid {
-      @include res-aware-element-spacing('margin-left', 'lg');
-    }
-  }
-
-  .mark-valid {
-    @include res-aware-element-spacing('margin-left', 'lg');
   }
 }
 </style>

@@ -10,7 +10,7 @@
 import dedent from 'dedent'
 
 import { handleErrorDuringRoute } from 'project-root/create/router/api/helpers'
-import { combine, mAppend } from 'fes'
+import { any, combine, containedIn, mAppend } from 'fes'
 import { getCurrentAndOtherPlayerData, sanitize, toggleTurn } from './helpers'
 import {
   createIfRequestIsValid,
@@ -31,6 +31,7 @@ import {
 //------//
 
 const ifRequestIsValid = createIfRequestIsValid('guess'),
+  atLeastOneLetter = any,
   optionsForGet = {
     allow404: true,
     returnRawResponse: true,
@@ -108,9 +109,13 @@ function createAddGuessAndReturnCurrentPlayer(websocketServer) {
       roomIdAndRev = pickIdAndRev(couchdbRoomData),
       playerIdAndRev = pickIdAndRev(currentPlayer),
       roomData = removeCouchdbProperties(couchdbRoomData),
-      playerData = removeCouchdbProperties(currentPlayer)
+      playerData = removeCouchdbProperties(currentPlayer),
+      hasAnyMatchingLetters = atLeastOneLetter(containedIn(word))(
+        guessedWord
+      )
 
     const guess = {
+      hasAnyMatchingLetters,
       word: guessedWord,
       isCorrect: word === guessedWord,
     }

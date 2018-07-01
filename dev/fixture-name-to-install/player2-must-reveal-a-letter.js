@@ -33,7 +33,7 @@ const test1EncryptedEmail =
 // Main //
 //------//
 
-const name = 'player2-must-review'
+const name = 'player2-must-reveal-a-letter'
 
 const install = () => {
   return Promise.all([
@@ -115,12 +115,18 @@ function createPlayers([roomData]) {
         player1Data = removeCouchdbProperties(player1),
         player2Data = removeCouchdbProperties(player2)
 
-      player1Data.guesses = [{ word: 'coast' }]
+      player1Data.guesses = [
+        {
+          hasAnyMatchingLetters: true,
+          isCorrect: 'false',
+          word: 'coast',
+        },
+      ]
       player2Data.guesses = [
         {
+          hasAnyMatchingLetters: true,
+          isCorrect: 'false',
           word: 'blast',
-          isValid: true,
-          wasReviewed: true,
           chosenLetter: 'a',
         },
       ]

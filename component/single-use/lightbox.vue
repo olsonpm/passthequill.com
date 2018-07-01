@@ -20,8 +20,6 @@
 
 <script>
 import defaultLightbox from './default-lightbox'
-import confirmInvalidGuess from '../view/room/game/confirm_invalid-guess'
-import infoInvalidGuess from '../view/room/game/info_invalid-guess'
 import infoUnsubscribeAll from '../view/email/unsubscriptions/info_all'
 import infoUnsubscribeRoomCreated from '../view/email/unsubscriptions/info_room-created'
 import infoUnsubscribeInvitation from '../view/email/unsubscriptions/info_invitation'
@@ -128,9 +126,7 @@ export default {
 
 function getPossibleLightboxComponents() {
   return [
-    confirmInvalidGuess,
     defaultLightbox,
-    infoInvalidGuess,
     infoUnsubscribeAll,
     infoUnsubscribeRoomCreated,
     infoUnsubscribeInvitation,

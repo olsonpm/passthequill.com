@@ -53,7 +53,21 @@
 
       <h3>Got it<party /></h3>
 
-      <p>{{ successStatusMessage }}</p>
+      <p v-html="state.successStatusMessage"></p>
+
+      <div class="just-kidding"
+        ref="justKiddingEl"
+        data-animate="{
+          duration: {
+            opacity: 'fast',
+            size: 'fast',
+          },
+          shouldAnimate: { height: true },
+        }">
+
+        Just kidding - it seems you're friend just joined.  Press 'Ok' to
+        start&nbsp;playing.
+      </div>
 
       <my-button type="button"
         text="Ok"
@@ -70,8 +84,9 @@
 
 import dedent from 'dedent'
 import validationInfo from 'universal/input-validation-info'
+import setOfValidWords from 'universal/set-of-valid-words'
 import { createNamespacedHelpers } from 'vuex'
-import { settleAll, waitMs, wrapIn } from 'universal/utils'
+import { logErrorToServer, settleAll, waitMs, wrapIn } from 'universal/utils'
 import { animateShow } from 'client/utils'
 import {
   createComputedFormData,
@@ -82,6 +97,7 @@ import {
   combineAll,
   getArrayOfKeys,
   isGreaterThan,
+  isLaden,
   join,
   keep,
   keepWhen,
@@ -138,9 +154,32 @@ export default {
     }
   },
 
+  subscribeTo: {
+    room: {
+      liveUpdate: {
+        afterOtherPlayerInitialized() {
+          const { $refs, state } = this
+
+          if (!state.successStatusMessage) return
+
+          return animateShow($refs.justKiddingEl)
+        },
+      },
+    }
+  },
+
   methods: {
+    getClientErrorMessages() {
+      const messages = [],
+        addMessage = mAppendTo(messages)
+
+      if (!this.displayName_isValid) addMessage(invalidDisplayNameMessage)
+      if (!this.word_isValid) addMessage(this.invalidWordMessage)
+
+      return messages
+    },
     getErrorMessageHtml() {
-      return passThrough(this.clientErrorMessages, [
+      return passThrough(this.getClientErrorMessages(), [
         map(wrapIn('<p>', '</p>')),
         join('')
       ])
@@ -178,6 +217,7 @@ export default {
         })
         .then(() => {
           state.showSuccessInfo = true
+          state.successStatusMessage = statusToMessage[this.successStatus]
           return this.$nextTick()
         })
         .then(() => animateShow($refs.infoAfterSubmitEl))
@@ -218,10 +258,10 @@ function getStatusToMessage() {
     mustWaitForFriend: dedent(`
       Looks like your friend hasn't entered in their display name and word
       yet.  If you're sure they've received the invitation email then there aint
-      much to do other than wait in the game room.
+      much to do other than wait in the game&nbsp;room.
     `),
     startGame: dedent(`
-      You're ready to start playing!
+      You're ready to start&nbsp;playing!
     `),
   }
 }
@@ -243,18 +283,6 @@ function getCustomComputedProperties() {
         ? 'mustWaitForFriend'
         : 'startGame'
     },
-    successStatusMessage() {
-      return statusToMessage[this.successStatus]
-    },
-    clientErrorMessages() {
-      const messages = [],
-        addMessage = mAppendTo(messages)
-
-      if (!this.displayName_isValid) addMessage(invalidDisplayNameMessage)
-      if (!this.word_isValid) addMessage(this.invalidWordMessage)
-
-      return messages
-    },
     invalidWordMessage() {
       const currentWord = this.formData.inputs.word || ''
 
@@ -266,12 +294,23 @@ function getCustomComputedProperties() {
         getArrayOfKeys,
       ])
 
-      const showRepeatedLetters =
-        repeatingLetters.length === 1
-          ? `('${repeatingLetters[0]}' is repeated)`
-          : `('${join("' and '")(repeatingLetters)}' are repeated)`
+      if (isLaden(repeatingLetters)) {
+        const showRepeatedLetters =
+          repeatingLetters.length === 1
+            ? `('${repeatingLetters[0]}' is repeated)`
+            : `('${join("' and '")(repeatingLetters)}' are repeated)`
 
-      return `your word must use unique letters<br>${showRepeatedLetters}`
+        return `your word must use unique letters<br>${showRepeatedLetters}`
+      }
+
+      if (!setOfValidWords.has(currentWord)) {
+        return `your word is not in my dictionary`
+      }
+
+      logErrorToServer({
+        context: 'during invalidWordMessage()',
+        error: new Error(`currentWord seems to be valid: '${currentWord}'`)
+      })
     },
   }
 }
@@ -297,6 +336,16 @@ $local_label-width: 150px;
 
     > h3 + p {
       margin-bottom: 0;
+    }
+
+    .just-kidding {
+      @include res-aware-element-spacing('margin-top', 'sm');
+
+      display: none;
+
+      &.exists {
+        display: block;
+      }
     }
   }
 }

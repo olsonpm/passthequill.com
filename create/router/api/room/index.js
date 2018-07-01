@@ -5,9 +5,7 @@
 import KoaRouter from 'koa-router'
 import createGetRoute from './get'
 import createPostGuess from './post_guess'
-import createPostMarkChosenLetter from './post_mark-chosen-letter'
-import createPostMarkGuessAsInvalid from './post_mark-guess-as-invalid'
-import createPostMarkGuessAsValid from './post_mark-guess-as-valid'
+import createPostRevealLetter from './post_reveal-letter'
 import createPostInitPlayer from './post_init-player'
 
 import { passThrough } from 'fes'
@@ -24,9 +22,7 @@ const createRoomRouter = websocketServer => {
     createGetRoute,
     createPostInitPlayer,
     createPostGuess,
-    createPostMarkGuessAsInvalid,
-    createPostMarkGuessAsValid,
-    createPostMarkChosenLetter,
+    createPostRevealLetter,
   ])
 
   return router

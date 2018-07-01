@@ -21,7 +21,7 @@ const handleErrorDuringRoute = (ctx, createErrorMessage, args) => error => {
   ctx.status = 500
 
   if (error.isHandled) {
-    ctx.body = { error: `An error occurred while ${error.friendlyMessage}` }
+    ctx.body = { error: error.friendlyMessage }
     return
   }
 

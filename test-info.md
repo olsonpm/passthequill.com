@@ -20,7 +20,7 @@
 - only-player2-is-initialized
 - both-players-initialized
 - player2-must-guess
-- player1-must-review-with-match
-- player1-must-review-no-match
-- player1-must-guess
-- player2-must-review
+- player1-must-reveal-a-letter
+- player1-must-guess-no-match
+- player1-must-guess-with-match
+- player2-must-reveal-a-letter

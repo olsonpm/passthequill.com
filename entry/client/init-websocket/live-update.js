@@ -19,16 +19,15 @@ import dedent from 'dedent'
 import vue from 'vue'
 
 import { liveUpdateWebsocket } from 'project-root/config/app'
-import { capitalizeFirstLetter, logErrorToServer, noop } from 'universal/utils'
-import { assignOver, last, mSet, reduce } from 'fes'
+import { capitalizeFirstLetter, logErrorToServer } from 'universal/utils'
+import { assignOver, mSet, reduce } from 'fes'
 
 //
 //------//
 // Init //
 //------//
 
-const idToMutatePayload = getIdToMutatePayload(),
-  liveUpdateIds = getLiveUpdateIds(),
+const liveUpdateIds = getLiveUpdateIds(),
   normalClosure = 1000
 
 //
@@ -102,17 +101,7 @@ function getLiveUpdateIds() {
     'otherPlayerChoseLetter',
     'otherPlayerGuessed',
     'otherPlayerInitialized',
-    'otherPlayerMarkedGuessAsInvalid',
-    'otherPlayerMarkedGuessAsValid',
   ])
-}
-
-function getIdToMutatePayload() {
-  return {
-    otherPlayerGuessed: payload => {
-      last(payload.otherPlayer.guesses).justAdded = true
-    },
-  }
 }
 
 function getIdToHandleUpdate(eventManager, store) {
@@ -135,15 +124,15 @@ function getIdToHandleUpdate(eventManager, store) {
       } else {
         // commitOrDispatch === 'commit'
         return eventManager
-          .publish(`room/liveUpdate/before${upperFirstId}`)
+          .publish(`room/liveUpdate/before${upperFirstId}`, [{ payload }])
           .then(() => {
-            const mutatePayload = idToMutatePayload[id] || noop
-            mutatePayload(payload)
             store.commit(type, payload, options)
             return vue.nextTick()
           })
           .then(() =>
-            eventManager.publish(`room/liveUpdate/after${upperFirstId}`)
+            eventManager.publish(`room/liveUpdate/after${upperFirstId}`, [
+              { payload },
+            ])
           )
       }
     }
