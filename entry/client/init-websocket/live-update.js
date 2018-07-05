@@ -10,6 +10,10 @@
 //   there's no good reason to separate it as its own vuex module.  For now I'm
 //   just going to keep the event publishing and store mutations located here.
 //
+// TODO: Implement a clientSocketToDataQueue, where if a message can't be sent
+//   due to the client temporarily being disconnected, then the data is sent
+//   once the client comes back online and requests the queue.
+//
 
 //---------//
 // Imports //
@@ -18,6 +22,7 @@
 import dedent from 'dedent'
 import vue from 'vue'
 
+import { PersistentWebsocket } from 'persistent-websocket'
 import { liveUpdateWebsocket } from 'project-root/config/app'
 import { capitalizeFirstLetter, logErrorToServer } from 'universal/utils'
 import { assignOver, mSet, reduce } from 'fes'
@@ -36,11 +41,14 @@ const liveUpdateIds = getLiveUpdateIds(),
 //------//
 
 const init = ({ eventManager, store, playerHash, roomHash }) => {
-  const liveUpdateWs = new WebSocket(liveUpdateWebsocket.url),
+  const liveUpdatePws = new PersistentWebsocket(liveUpdateWebsocket.url, {
+      pingSendFunction: pws => pws.send('ping'),
+      reachabilityTestUrl: '/ping',
+    }),
     idToHandleUpdate = getIdToHandleUpdate(eventManager, store)
 
-  liveUpdateWs.onopen = () => {
-    liveUpdateWs.send(
+  liveUpdatePws.onopen = () => {
+    liveUpdatePws.send(
       JSON.stringify({
         id: 'initial-connection',
         data: {
@@ -51,24 +59,20 @@ const init = ({ eventManager, store, playerHash, roomHash }) => {
     )
   }
 
-  liveUpdateWs.onerror = event => {
+  liveUpdatePws.onerror = event => {
     logErrorToServer({
       context: 'in liveUpdate WebSocket onerror event',
       error: new Error(event.toString()),
     })
   }
 
-  liveUpdateWs.onclose = event => {
-    //
-    // not sure what to do if the 'code' property doesn't exist, so I'm ignoring
-    //   that case for now
-    //
-    if (event.code && event.code !== normalClosure) {
+  liveUpdatePws.onclose = event => {
+    if (event.code !== normalClosure) {
       const message = dedent(`
         abby-normal websocket close event received
 
         code: ${event.code}
-        stringified event: ${event.toString()}
+        reason: ${event.reason}
       `)
 
       logErrorToServer({
@@ -78,7 +82,9 @@ const init = ({ eventManager, store, playerHash, roomHash }) => {
     }
   }
 
-  liveUpdateWs.onmessage = event => {
+  liveUpdatePws.onmessage = event => {
+    if (event.data === 'pong') return
+
     const { id, data } = JSON.parse(event.data),
       handleUpdate = idToHandleUpdate[id]
 
@@ -88,7 +94,9 @@ const init = ({ eventManager, store, playerHash, roomHash }) => {
     handleUpdate(data)
   }
 
-  return () => liveUpdateWs.close()
+  liveUpdatePws.open()
+
+  return () => liveUpdatePws.close()
 }
 
 //

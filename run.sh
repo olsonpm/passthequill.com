@@ -91,6 +91,10 @@ case "${command}" in
     echo 'export default {}' > "${debugFileName}"
     echo 'empty debug config created!' ;;
 
+  create-local-address-config)
+    node -r esm ./lib/scripts/create-local-address-config.js > config/local-address.js
+    echo 'local-address config created!' ;;
+
   lint)
     node node_modules/.bin/eslint --ext .js,.vue -- component config create entry lib log server.js ;;
 

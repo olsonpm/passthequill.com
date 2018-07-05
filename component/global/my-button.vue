@@ -7,7 +7,7 @@
     <button :type="type"
       :disabled="disabled"
       :class="{ active: isActive }"
-      @click="onClick"
+      @click="onClickWrapper"
       @keydown.space="setActive"
       @keydown.enter="setActive"
       @keyup.space="unsetActive"
@@ -25,6 +25,10 @@ export default {
   name: 'my-button',
   props: {
     active: {},
+    canOnlyClickOnce: {
+      type: Boolean,
+      default: false,
+    },
     disabled: {},
     text: {},
     type: {},
@@ -33,9 +37,20 @@ export default {
     },
   },
   data: () => ({
-    state: { active: false },
+    state: {
+      active: false,
+      alreadyClicked: false,
+    },
   }),
   methods: {
+    onClickWrapper() {
+      const { canOnlyClickOnce, onClick, state } = this
+
+      if (canOnlyClickOnce && state.alreadyClicked) return
+
+      state.alreadyClicked = true
+      return onClick()
+    },
     setActive() {
       this.state.active = true
     },

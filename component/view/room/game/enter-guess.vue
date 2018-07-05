@@ -95,6 +95,8 @@ export default {
           'notifyError/tryToShow',
           { html: `<p>${errorMessage}</p>` }
         )
+      } else {
+        $myStore.dispatch('notifyError/tryToHide')
       }
 
       const { guess } = formData.inputs

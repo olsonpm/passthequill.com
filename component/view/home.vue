@@ -20,8 +20,8 @@
       from there.
     </p>
     <p>
-      If you have questions or get confused confused along the way please email
-      me at {{ global.authorEmail }}.  I want this game to be fun and simple so
+      If you have questions or get confused along the way please email me at
+      {{ global.authorEmail }}.  I want this game to be fun and simple so
       feedback is appreciated.
     </p>
   </div>

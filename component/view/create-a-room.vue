@@ -205,6 +205,8 @@ export default {
           'notifyError/tryToShow',
           { html: '<p>Both emails are required</p>' }
         )
+      } else {
+        $myStore.dispatch('notifyError/tryToHide')
       }
 
       state.loading = true

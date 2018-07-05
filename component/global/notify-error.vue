@@ -1,9 +1,8 @@
 <template>
   <div class="notification-wrapper">
-    <simple-button can-only-click-once
-      class="notification error"
+    <simple-button class="notification"
       ref="notificationComponent"
-      :on-click="close">
+      :on-click="tryToHide">
 
       <div v-html="html" />
       <close-x />
@@ -17,7 +16,6 @@
 //---------//
 
 import animate from 'velocity-animate'
-import closeX from './close-x'
 
 import { durationEnum, onKeyUp } from 'client/utils'
 import { createNamespacedHelpers } from 'vuex'
@@ -37,60 +35,54 @@ const duration = durationEnum.normal,
 
 export default {
   name: 'notify-error',
-  data: () => ({
-    state: {
-      isClosing: false
-    },
-  }),
   beforeMount() {
     this.disposeKeyUp = onKeyUp('Escape', () => {
-      this.close()
+      this.$myStore.dispatch('notifyError/tryToHide')
     })
   },
   beforeDestroy() {
     this.disposeKeyUp()
   },
-  components: {
-    'close-x': closeX,
+  subscribeTo: {
+    notifyError: {
+      hide() {
+        return this.hide()
+      },
+      show() {
+        return this.show()
+      }
+    }
   },
-  mounted() {
-    const { $refs, $store } = this
-
-    return animate(
-      $refs.notificationComponent.$el,
-      { opacity: [1, 0], transform: ['translateY(15px)', 'translateY(0px)'] },
-      { duration }
-    ).then(() => {
-      $store.commit('notifyError/setIsAnimating', false)
-    })
-  },
-  computed: mapState(['html']),
+  computed: mapState(['html', 'isActive']),
   methods: {
-    close() {
-      const { $refs, $store, state } = this
-
-      if (state.isClosing) return
-      else state.isClosing = true
-
+    tryToHide() {
+      return this.$myStore.dispatch('notifyError/tryToHide')
+    },
+    hide() {
+      const notificationEl = this.$refs.notificationComponent.$el
       return animate(
-        $refs.notificationComponent.$el,
+        notificationEl,
         {
           opacity: [0, 1],
           transform: ['translateY(30px)', 'translateY(15px)'],
         },
         { duration }
       ).then(() => {
-        $store.commit('notifyError/setHtml', '')
-        $store.commit('notifyError/setIsActive', false)
-        $store.commit('notifyError/setIsAnimating', false)
+        notificationEl.style.display = 'none'
       })
-      // finally
-      .then(() => {
-        state.isClosing = false
-      })
-      .catch(() => {
-        state.isClosing = false
-      })
+    },
+    show() {
+      const notificationEl = this.$refs.notificationComponent.$el
+      notificationEl.style.display = 'inline-block'
+
+      return animate(
+        this.$refs.notificationComponent.$el,
+        {
+          opacity: [1, 0],
+          transform: ['translateY(15px)', 'translateY(0px)'],
+        },
+        { duration }
+      )
     },
   },
 }
@@ -104,23 +96,20 @@ export default {
   text-align: center;
   top: 0;
   width: 100%;
-  z-index: 1;
+  z-index: 4;
 
   .notification {
     @include per-screen-size('min-width', 100%, 70%, 500px, 500px);
     @include res-aware-element-spacing('padding', 'sm');
     @include shadow-normal;
 
+    background-color: $error-red;
     border-radius: $radius-small;
     color: $bg;
-    display: inline-block;
+    display: none;
     font-weight: 500;
     line-height: $default-line-height;
     position: relative;
-
-    &.error {
-      background-color: $error-red;
-    }
 
     p {
       margin-top: 0;

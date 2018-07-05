@@ -7,15 +7,37 @@ const notifyError = {
     html: '',
     isActive: false,
     isAnimating: false,
+    isShowing: false,
   }),
   actions: {
-    tryToShow({ commit, state }, { html }) {
-      if (!state.isActive) {
-        commit('setHtml', html)
-        commit('setIsActive', true)
-        commit('setIsAnimating', true)
-      }
-      return Promise.resolve()
+    tryToShow({ commit, dispatch, state }, { eventManager, html }) {
+      if (state.isShowing) return
+      else commit('setIsShowing', true)
+
+      const maybeHide = state.isActive
+        ? dispatch('tryToHide', { eventManager })
+        : Promise.resolve()
+
+      return maybeHide
+        .then(() => {
+          commit('setHtml', html)
+          commit('setIsActive', true)
+          commit('setIsAnimating', true)
+          return eventManager.publish('notifyError/show')
+        })
+        .then(() => {
+          commit('setIsAnimating', false)
+          commit('setIsShowing', false)
+        })
+    },
+    tryToHide({ commit, state }, { eventManager }) {
+      if (!state.isActive) return Promise.resolve()
+
+      commit('setIsAnimating', true)
+      return eventManager.publish('notifyError/hide').then(() => {
+        commit('setIsActive', false)
+        commit('setIsAnimating', false)
+      })
     },
   },
   mutations: {
@@ -27,6 +49,9 @@ const notifyError = {
     },
     setIsAnimating(state, trueOrFalse) {
       state.isAnimating = trueOrFalse
+    },
+    setIsShowing(state, trueOrFalse) {
+      state.isShowing = trueOrFalse
     },
   },
 }

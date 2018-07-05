@@ -218,9 +218,9 @@ export default {
         state.showPlaceholder = false
 
         return Promise.all([
-            animateShow($refs.statusComponent),
-            maybeShowGameOver,
-          ])
+          this.showStatus(),
+          maybeShowGameOver,
+        ])
       },
       beforeRevealLetter() {
         return (this.currentPlayerHasGuessed)
@@ -236,10 +236,8 @@ export default {
           ])
         },
         afterOtherPlayerInitialized() {
-          const { $refs, currentPlayerMustGuess, state } = this,
-            { statusComponent } = $refs
+          const { currentPlayerMustGuess, state } = this
 
-          statusComponent.maybeDrawAttentionUntilUserInteracts()
           state.showEnterGuess = currentPlayerMustGuess
 
           const maybeShowEnterGuess = state.showEnterGuess
@@ -247,7 +245,7 @@ export default {
               : undefined
 
           return Promise.all([
-            animateShow(statusComponent),
+            this.showStatus(),
             animateShow(this.getRef('otherPlayerDisplayNameEl')),
             maybeShowEnterGuess
           ])
@@ -273,10 +271,8 @@ export default {
             ? this.revealEnterGuess()
             : undefined
 
-          $refs.statusComponent.maybeDrawAttentionUntilUserInteracts()
-
           return Promise.all([
-            animateShow($refs.statusComponent),
+            this.showStatus(),
             maybeShowEnterGuess,
             maybeShowGameOver,
           ])
@@ -418,6 +414,13 @@ export default {
 
         return animateShow(enterGuessComponent)
       })
+    },
+    showStatus() {
+      const statusComponent = this.$refs.statusComponent
+
+      return statusComponent.maybeDrawAttentionUntilUserInteracts().then(
+        () => animateShow(statusComponent)
+      )
     },
     sliiiideToTheLeft() {
       return this.slide(-1)

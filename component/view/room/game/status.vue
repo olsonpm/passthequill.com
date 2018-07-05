@@ -29,7 +29,19 @@
     <span class="message">
       {{ message }}
       <attention-circle ref="attentionCircleComponent"
-        data-animate="{ duration: { opacity: 'slow' } }" />
+        data-animate="{
+          duration: {
+            opacity: {
+              onShow: 'immediate',
+              onHide: 'slow',
+            },
+            size: {
+              onShow: 'immediate',
+              onHide: 'fast',
+            },
+          },
+          shouldAnimate: { width: true },
+        }" />
     </span>
   </h5>
 </template>
@@ -48,7 +60,6 @@ import {
   addClass,
   animateHide,
   animateShow,
-  makeVisible,
   removeClass,
 } from 'client/utils'
 import {
@@ -128,9 +139,9 @@ export default {
       const { $refs, $store, message, statusIsPulsating } = this,
         { myTurn } = statusToMessage
 
-      if (message !== myTurn || statusIsPulsating) return
+      if (message !== myTurn || statusIsPulsating) return Promise.resolve()
 
-      if (!statusIsPulsating) $store.commit('room/setStatusIsPulsating', true)
+      $store.commit('room/setStatusIsPulsating', true)
 
       const stopPulsating = () => {
         $store.commit('room/setStatusIsPulsating', false)
@@ -140,10 +151,11 @@ export default {
         )(interactionEvents)
       }
 
-      makeVisible($refs.attentionCircleComponent)
       forEach(
         eventName => window.addEventListener(eventName, stopPulsating)
       )(interactionEvents)
+
+      return animateShow($refs.attentionCircleComponent)
     },
     showStatusHelp() {
       const { $myStore, helpContent } = this

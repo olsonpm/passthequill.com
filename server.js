@@ -61,7 +61,7 @@ const distDir = path.resolve(__dirname, 'dist'),
     client: _client,
     ssr: _ssr,
   },
-  fixtureNameCamel = 'player2MustReview',
+  fixtureNameCamel = 'roomExists',
   installFixture = () => fixtureNameToInstall[fixtureNameCamel]()
 
 logUnhandledRejections()
@@ -94,10 +94,12 @@ maybeInitDevDatabase()
       koaApp.use(koaStatic(distDir))
     }
 
-    koaApp
-      .use(router.routes())
-      .use(router.allowedMethods())
-      .listen(serverPort)
+    koaApp.use(router.routes()).use(router.allowedMethods())
+
+    const listenArgs = [serverPort]
+    if (isDevelopment) listenArgs.push(localHostIp)
+
+    koaApp.listen(...listenArgs)
 
     // eslint-disable-next-line no-console
     console.log(`The server is running on port: ${highlight(serverPort)}`)
@@ -196,6 +198,10 @@ function createRouter(getRenderer) {
   }
 
   router.root
+    .use('/ping', ctx => {
+      ctx.set('Cache-Control', 'no-cache')
+      ctx.status = 200
+    })
     .use('/api', router.api.routes(), router.api.allowedMethods())
     .use(router.page.routes(), router.page.allowedMethods())
 

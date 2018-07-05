@@ -69,7 +69,8 @@
         start&nbsp;playing.
       </div>
 
-      <my-button type="button"
+      <my-button can-only-click-once
+        type="button"
         text="Ok"
         class="ok"
         :on-click="okClicked" />
@@ -192,6 +193,8 @@ export default {
           'notifyError/tryToShow',
           { html: this.getErrorMessageHtml() }
         )
+      } else {
+        $myStore.dispatch('notifyError/tryToHide')
       }
 
       state.loading = true

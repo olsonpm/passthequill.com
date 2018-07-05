@@ -9,7 +9,7 @@
     -->
 
     <lightbox />
-    <notify-error v-if="isNotifyErrorActive" />
+    <notify-error />
 
     <header>
       <div class="site-container">
@@ -63,7 +63,7 @@ import errorView from 'project-root/component/single-use/error'
 import lightbox from 'project-root/component/single-use/lightbox'
 import notFoundView from 'project-root/component/view/not-found'
 import { removeFocus } from 'client/utils'
-import { createNamespacedHelpers, mapState as mapRootState } from 'vuex'
+import { mapState as mapRootState } from 'vuex'
 import { append, combineAll } from 'fes'
 import { locals } from './screen-size-breakpoints.scss'
 
@@ -72,8 +72,7 @@ import { locals } from './screen-size-breakpoints.scss'
 // Init //
 //------//
 
-const { phoneMax, smallPhoneMax } = locals,
-  { mapState: mapNotifyErrorState } = createNamespacedHelpers('notifyError')
+const { phoneMax, smallPhoneMax } = locals
 
 //
 //------//
@@ -157,14 +156,10 @@ function createMaybeUpdateScreenSize(appInstance, initialSizes) {
 
 function getComputedProperties() {
   const vuexRootState = mapRootState(['showNotFoundView', 'showErrorView']),
-    vuexNotifyErrorState = mapNotifyErrorState({
-      isNotifyErrorActive: 'isActive'
-    }),
     localComputedState = getLocalComputedState()
 
   return combineAll.objects([
     vuexRootState,
-    vuexNotifyErrorState,
     localComputedState
   ])
 }

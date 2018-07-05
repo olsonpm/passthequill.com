@@ -58,7 +58,7 @@ function createAddGuess(websocketServer) {
 
   return ctx => {
     const { body } = ctx.request
-    body.guess = body.guess.toLowerCase()
+    body.guess = body.guess.toLowerCase().trim()
 
     const { playerHash, roomHash } = ctx.params,
       guess = ctx.request.body,
@@ -110,9 +110,7 @@ function createAddGuessAndReturnCurrentPlayer(websocketServer) {
       playerIdAndRev = pickIdAndRev(currentPlayer),
       roomData = removeCouchdbProperties(couchdbRoomData),
       playerData = removeCouchdbProperties(currentPlayer),
-      hasAnyMatchingLetters = atLeastOneLetter(containedIn(word))(
-        guessedWord
-      )
+      hasAnyMatchingLetters = atLeastOneLetter(containedIn(word))(guessedWord)
 
     const guess = {
       hasAnyMatchingLetters,

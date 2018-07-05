@@ -19,10 +19,13 @@ $attention-circle-color: #ff8d00;
   background-color: $attention-circle-color;
   border-color: transparent;
   border-radius: 100px;
-  display: inline-block;
+  display: none;
   height: 14px;
-  opacity: 0;
   width: 14px;
+
+  &.exists {
+    display: inline-block;
+  }
 
   > .pulsating-circle {
     animation: pulsateAnimation_attentionCircle 1.4s infinite;

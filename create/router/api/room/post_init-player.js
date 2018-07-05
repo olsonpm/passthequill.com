@@ -56,7 +56,7 @@ function createInitializePlayer(websocketServer) {
     const { playerHash, roomHash } = ctx.params,
       { body } = ctx.request
 
-    body.word = body.word.toLowerCase()
+    body.word = body.word.toLowerCase().trim()
 
     const { displayName, word } = body,
       errorArgs = [playerHash, roomHash, displayName, word],
