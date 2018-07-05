@@ -2,7 +2,7 @@
 // Imports //
 //---------//
 
-import sendEmail from 'server/email/send'
+import getTemplateNameToSendEmail from 'server/email/get-template-name-to-send'
 
 import { docidToHash } from 'server/db'
 import { resolveAllProperties } from 'universal/utils'
@@ -45,13 +45,17 @@ const createSendEmails = (player1Email, player2Email) => {
 //------------------//
 
 function send(player, roomHash, templateName) {
-  return sendEmail[templateName]({
-    to: player.email,
-    templateVariables: {
-      emailSentHash: player.emailSentHash,
-      playerHash: player.hash,
-      roomHash,
-    },
+  return getTemplateNameToSendEmail().then(templateNameToSendEmail => {
+    const sendEmail = templateNameToSendEmail[templateName]
+
+    return sendEmail({
+      to: player.email,
+      templateVariables: {
+        emailSentHash: player.emailSentHash,
+        playerHash: player.hash,
+        roomHash,
+      },
+    })
   })
 }
 

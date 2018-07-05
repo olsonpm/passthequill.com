@@ -1,0 +1,18 @@
+Your room is ready
+
+Click the link below to enter and begin playing.
+
+{{ global.externalBaseUrl }}/room/{{ roomHash }}/player/{{ playerHash }}
+
+Good luck!
+
+
+
+Unsubscribe from 'room created' emails
+{{ global.externalBaseUrl }}/email/unsubscribe/room-created/{{ emailSentHash }}
+
+Unsubscribe from all emails
+{{ global.externalBaseUrl }}/email/unsubscribe/all/{{ emailSentHash }}
+
+Manage your subscriptions
+{{ global.externalBaseUrl }}/email/unsubscriptions/{{ emailSentHash }}
