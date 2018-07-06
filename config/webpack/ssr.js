@@ -51,10 +51,13 @@ ssrConfig.module.rules = append(replaceLoader)(ssrConfig.module.rules)
 
 function getSsrPlugins() {
   return [
-    new CleanPlugin([path.join(distDir, '*.js'), path.join(distDir, '*.map')], {
-      verbose: false,
-      watch: true,
-    }),
+    new CleanPlugin(
+      [path.resolve(distDir, '*.js'), path.resolve(distDir, '*.map')],
+      {
+        verbose: false,
+        watch: true,
+      }
+    ),
     new webpack.DefinePlugin({
       'process.env.BASE_URL': `'${baseUrl.local}/'`,
       'process.env.ENVIRONMENT': "'ssr'",

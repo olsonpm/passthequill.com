@@ -113,11 +113,18 @@ function onBeforeResolve(to, from, next) {
 function logUnhandledErrorsAndRejections() {
   window.addEventListener('unhandledrejection', promiseRejectionEvent => {
     try {
-      const error = new Error(promiseRejectionEvent.reason)
+      let error = promiseRejectionEvent.reason,
+        ignoreStack = false
+
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+        ignoreStack = true
+      }
 
       logErrorToServer({
         context: '- unhandled rejection event',
         error,
+        ignoreStack,
       })
     } catch (_unused_error) {
       // prevent a possible infinite loop caused by:
@@ -130,14 +137,18 @@ function logUnhandledErrorsAndRejections() {
 
   window.addEventListener('error', errorEvent => {
     try {
-      const error =
-        errorEvent.error instanceof Error
-          ? errorEvent.error
-          : new Error(errorEvent.message || '(no message)')
+      let error = errorEvent.error,
+        ignoreStack = false
+
+      if (!(error instanceof Error)) {
+        error = new Error(errorEvent.message || '(no message)')
+        ignoreStack = true
+      }
 
       logErrorToServer({
         error,
         context: '- unhandled error event',
+        ignoreStack,
       })
     } catch (_unused_error) {
       // don't cause an infinite loop
