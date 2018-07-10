@@ -57,8 +57,8 @@ export default {
       },
     }
   },
-  asyncData({ store }) {
-    return store.dispatch('email/getUnsubscriptions')
+  asyncData({ route, store }) {
+    return store.dispatch('email/getUnsubscriptions', { route })
   },
 
   watch: {

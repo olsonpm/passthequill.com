@@ -25,7 +25,7 @@ export default {
   path: `/email/unsubscribe/:type(${unsubscribeTypes})/:emailSentHash`,
 
   asyncData({ route, store }) {
-    return store.dispatch('email/unsubscribe', { route })
+    return store.dispatch('email/unsubscribe', route.params)
   },
 
   computed: {

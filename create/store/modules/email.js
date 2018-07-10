@@ -23,17 +23,15 @@ const initialUnsubscribedFrom = getInitialUnsubscribedFrom()
 const email = {
   state: getInitialState,
   actions: {
-    getUnsubscriptions({ commit, rootState }) {
-      const { emailSentHash } = rootState.route.params
+    getUnsubscriptions({ commit }, { route }) {
+      const { emailSentHash } = route.params
 
       return api
         .get(`/email/unsubscriptions/${emailSentHash}`)
         .then(result => commit('setUnsubscriptions', result.types))
         .catch(setShowNotFoundOrErrorView(commit))
     },
-    unsubscribe({ commit }, { route }) {
-      const { emailSentHash, type } = route.params
-
+    unsubscribe({ commit }, { emailSentHash, type }) {
       commit('unsubscribeFrom', type)
       return api
         .post(`/email/unsubscribe/${emailSentHash}`, { type })
@@ -44,6 +42,7 @@ const email = {
     },
     resubscribe({ commit }, { emailSentHash, type }) {
       commit('resubscribeTo', type)
+
       return api
         .post(`/email/resubscribe/${emailSentHash}`, { type })
         .catch(setShowNotFoundOrErrorView(commit))
