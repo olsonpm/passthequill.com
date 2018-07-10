@@ -114,6 +114,8 @@ function maybeUpdateClient({ data, playerHash }) {
 }
 
 function handleSendError(error) {
+  if (!error) return
+
   logErrorToServer({
     context: 'while sending liveUpdate data',
     error,

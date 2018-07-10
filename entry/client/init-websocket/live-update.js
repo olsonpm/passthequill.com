@@ -62,7 +62,8 @@ const init = ({ eventManager, store, playerHash, roomHash }) => {
   liveUpdatePws.onerror = event => {
     logErrorToServer({
       context: 'in liveUpdate WebSocket onerror event',
-      error: new Error(event.toString()),
+      error: new Error(event),
+      ignoreStack: true,
     })
   }
 
@@ -72,12 +73,13 @@ const init = ({ eventManager, store, playerHash, roomHash }) => {
         abby-normal websocket close event received
 
         code: ${event.code}
-        reason: ${event.reason}
+        reason: ${event.reason || '(unknown)'}
       `)
 
       logErrorToServer({
         context: 'in liveUpdate WebSocket onclose event',
         error: new Error(message),
+        ignoreStack: true,
       })
     }
   }

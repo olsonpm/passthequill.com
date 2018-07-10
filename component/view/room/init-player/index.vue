@@ -21,6 +21,7 @@
         </li>
         <li>
           <my-text-input id="word"
+            autocomplete="off"
             label="Your secret word"
             info-component-name="init-player-info_word"
             placeholder="e.g. super"

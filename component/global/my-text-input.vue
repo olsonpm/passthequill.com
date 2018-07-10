@@ -17,6 +17,7 @@
       ref="inputWrapper">
 
       <input :class="{ invalid: isInvalid }"
+        :autocomplete="autocomplete"
         :disabled="readonly"
         :id="id"
         :maxlength="maxlength"
@@ -70,6 +71,10 @@ export default {
   // the parentComponent is necessary to dynamically access computed properties
   //
   props: {
+    autocomplete: {
+      type: String,
+      default: 'on',
+    },
     autofocus: {
       type: Boolean,
     },

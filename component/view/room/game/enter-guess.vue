@@ -6,6 +6,7 @@
       :set-submit-active="setSubmitActive">
 
       <my-text-input id="guess"
+        autocomplete="off"
         label="Your Guess"
         maxlength="5"
         disable-validation-indicator

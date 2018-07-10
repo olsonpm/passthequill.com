@@ -31,8 +31,8 @@ const email = {
         .then(result => commit('setUnsubscriptions', result.types))
         .catch(setShowNotFoundOrErrorView(commit))
     },
-    unsubscribe({ commit, rootState }, { type }) {
-      const { emailSentHash } = rootState.route.params
+    unsubscribe({ commit }, { route }) {
+      const { emailSentHash, type } = route.params
 
       commit('unsubscribeFrom', type)
       return api

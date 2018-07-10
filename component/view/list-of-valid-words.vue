@@ -8,12 +8,12 @@
         SCOWL (And Friends)
       </link-to>.
       It is
-      <link-to url="url_2of12inf_isForWordgames">
+      <link-to :url="url_2of12inf_isForWordgames">
         intended for word games
       </link-to>
       because it removes hyphens, includes inflections and a few other suitable
       qualities.  More info about the list can be
-      <link-to url="url_2of12inf_moreInfo">
+      <link-to :url="url_2of12inf_moreInfo">
         found here
       </link-to>.
     </p>

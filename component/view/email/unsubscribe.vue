@@ -3,9 +3,9 @@
     <h3>Successfully Unsubscribed From '{{ typeTitle }}' Emails</h3>
     <h4 v-if="wasAlreadySubscribed">
       Note: It seems you've unsubscribed from these emails before.  If you are
-      receiving emails when you shouldn't be then let me know at
+      receiving emails when you shouldn't then let me know at
       {{ global.authorEmail }} so I can fix the problem. Spam is no
-      fun <frown />
+      <span class="dont-wrap">fun <frown /></span>
     </h4>
   </div>
 </template>
@@ -24,8 +24,8 @@ export default {
   name: 'email-unsubscribe',
   path: `/email/unsubscribe/:type(${unsubscribeTypes})/:emailSentHash`,
 
-  asyncData({ store }) {
-    return store.dispatch('email/unsubscribe')
+  asyncData({ route, store }) {
+    return store.dispatch('email/unsubscribe', { route })
   },
 
   computed: {

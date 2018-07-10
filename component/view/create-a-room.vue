@@ -9,6 +9,7 @@
       <ul>
         <li>
           <my-text-input id="player1-email"
+            autocomplete="email"
             label="Your email"
             type="email"
             :autofocus="true"
@@ -17,6 +18,7 @@
         </li>
         <li>
           <my-text-input id="player2-email"
+            autocomplete="email"
             label="Your friend's email"
             type="email"
             :parentComponent="this"
