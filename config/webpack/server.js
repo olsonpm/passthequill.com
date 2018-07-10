@@ -60,6 +60,10 @@ const eventualConfig = createInlineTemplates().then(() => {
       new webpack.DefinePlugin({
         'process.env.BASE_URL': `'${baseUrl.local}/'`,
         'process.env.ENVIRONMENT': "'server'",
+        'process.env.SHOULD_INIT_DEV_SERVER':
+          process.env.SHOULD_INIT_DEV_SERVER === undefined
+            ? 'true'
+            : process.env.SHOULD_INIT_DEV_SERVER,
         'process.env.VUE_ENV': 'undefined',
       }),
     ],

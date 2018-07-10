@@ -17,10 +17,12 @@ command="${1}"
 shift
 
 buildSsrAssets='true'
+shouldInitDevServer='true'
 
 if [ "${command}" = "build-dev" ]; then
   if [ "${1}" = "--include-ssr-assets" ]; then
     buildSsrAssets='true'
+    shouldInitDevServer='false'
     shift
   else
     buildSsrAssets='false'
@@ -76,7 +78,7 @@ case "${command}" in
     NODE_ENV='test' build_server "$@" ;;
 
   build-dev)
-    NODE_ENV='development' build_server "$@" ;;
+    SHOULD_INIT_DEV_SERVER="${shouldInitDevServer}" NODE_ENV='development' build_server "$@" ;;
 
   prod)
     NODE_ENV='production' node server.bundle.js ;;

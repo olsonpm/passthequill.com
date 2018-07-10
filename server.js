@@ -55,6 +55,7 @@ const { localHostIp, webpackHotClientPort } = debugConfig
 const distDir = path.resolve(__dirname, 'dist'),
   highlight = chalk.green,
   isDevelopment = process.env.NODE_ENV === 'development',
+  shouldInitDevServer = process.env.SHOULD_INIT_DEV_SERVER,
   templatePath = path.resolve(__dirname, 'index.template.html'),
   faviconPath = path.resolve(__dirname, 'assets/images/favicon'),
   webpackConfigs = {
@@ -81,12 +82,15 @@ maybeInitDevDatabase()
   )
   .then(contents => {
     const koaApp = createInitialKoaApp(contents)
-    return isDevelopment ? initDevServer(koaApp) : initNonDevServer(koaApp)
+
+    return isDevelopment && shouldInitDevServer
+      ? initDevServer(koaApp)
+      : initNonDevServer(koaApp)
   })
   .then(({ getRenderer, koaApp }) => {
     const router = createRouter(getRenderer)
 
-    if (!isDevelopment) {
+    if (!isDevelopment || !shouldInitDevServer) {
       if (persistentStaticDir) {
         koaApp.use(koaStatic(persistentStaticDir, { hidden: true }))
       }
@@ -146,18 +150,19 @@ function initNonDevServer(koaApp) {
     readFile(templatePath),
   ]).then(([ssrClientManifest, ssrServerBundle, template]) => {
     const bundleRenderer = createBundleRenderer(JSON.parse(ssrServerBundle), {
-      clientManifest: JSON.parse(ssrClientManifest),
-      template,
-      cache: createLruCache({
-        max: 1000,
-        maxAge: 1000 * 60 * 15,
-      }),
       //
       // doesn't matter whether we use client or ssr output paths as they
       //   should be the same
       //
       basedir: webpackConfigs.client.output.path,
+      cache: createLruCache({
+        max: 1000,
+        maxAge: 1000 * 60 * 15,
+      }),
+      clientManifest: JSON.parse(ssrClientManifest),
+      directives: directives.ssr,
       runInNewContext: false,
+      template,
     })
 
     return {
