@@ -114,6 +114,9 @@ maybeInitDevDatabase()
 function createInitialKoaApp(faviconContents) {
   const koaApp = new Koa()
 
+  // ensures request.ip is correct
+  koaApp.proxy = true
+
   koaApp.use(koaCompress()).use((ctx, next) => {
     if (ctx.url === '/favicon.ico') {
       ctx.body = faviconContents.ico
