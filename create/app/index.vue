@@ -13,8 +13,7 @@
 
     <header>
       <div class="site-container">
-        <h1>Pass The Quill</h1>
-        <quill />
+        <logo />
         <nav ref="navEl">
           <router-link to="/" class="link-to">
             Home

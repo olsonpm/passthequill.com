@@ -14,6 +14,7 @@ import helpCircle from './help-circle'
 import helpWithUnexpectedError from './help-with-unexpected-error'
 import linkTo from './link-to'
 import loadingCheck from './loading-check'
+import logo from './logo'
 import moreInfo from './more-info'
 import myButton from './my-button'
 import myCheckbox from './my-checkbox'
@@ -24,7 +25,6 @@ import notifyError from './notify-error'
 import octicon from './octicon'
 import pageMarker from './page-marker'
 import party from './party'
-import quill from './quill'
 import simpleButton from './simple-button'
 import smallQuill from './small-quill'
 import smile from './smile'
@@ -49,6 +49,7 @@ export default {
   helpWithUnexpectedError,
   linkTo,
   loadingCheck,
+  logo,
   moreInfo,
   myButton,
   myCheckbox,
@@ -59,7 +60,6 @@ export default {
   octicon,
   pageMarker,
   party,
-  quill,
   simpleButton,
   smallQuill,
   smile,

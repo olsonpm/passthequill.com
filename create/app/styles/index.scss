@@ -173,20 +173,11 @@ header {
     margin-left: 20px;
   }
 
-  h1,
-  .quill {
+  .logo {
     @include res-aware-element-spacing('margin-bottom', 'lg');
+    @include per-screen-size('width', 280, 320, 360, 400, 'px');
 
-    display: inline-block;
-    vertical-align: middle;
-  }
-
-  .quill {
-    @include res-aware-element-spacing('margin-left', 'md');
-    @include per-screen-size('height', 60, 70, 75, 80, 'px');
-
-    fill: $quill-blue;
-    margin-top: 0;
+    display: block;
   }
 }
 
