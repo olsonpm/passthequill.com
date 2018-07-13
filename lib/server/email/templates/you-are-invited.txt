@@ -15,4 +15,4 @@ Unsubscribe from all emails
 {{ global.externalBaseUrl }}/email/unsubscribe/all/{{ emailSentHash }}
 
 Manage your subscriptions
-{{ global.externalBaseUrl }}/email/unsubscribed/{{ emailSentHash }}
+{{ global.externalBaseUrl }}/email/unsubscriptions/{{ emailSentHash }}

@@ -10,7 +10,9 @@ import unsubscribeViaEmailSentHash from './via-email-sent-hash'
 import { validEmailTypes } from 'universal/email/types'
 import { handleErrorDuringRoute } from 'project-root/create/router/api/helpers'
 import { createIfRequestIsValid } from 'server/utils'
+import { hashToDocid } from 'server/db'
 import { join, passThrough } from 'fes'
+import { logErrorToServer } from 'universal/utils'
 
 //
 //------//
@@ -43,7 +45,6 @@ const createUnsubscribeRouter = () =>
 //
 function createGetRoute(unsubscribeRouter) {
   return unsubscribeRouter.get(
-    'list-unsubscribe',
     `/:emailType(${listOfApplicableTypes})/:emailSentHash`,
     ctx => {
       const { emailSentHash, emailType } = ctx.params,
@@ -70,6 +71,24 @@ function createPostRoute(unsubscribeRouter) {
       const { emailSentHash } = ctx.params,
         { type } = ctx.request.body,
         errorArgs = [type, emailSentHash]
+
+      //
+      // TODO: remove this code once the bug is solved - this check should
+      //   be unnecessary
+      //
+      try {
+        hashToDocid(emailSentHash)
+      } catch (error) {
+        ctx.status = 400
+        ctx.body = {
+          error: `Invalid emailSentHash was passed: ${emailSentHash}`,
+        }
+        logErrorToServer({
+          error,
+          context: 'during POST api/email/unsubscribe',
+        })
+        return
+      }
 
       return unsubscribeViaEmailSentHash(emailSentHash, type)
         .then(result => {

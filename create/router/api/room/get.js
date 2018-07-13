@@ -9,6 +9,7 @@ import { handleErrorDuringRoute } from 'project-root/create/router/api/helpers'
 import { ifResponseIsNot404, ifStatusIsNot404 } from 'server/utils'
 import { transformProperties } from 'fes'
 import { getCurrentAndOtherPlayerData, sanitize } from './helpers'
+import { logErrorToServer } from 'universal/utils'
 
 //
 //------//
@@ -41,6 +42,7 @@ function getRoom(ctx) {
     ctx.body = {
       error: "the query parameter 'player-hash' is required",
     }
+    return
   }
 
   const errorArgs = [playerHash, roomHash],
@@ -49,8 +51,27 @@ function getRoom(ctx) {
       playerHash
     )
 
+  //
+  // TODO: once bug is solved then remove this check.  It should be unnecessary
+  //
+  let _id
+
+  try {
+    _id = hashToDocid(roomHash)
+  } catch (error) {
+    ctx.status = 400
+    ctx.body = {
+      error: `Invalid roomHash was passed: ${roomHash}`,
+    }
+    logErrorToServer({
+      error,
+      context: 'during GET api/room',
+    })
+    return
+  }
+
   return dal.activeRoom
-    .get({ _id: hashToDocid(roomHash) }, optionsForGet)
+    .get({ _id }, optionsForGet)
     .then(ifResponseIsNot404(ctx, authorizeThenGetPlayerData))
     .then(ifStatusIsNot404(sanitizeAndReturnAllData))
     .catch(handleErrorDuringRoute(ctx, createErrorMessage, errorArgs))
