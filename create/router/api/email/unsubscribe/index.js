@@ -44,20 +44,25 @@ const createUnsubscribeRouter = () =>
 // these non-restful route is for the List-Unsubscribe header
 //
 function createGetRoute(unsubscribeRouter) {
-  return unsubscribeRouter.post(
-    `/:emailType(${listOfApplicableTypes})/:emailSentHash`,
-    ctx => {
-      const { emailSentHash, emailType } = ctx.params,
-        errorArgs = [emailType, emailSentHash]
+  const nonRestfulUrl = `/:emailType(${listOfApplicableTypes})/:emailSentHash`
 
-      return unsubscribeViaEmailSentHash(emailSentHash, emailType)
-        .then(result => {
-          ctx.status = 200
-          ctx.body = result
-        })
-        .catch(handleErrorDuringRoute(ctx, createErrorMessage.get, errorArgs))
-    }
-  )
+  unsubscribeRouter.post(nonRestfulUrl, ctx => {
+    const { emailSentHash, emailType } = ctx.params,
+      errorArgs = [emailType, emailSentHash]
+
+    return unsubscribeViaEmailSentHash(emailSentHash, emailType)
+      .then(result => {
+        ctx.status = 200
+        ctx.body = result
+      })
+      .catch(
+        handleErrorDuringRoute(
+          ctx,
+          createErrorMessage.nonRestful.post,
+          errorArgs
+        )
+      )
+  })
 }
 
 //
@@ -104,14 +109,16 @@ function getCreateErrorMessage() {
   const friendly = 'attempting to update your unsubscribe settings'
 
   return {
-    get: (type, emailSentHash) => ({
-      friendly,
-      detailed: dedent(`
-        error occurred during GET unsubscribe
-          hash: ${emailSentHash}
-          type: ${type}
-      `),
-    }),
+    nonRestful: {
+      post: (type, emailSentHash) => ({
+        friendly,
+        detailed: dedent(`
+          error occurred during non-restful POST unsubscribe
+            hash: ${emailSentHash}
+            type: ${type}
+        `),
+      }),
+    },
     post: (type, emailSentHash) => ({
       friendly,
       detailed: dedent(`

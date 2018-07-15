@@ -200,13 +200,12 @@ export default {
         const { $refs, state } = this
 
         return Promise.all([
-            animateHide(this.getRef('enterGuessComponent')),
-            animateHide($refs.statusComponent),
-          ])
-          .then(() => {
-            state.showEnterGuess = false
-            state.showPlaceholder = true
-          })
+          animateHide(this.getRef('enterGuessComponent')),
+          animateHide($refs.statusComponent),
+        ]).then(() => {
+          state.showEnterGuess = false
+          state.showPlaceholder = true
+        })
       },
       afterAddGuess() {
         const { $refs, isGameOver, state } = this
@@ -217,13 +216,10 @@ export default {
 
         state.showPlaceholder = false
 
-        return Promise.all([
-          this.showStatus(),
-          maybeShowGameOver,
-        ])
+        return Promise.all([this.showStatus(), maybeShowGameOver])
       },
       beforeRevealLetter() {
-        return (this.currentPlayerHasGuessed)
+        return this.currentPlayerHasGuessed
           ? undefined
           : animateHide(this.getRef('otherPlayerNoGuessesEl'))
       },
@@ -232,7 +228,7 @@ export default {
         beforeOtherPlayerInitialized() {
           return Promise.all([
             animateHide(this.$refs.statusComponent),
-            animateHide(this.getRef('otherPlayerDisplayNameEl'))
+            animateHide(this.getRef('otherPlayerDisplayNameEl')),
           ])
         },
         afterOtherPlayerInitialized() {
@@ -241,13 +237,15 @@ export default {
           state.showEnterGuess = currentPlayerMustGuess
 
           const maybeShowEnterGuess = state.showEnterGuess
-              ? this.$nextTick().then(() => animateShow(this.getRef('enterGuessComponent')))
-              : undefined
+            ? this.$nextTick().then(() =>
+                animateShow(this.getRef('enterGuessComponent'))
+              )
+            : undefined
 
           return Promise.all([
             this.showStatus(),
             animateShow(this.getRef('otherPlayerDisplayNameEl')),
-            maybeShowEnterGuess
+            maybeShowEnterGuess,
           ])
         },
         beforeOtherPlayerGuessed({ payload }) {
@@ -264,8 +262,8 @@ export default {
           const { $refs, currentPlayerMustGuess, isGameOver } = this
 
           const maybeShowGameOver = isGameOver
-              ? this.$nextTick().then(() => animateShow($refs.gameOverEl))
-              : undefined
+            ? this.$nextTick().then(() => animateShow($refs.gameOverEl))
+            : undefined
 
           const maybeShowEnterGuess = currentPlayerMustGuess
             ? this.revealEnterGuess()
@@ -366,10 +364,7 @@ export default {
       delete this.touchManager
     },
     getMaybeHideNoGuesses(payload) {
-      const {
-        currentPlayerHasGuessed,
-        otherPlayerHasGuessed
-      } = this
+      const { currentPlayerHasGuessed, otherPlayerHasGuessed } = this
 
       const mostRecentGuess = last(payload.otherPlayer.guesses),
         currentPlayerMustRevealLetter = mostRecentGuess.hasAnyMatchingLetters
@@ -378,16 +373,14 @@ export default {
         ? undefined
         : animateHide(this.getRef('currentPlayerNoGuessesEl'))
 
-      const otherPlayer = (
-        currentPlayerHasGuessed
-        || currentPlayerMustRevealLetter
-      )
-        ? undefined
-        : animateHide(this.getRef('otherPlayerNoGuessesEl'))
+      const otherPlayer =
+        currentPlayerHasGuessed || currentPlayerMustRevealLetter
+          ? undefined
+          : animateHide(this.getRef('otherPlayerNoGuessesEl'))
 
       return {
         currentPlayer,
-        otherPlayer
+        otherPlayer,
       }
     },
     getRef(name) {
@@ -418,9 +411,9 @@ export default {
     showStatus() {
       const statusComponent = this.$refs.statusComponent
 
-      return statusComponent.maybeDrawAttentionUntilUserInteracts().then(
-        () => animateShow(statusComponent)
-      )
+      return statusComponent
+        .maybeDrawAttentionUntilUserInteracts()
+        .then(() => animateShow(statusComponent))
     },
     sliiiideToTheLeft() {
       return this.slide(-1)
@@ -464,7 +457,7 @@ function getComputedProperties() {
       'currentPlayer',
       'otherPlayer',
       'room',
-      'statusIsPulsating'
+      'statusIsPulsating',
     ]),
     vuexRoomGetters = mapRoomGetters([
       'currentPlayerMustGuess',
@@ -508,9 +501,7 @@ function getLocalComputedProperties() {
     showNoGuessesYet() {
       const { currentPlayerMustRevealALetter, friendWon, isFriendsTurn } = this
 
-      return isFriendsTurn ||
-        currentPlayerMustRevealALetter ||
-        friendWon
+      return isFriendsTurn || currentPlayerMustRevealALetter || friendWon
     },
     showRightArrow() {
       return this.state.slidePosition < 1
@@ -528,6 +519,18 @@ function getLocalComputedProperties() {
 @include for-phones-and-down {
   #app.game {
     text-align: center;
+
+    > header .logo {
+      margin-left: auto;
+      margin-right: auto;
+
+      //
+      // due to the feather leaning to the right, the logo doesn't seem centered
+      //   without a manual offset.
+      //
+      position: relative;
+      right: -8px;
+    }
 
     > footer {
       margin-top: 0;

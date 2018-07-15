@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>Click 'Confirm' to unsubscribe from '{{ typeTitle }}' emails</h3>
+    <h3>Click 'Confirm' to unsubscribe from '{{ typeTitle }}'&nbsp;emails</h3>
 
     <my-button autofocus
       can-only-click-once

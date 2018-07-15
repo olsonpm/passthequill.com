@@ -174,8 +174,8 @@ header {
   }
 
   .logo {
-    @include res-aware-element-spacing('margin-bottom', 'lg');
-    @include per-screen-size('width', 280, 320, 360, 400, 'px');
+    @include per-screen-size('margin-bottom', 22, 26, 32, 36, 'px');
+    @include per-screen-size('width', 300, 340, 380, 420, 'px');
 
     display: block;
   }
