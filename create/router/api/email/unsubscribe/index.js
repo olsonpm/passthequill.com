@@ -46,7 +46,7 @@ const createUnsubscribeRouter = () =>
 function createGetRoute(unsubscribeRouter) {
   const nonRestfulUrl = `/:emailType(${listOfApplicableTypes})/:emailSentHash`
 
-  unsubscribeRouter.post(nonRestfulUrl, ctx => {
+  return unsubscribeRouter.post(nonRestfulUrl, ctx => {
     const { emailSentHash, emailType } = ctx.params,
       errorArgs = [emailType, emailSentHash]
 
