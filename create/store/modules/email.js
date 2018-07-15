@@ -35,9 +35,6 @@ const email = {
       commit('unsubscribeFrom', type)
       return api
         .post(`/email/unsubscribe/${emailSentHash}`, { type })
-        .then(({ result }) => {
-          commit('setUnsubscribeResult', { type, result })
-        })
         .catch(setShowNotFoundOrErrorView(commit))
     },
     resubscribe({ commit }, { emailSentHash, type }) {
@@ -60,9 +57,6 @@ const email = {
       const unsubscribed = reduce(allToTrue, {})(types)
       state.unsubscribedFrom = assignOver(initialUnsubscribedFrom)(unsubscribed)
     },
-    setUnsubscribeResult(state, { type, result }) {
-      state.unsubscribeResult[type] = result
-    },
     unsubscribeFrom(state, type) {
       state.unsubscribedFrom[type] = true
     },
@@ -84,21 +78,12 @@ function allToFalse(typeToStatus, type) {
 
 function getInitialState() {
   return {
-    unsubscribeResult: getInitialUnsubscribeResult(),
     unsubscribedFrom: getInitialUnsubscribedFrom(),
   }
 }
 
 function getInitialUnsubscribedFrom() {
   return reduce(allToFalse, {})(validEmailTypes.unsubscribe)
-}
-
-function getInitialUnsubscribeResult() {
-  return reduce(setToEmptyString, {})(validEmailTypes.unsubscribe)
-}
-
-function setToEmptyString(typeToInitialState, type) {
-  return mSet(type, '')(typeToInitialState)
 }
 
 //

@@ -50,6 +50,7 @@ export default {
   path: '/email/unsubscriptions/:emailSentHash',
 
   computed: getComputedProperties(),
+
   data() {
     return {
       state: {
@@ -57,6 +58,7 @@ export default {
       },
     }
   },
+
   asyncData({ route, store }) {
     return store.dispatch('email/getUnsubscriptions', { route })
   },

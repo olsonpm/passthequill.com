@@ -1,6 +1,7 @@
 <template>
   <button type="button"
     class="simple-button"
+    :autofocus="autofocus"
     :class="{ 'custom-focus': hasCustomStyledFocus }"
     @click.capture.stop.prevent="onClickWrapper"
     v-initial-classes="initialClasses"
@@ -33,10 +34,14 @@ export default {
   },
   data: () => ({
     state: {
-      clicked: false
+      clicked: false,
     },
   }),
   props: {
+    autofocus: {
+      type: Boolean,
+      default: false,
+    },
     canOnlyClickOnce: {
       type: Boolean,
       default: false,
@@ -46,7 +51,7 @@ export default {
       default: false,
     },
     initialClasses: {
-      default: () => ({})
+      default: () => ({}),
     },
     onClick: {},
     showInitially: {
@@ -63,7 +68,7 @@ export default {
         state.wasClicked = true
         this.onClick()
       }
-    }
+    },
   },
 }
 </script>
@@ -96,7 +101,6 @@ export default {
     //   a mouse.  This transition delay fixes a flash of focus styling before
     //   focus is removed upon a mouse click.
     transition-delay: 50ms;
-
   }
   &:not(.custom-focus):focus::before {
     bottom: 0;

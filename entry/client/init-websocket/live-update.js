@@ -59,31 +59,6 @@ const init = ({ eventManager, store, playerHash, roomHash }) => {
     )
   }
 
-  liveUpdatePws.onerror = event => {
-    logErrorToServer({
-      context: 'in liveUpdate WebSocket onerror event',
-      error: new Error(event),
-      ignoreStack: true,
-    })
-  }
-
-  liveUpdatePws.onclose = event => {
-    if (event.code !== normalClosure) {
-      const message = dedent(`
-        abby-normal websocket close event received
-
-        code: ${event.code}
-        reason: ${event.reason || '(unknown)'}
-      `)
-
-      logErrorToServer({
-        context: 'in liveUpdate WebSocket onclose event',
-        error: new Error(message),
-        ignoreStack: true,
-      })
-    }
-  }
-
   liveUpdatePws.onmessage = event => {
     if (event.data === 'pong') return
 

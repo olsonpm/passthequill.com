@@ -5,6 +5,7 @@
       the :active pseudoclass upon these buttons being pressed
     -->
     <button :type="type"
+      :autofocus="autofocus"
       :disabled="disabled"
       :class="{ active: isActive }"
       @click="onClickWrapper"
@@ -25,6 +26,10 @@ export default {
   name: 'my-button',
   props: {
     active: {},
+    autofocus: {
+      type: Boolean,
+      default: false,
+    },
     canOnlyClickOnce: {
       type: Boolean,
       default: false,
@@ -81,10 +86,12 @@ export default {
 
   > button {
     @include for-tablets-and-down {
-      padding: $button-vertical-padding-tablets-and-smaller $button-horizontal-padding-tablets-and-smaller;
+      padding: $button-vertical-padding-tablets-and-smaller
+        $button-horizontal-padding-tablets-and-smaller;
     }
     @include for-desktops {
-      padding: $button-vertical-padding-desktops $button-horizontal-padding-desktops;
+      padding: $button-vertical-padding-desktops
+        $button-horizontal-padding-desktops;
     }
 
     background-color: $green;
