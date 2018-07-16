@@ -18,7 +18,9 @@ import funGameNote from 'universal/fun-game-note'
 export default {
   name: 'init-player-info_word',
   computed: {
-    funGameNote() { return funGameNote }
+    funGameNote() {
+      return funGameNote
+    },
   },
 }
 </script>
@@ -33,36 +35,6 @@ export default {
   }
   p {
     @include res-aware-element-spacing('margin-top', 'xs');
-  }
-
-  .page-view {
-    overflow: hidden;
-    white-space: nowrap;
-
-    > li {
-      display: inline-block;
-      vertical-align: top;
-      white-space: normal;
-      width: 100%;
-    }
-  }
-
-  > .page-control {
-    @include res-aware-element-spacing('margin-top', 'md');
-
-    align-items: center;
-    display: flex;
-    height: 40px;
-    justify-content: space-between;
-
-    button.arrow-circle {
-      display: flex;
-    }
-
-    button.arrow-circle,
-    .page-marker {
-      display: inline-block;
-    }
   }
 }
 </style>

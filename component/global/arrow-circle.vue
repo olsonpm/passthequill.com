@@ -4,8 +4,8 @@
     :show-initially="showInitially">
 
     <svg viewBox="0 0 24 24"
-      width="24"
-      height="24"
+      width="27"
+      height="27"
       fill="none"
       stroke="currentColor"
       stroke-linecap="round"
@@ -44,7 +44,7 @@ export default {
     showInitially: {
       default: true,
     },
-  }
+  },
 }
 </script>
 
@@ -80,7 +80,7 @@ svg.arrow-circle {
   }
   to {
     opacity: 0;
-    transform: scale(1.7);
+    transform: scale(1.9);
   }
 }
 </style>

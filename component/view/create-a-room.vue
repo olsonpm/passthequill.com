@@ -89,8 +89,10 @@
 
       <h3>Success<party /></h3>
 
-      <p>The emails sent successfully</p>
-      <p>Join your game by clicking on the link in your&nbsp;email</p>
+      <p>The emails were sent to you and your friend</p>
+      <p>
+        You may each join the game by clicking on the link in your&nbsp;email
+      </p>
       <p>Good luck!</p>
 
       <more-info>
@@ -198,15 +200,15 @@ export default {
       if (state.showFailureLink) {
         state.success = null
         state.showFailureLink = false
-        return animateHide($refs.failureLinkComponent)
-          .then(() => this.onSubmit())
+        return animateHide($refs.failureLinkComponent).then(() =>
+          this.onSubmit()
+        )
       }
 
       if (!formObject.isValid()) {
-        return $myStore.dispatch(
-          'notifyError/tryToShow',
-          { html: '<p>Both emails are required</p>' }
-        )
+        return $myStore.dispatch('notifyError/tryToShow', {
+          html: '<p>Both emails are required</p>',
+        })
       } else {
         $myStore.dispatch('notifyError/tryToHide')
       }
@@ -241,7 +243,9 @@ export default {
             return waitMs(1300).then(() => {
               state.loading = false
               state.showSuccessInfo = true
-              return this.$nextTick().then(() => animateShow($refs.infoAfterSubmitEl))
+              return this.$nextTick().then(() =>
+                animateShow($refs.infoAfterSubmitEl)
+              )
             })
           }
 
@@ -251,8 +255,9 @@ export default {
             unsubscribedPlayers
           )
 
-          return animateHide($refs.loadingCheckComponent)
-            .then(() => this.maybeDisplayError())
+          return animateHide($refs.loadingCheckComponent).then(() =>
+            this.maybeDisplayError()
+          )
         })
         .catch(error => {
           const friendlyMessage =

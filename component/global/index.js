@@ -1,6 +1,5 @@
 import alert from './alert'
 import arrowCircle from './arrow-circle'
-import arrowRight from './arrow-right'
 import attentionCircle from './attention-circle'
 import cancel from './cancel'
 import check from './check'
@@ -35,7 +34,6 @@ import unexpectedError from './unexpected-error'
 export default {
   alert,
   arrowCircle,
-  arrowRight,
   attentionCircle,
   cancel,
   check,

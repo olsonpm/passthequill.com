@@ -14,7 +14,8 @@
           <my-text-input id="display-name"
             label="Your display name"
             info-component-name="init-player-info_display-name"
-            placeholder="e.g. Wonder Woman"
+            ref="displayNameComponent"
+            :placeholder="placeholder.displayName"
             :autofocus="true"
             :parentComponent="this"
             :readonly="state.showSuccessInfo" />
@@ -24,7 +25,8 @@
             autocomplete="off"
             label="Your secret word"
             info-component-name="init-player-info_word"
-            placeholder="e.g. super"
+            ref="secretWordComponent"
+            :placeholder="placeholder.secretWord"
             :parentComponent="this"
             :readonly="state.showSuccessInfo" />
         </li>
@@ -85,11 +87,17 @@
 //---------//
 
 import dedent from 'dedent'
-import validationInfo from 'universal/input-validation-info'
 import setOfValidWords from 'universal/set-of-valid-words'
+import validationInfo from 'universal/input-validation-info'
 import { createNamespacedHelpers } from 'vuex'
-import { logErrorToServer, settleAll, waitMs, wrapIn } from 'universal/utils'
 import { animateShow } from 'client/utils'
+import {
+  getRandomElementFrom,
+  logErrorToServer,
+  settleAll,
+  waitMs,
+  wrapIn,
+} from 'universal/utils'
 import {
   createComputedFormData,
   createFormData,
@@ -119,13 +127,17 @@ import {
 
 const inputIdToInitialState = validationInfo.initPlayer.body,
   statusToMessage = getStatusToMessage(),
-  { mapState } = createNamespacedHelpers('room'),
-  invalidDisplayNameMessage = 'display name must be 1 to 15 letters'
+  { mapState: mapRoomState } = createNamespacedHelpers('room'),
+  { mapState: mapInitPlayerState } = createNamespacedHelpers('initPlayer'),
+  invalidDisplayNameMessage = 'display name must be 1 to 15 letters',
+  exampleDisplayNameAndSecretWordPairs = getExampleDisplayNameAndSecretWordPairs()
 
+/*
 if (process.env.NODE_ENV === 'development') {
   inputIdToInitialState.displayName.initialValue = 'Superwoman'
   inputIdToInitialState.word.initialValue = 'humor'
 }
+*/
 
 //
 //------//
@@ -137,6 +149,10 @@ export default {
 
   beforeCreate() {
     this.formObject = createFormObject(inputIdToInitialState, this)
+  },
+
+  created() {
+    if (!this.placeholder.displayName) this.setPlaceholder()
   },
 
   props: ['transitionTo'],
@@ -167,7 +183,7 @@ export default {
           return animateShow($refs.justKiddingEl)
         },
       },
-    }
+    },
   },
 
   methods: {
@@ -183,17 +199,19 @@ export default {
     getErrorMessageHtml() {
       return passThrough(this.getClientErrorMessages(), [
         map(wrapIn('<p>', '</p>')),
-        join('')
+        join(''),
       ])
+    },
+    okClicked() {
+      this.transitionTo('game')
     },
     onSubmit() {
       const { $myStore, $refs, formData, formObject, state } = this
 
       if (!formObject.isValid()) {
-        return $myStore.dispatch(
-          'notifyError/tryToShow',
-          { html: this.getErrorMessageHtml() }
-        )
+        return $myStore.dispatch('notifyError/tryToShow', {
+          html: this.getErrorMessageHtml(),
+        })
       } else {
         $myStore.dispatch('notifyError/tryToHide')
       }
@@ -226,11 +244,18 @@ export default {
         })
         .then(() => animateShow($refs.infoAfterSubmitEl))
     },
+    setPlaceholder() {
+      const [displayName, secretWord] = getRandomElementFrom(
+        exampleDisplayNameAndSecretWordPairs
+      )
+
+      this.$store.commit('initPlayer/setPlaceholder', {
+        displayName: `e.g. ${displayName}`,
+        secretWord: `e.g. ${secretWord}`,
+      })
+    },
     setSubmitActive(trueOrFalse) {
       this.state.submitActive = trueOrFalse
-    },
-    okClicked() {
-      this.transitionTo('game')
     },
   },
 }
@@ -238,6 +263,24 @@ export default {
 //------------------//
 // Helper Functions //
 //------------------//
+
+function getExampleDisplayNameAndSecretWordPairs() {
+  return [
+    ['Austin Powers', 'swing'],
+    ['Backstreet Boy', 'group'],
+    ['Gordon Ramsay', 'shout'],
+    ['Hercules', 'bicep'],
+    ['Hulk Hogan', 'brawl'],
+    ['Jack Dawson', 'goner'],
+    ['Jason Voorhees', 'panic'],
+    ['Mario', 'peach'],
+    ['Michael Jordan', 'jumps'],
+    ['My Cat Max', 'meows'],
+    ['Paul Bunyan', 'giant'],
+    ['Tinkerbell', 'fairy'],
+    ['Wonder Woman', 'super'],
+  ]
+}
 
 function getLetterToLetterCount(currentWord) {
   return passThrough(currentWord, [
@@ -271,26 +314,25 @@ function getStatusToMessage() {
 }
 
 function getComputedProperties() {
-  const vuexState = mapState(['currentPlayer', 'otherPlayer', 'room']),
+  const vuexRoomState = mapRoomState(['currentPlayer', 'otherPlayer', 'room']),
+    vuexInitPlayerState = mapInitPlayerState(['placeholder']),
     formState = createComputedFormData(inputIdToInitialState),
-    customState = getCustomComputedProperties()
+    customState = getLocalComputedProperties()
 
-  return combineAll.objects([vuexState, formState, customState])
+  return combineAll.objects([
+    vuexRoomState,
+    vuexInitPlayerState,
+    formState,
+    customState,
+  ])
 }
 
-function getCustomComputedProperties() {
+function getLocalComputedProperties() {
   return {
-    successStatus() {
-      const { otherPlayer } = this
-
-      return !otherPlayer.hasWord || !otherPlayer.displayName
-        ? 'mustWaitForFriend'
-        : 'startGame'
-    },
     invalidWordMessage() {
       const currentWord = this.formData.inputs.word || ''
 
-      if (currentWord.length !== 5) return 'word must be 5 letters'
+      if (currentWord.length !== 5) return 'secret word must be 5 letters'
 
       const repeatingLetters = passThrough(currentWord, [
         getLetterToLetterCount,
@@ -313,8 +355,15 @@ function getCustomComputedProperties() {
 
       logErrorToServer({
         context: 'during invalidWordMessage()',
-        error: new Error(`currentWord seems to be valid: '${currentWord}'`)
+        error: new Error(`currentWord seems to be valid: '${currentWord}'`),
       })
+    },
+    successStatus() {
+      const { otherPlayer } = this
+
+      return !otherPlayer.hasWord || !otherPlayer.displayName
+        ? 'mustWaitForFriend'
+        : 'startGame'
     },
   }
 }
