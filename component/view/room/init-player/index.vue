@@ -268,6 +268,7 @@ function getExampleDisplayNameAndSecretWordPairs() {
   return [
     ['Austin Powers', 'swing'],
     ['Backstreet Boy', 'group'],
+    ['Dopey', 'dwarf'],
     ['Gordon Ramsay', 'shout'],
     ['Hercules', 'bicep'],
     ['Hulk Hogan', 'brawl'],
