@@ -40,7 +40,7 @@ function getLogIpRateLimiter() {
         `)
       )
     },
-    message: 'Too many rooms created from this IP',
+    message: 'Too many logs created from this IP',
   })
 }
 

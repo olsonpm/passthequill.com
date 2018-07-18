@@ -16,7 +16,7 @@ import globalComponents from 'project-root/component/global'
 import directives from 'universal/directives'
 
 import { noop } from 'universal/utils'
-import { authorEmail } from 'project-root/config/app'
+import { authorEmail, domain } from 'project-root/config/app'
 import { forEach, isEmpty, isLaden } from 'fes'
 
 //
@@ -73,10 +73,11 @@ function createAndInitVueRouter(store) {
     // Ideally there'd be a global 'leave' hook to mirror the per-component
     //   `beforeRouteLeave`.  `beforeEach` is the next best thing.
     //
-    // We need to set this in a global hook because every component may have an
-    //   error view
+    // We need to set this in a global hook because the error and notFound views
+    //   are global
     //
     if (store.state.showErrorView) store.commit('setShowErrorView', false)
+    if (store.state.showNotFoundView) store.commit('setShowNotFoundView', false)
     next()
   })
 
@@ -90,6 +91,7 @@ function register(aComponent) {
 function exposeGlobalProperties() {
   Vue.prototype.global = {
     authorEmail,
+    domain,
     isEmpty,
     isLaden,
     noop,

@@ -36,21 +36,10 @@
             </template>
             <template slot="details">
               <p>
-                Pass The Quill uses email for a couple&nbsp;things
-              </p>
-              <ul class="bulleted">
-                <li>
-                  Send both you and your friend a link to the game&nbsp;room
-                </li>
-                <li>
-                  Send a notification when it's your turn if you've
-                  been&nbsp;idle
-                </li>
-              </ul>
-              <p>
-                You can easily manage which emails Pass The Quill sends you via
-                the 'Manage your subscriptions' page.  A link to this page is
-                located at the bottom of every email&nbsp;sent.
+                I only need them to send both you and your friend a link to the
+                game room.  If you later decide you don't want to receive any
+                emails from {{ global.domain }} then you can easily unsubscribe
+                via the links at the bottom of every email&nbsp;sent.
               </p>
               <p>
                 If you have any questions related to how this site stores or
