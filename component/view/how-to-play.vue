@@ -34,13 +34,9 @@
       <dt>Secret Word</dt>
       <dd>
         <p>
-          A 5 letter word with no repeating characters found in
-          <link-to url="/list-of-valid-words">
-            this list
-          </link-to>.
-          For example, you could use "grape" but not "apple" because apple has
-          two p's.  Secret words and guesses in this game are
-          not&nbsp;case&#8209;sensitive.
+          A 5 letter word with no repeating characters.  For example, you could
+          use "grape" but not "apple" because apple has two p's.  Neither Secret
+          words nor guesses in this game are &nbsp;case&#8209;sensitive.
         </p>
         <p class="sidenote" v-html="funGameNote" />
       </dd>

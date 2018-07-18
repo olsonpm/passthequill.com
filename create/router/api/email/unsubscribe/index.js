@@ -2,8 +2,9 @@
 // Imports //
 //---------//
 
-import KoaRouter from 'koa-router'
+import cors from '@koa/cors'
 import dedent from 'dedent'
+import KoaRouter from 'koa-router'
 
 import unsubscribeViaEmailSentHash from './via-email-sent-hash'
 
@@ -33,7 +34,7 @@ const createErrorMessage = getCreateErrorMessage(),
 //------//
 
 const createUnsubscribeRouter = () =>
-  passThrough(new KoaRouter(), [createGetRoute, createPostRoute])
+  passThrough(new KoaRouter(), [createListUnsubscribeRoute, createPostRoute])
 
 //
 //------------------//
@@ -43,10 +44,10 @@ const createUnsubscribeRouter = () =>
 //
 // these non-restful route is for the List-Unsubscribe header
 //
-function createGetRoute(unsubscribeRouter) {
+function createListUnsubscribeRoute(unsubscribeRouter) {
   const nonRestfulUrl = `/:emailType(${listOfApplicableTypes})/:emailSentHash`
 
-  return unsubscribeRouter.post(nonRestfulUrl, ctx => {
+  return unsubscribeRouter.post(nonRestfulUrl, cors(), ctx => {
     const { emailSentHash, emailType } = ctx.params,
       errorArgs = [emailType, emailSentHash]
 
