@@ -15,6 +15,7 @@
 import api from 'server/api/couchdb'
 
 import bothPlayersInitialized from './both-players-initialized'
+import lotOfGuesses from './lot-of-guesses'
 import onlyPlayer1IsInitialized from './only-player1-is-initialized'
 import onlyPlayer2IsInitialized from './only-player2-is-initialized'
 import player1MustGuessNoMatch from './player1-must-guess-no-match'
@@ -70,6 +71,7 @@ function logHeader(header) {
 function getFixtures() {
   return {
     bothPlayersInitialized,
+    lotOfGuesses,
     onlyPlayer1IsInitialized,
     onlyPlayer2IsInitialized,
     player1MustGuessNoMatch,

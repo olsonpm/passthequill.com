@@ -24,3 +24,4 @@
 - player1-must-guess-no-match
 - player1-must-guess-with-match
 - player2-must-reveal-a-letter
+- lot-of-guesses

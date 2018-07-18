@@ -1,5 +1,5 @@
 <template>
-  <simple-button class="arrow-circle"
+  <simple-button :class="['arrow-circle', direction]"
     :on-click="onClick"
     :show-initially="showInitially">
 

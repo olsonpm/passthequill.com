@@ -321,7 +321,7 @@ function getInteractionEvents() {
 <style lang="scss">
 h5.status {
   @include per-screen-size(('height', 'line-height'), 30, 30, 30, 30, 'px');
-  @include per-screen-size('margin-top', 30, 36, 42, 48, 'px');
+  @include per-screen-size('margin-top', 5, 5, 42, 48, 'px');
   @include for-tablets-and-up {
     width: $column-width * 2;
   }

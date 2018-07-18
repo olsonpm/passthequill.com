@@ -35,10 +35,7 @@ function getGuessAWordContent() {
     <p>
       Unlike your secret word, your guess can be less than 5 letters and may
       also have repeating letters.  For example "apple", "pear" and "a" are
-      all valid.  Finally, guesses must be in this
-      <a href="/list-of-valid-words" class="link-to" target="_blank">
-        list of valid words
-      </a>.
+      all valid.
     </p>
   `)
 }

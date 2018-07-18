@@ -169,6 +169,8 @@ p {
 }
 
 header {
+  overflow: hidden;
+
   a + a {
     margin-left: 20px;
   }

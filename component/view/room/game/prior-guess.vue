@@ -343,7 +343,6 @@ function maybeClearOpacity(ref) {
 <style lang="scss">
 // TODO: figure out a better color scheme.  Local (unshared) colors feel dirty.
 $choose-letter-focus: #ff8d00;
-$matched-letter-color: #dcdcdc;
 
 //
 // TODO: decide whether it's better to only declare a class on the container,
@@ -388,7 +387,7 @@ $matched-letter-color: #dcdcdc;
             'px'
           );
 
-          background-color: $matched-letter-color;
+          background-color: $light-gray;
           border-radius: 200px;
           display: inline-block;
           text-align: center;

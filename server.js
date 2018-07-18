@@ -62,7 +62,7 @@ const distDir = path.resolve(__dirname, 'dist'),
     client: _client,
     ssr: _ssr,
   },
-  fixtureNameCamel = 'roomExists',
+  fixtureNameCamel = 'lotOfGuesses',
   installFixture = () => fixtureNameToInstall[fixtureNameCamel]()
 
 logUnhandledRejections()

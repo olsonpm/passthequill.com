@@ -132,12 +132,10 @@ const inputIdToInitialState = validationInfo.initPlayer.body,
   invalidDisplayNameMessage = 'display name must be 1 to 15 letters',
   exampleDisplayNameAndSecretWordPairs = getExampleDisplayNameAndSecretWordPairs()
 
-/*
 if (process.env.NODE_ENV === 'development') {
   inputIdToInitialState.displayName.initialValue = 'Superwoman'
   inputIdToInitialState.word.initialValue = 'humor'
 }
-*/
 
 //
 //------//

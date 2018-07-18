@@ -1,10 +1,10 @@
 <template>
   <div :class="{ 'game-over': isGameOver }">
-    <status ref="statusComponent"
-      data-animate="{ duration: { opacity: 'slow' } }" />
-
     <div v-if="isTabletOrLarger"
       class="board tablets-and-larger">
+
+      <status ref="tabletsAndLarger_statusComponent"
+        data-animate="{ duration: { opacity: 'slow' } }" />
 
       <div class="column current-player">
         <h3>{{ currentPlayer.displayName }}</h3>
@@ -66,25 +66,46 @@
     <div v-if="isPhoneOrSmaller"
       class="board phones-and-smaller">
 
-      <arrow-circle direction="left"
-        ref="leftArrowComponent"
-        data-animate="{ duration: { opacity: 'fast' } }"
-        :pulsate="currentPlayerMustRevealALetter && !statusIsPulsating"
-        :onClick="sliiiideToTheLeft"
-        :show-initially="showLeftArrow" />
+      <div class="sticky-header"
+        ref="stickyHeaderEl">
 
-      <arrow-circle direction="right"
-        ref="rightArrowComponent"
-        data-animate="{ duration: { opacity: 'fast' } }"
-        :pulsate="currentPlayerMustGuess && !statusIsPulsating"
-        :onClick="sliiiideToTheRight"
-        :show-initially="showRightArrow" />
+        <status ref="tabletsAndLarger_statusComponent"
+          data-animate="{ duration: { opacity: 'slow' } }" />
+
+        <div class="wrapper">
+          <arrow-circle direction="left"
+            ref="leftArrowComponent"
+            data-animate="{ duration: { opacity: 'fast' } }"
+            :pulsate="currentPlayerMustRevealALetter && !statusIsPulsating"
+            :onClick="sliiiideToTheLeft"
+            :show-initially="showLeftArrow" />
+
+          <div class="display-names"
+            ref="displayNamesEl">
+
+            <h4 ref="phonesAndSmaller_otherPlayerDisplayNameEl"
+              data-animate="{ duration: { opacity: 'slow' } }"
+              :class="{ tbd: !otherPlayer.displayName }">
+
+              {{ otherPlayer.displayName || '&lt;not entered yet&gt;' }}
+            </h4>
+
+            <h4>{{ currentPlayer.displayName }}</h4>
+          </div>
+
+          <arrow-circle direction="right"
+            ref="rightArrowComponent"
+            data-animate="{ duration: { opacity: 'fast' } }"
+            :pulsate="currentPlayerMustGuess && !statusIsPulsating"
+            :onClick="sliiiideToTheRight"
+            :show-initially="showRightArrow" />
+        </div>
+      </div>
 
       <ul class="player-view"
-        ref="phonesAndSmaller_playerViewEl">
+        ref="playerViewEl">
 
         <li>
-          <h4>{{ currentPlayer.displayName }}</h4>
           <ul class="prior-guesses">
             <template v-if="otherPlayerHasGuessed">
               <prior-guess v-for="(theGuess, index) in otherPlayer.guesses"
@@ -105,14 +126,7 @@
             </li>
           </ul>
         </li>
-
         <li>
-          <h4 ref="phonesAndSmaller_otherPlayerDisplayNameEl"
-            data-animate="{ duration: { opacity: 'slow' } }"
-            :class="{ tbd: !otherPlayer.displayName }">
-
-            {{ otherPlayer.displayName || '&lt;not entered yet&gt;' }}
-          </h4>
           <ul class="prior-guesses">
             <template v-if="currentPlayerHasGuessed">
               <prior-guess v-for="(theGuess, index) in currentPlayer.guesses"
@@ -197,11 +211,11 @@ export default {
   subscribeTo: {
     room: {
       beforeAddGuess() {
-        const { $refs, state } = this
+        const { state } = this
 
         return Promise.all([
           animateHide(this.getRef('enterGuessComponent')),
-          animateHide($refs.statusComponent),
+          animateHide(this.getRef('statusComponent')),
         ]).then(() => {
           state.showEnterGuess = false
           state.showPlaceholder = true
@@ -227,7 +241,7 @@ export default {
       liveUpdate: {
         beforeOtherPlayerInitialized() {
           return Promise.all([
-            animateHide(this.$refs.statusComponent),
+            animateHide(this.getRef('statusComponent')),
             animateHide(this.getRef('otherPlayerDisplayNameEl')),
           ])
         },
@@ -249,11 +263,10 @@ export default {
           ])
         },
         beforeOtherPlayerGuessed({ payload }) {
-          const { $refs } = this,
-            maybeHideNoGuesses = this.getMaybeHideNoGuesses(payload)
+          const maybeHideNoGuesses = this.getMaybeHideNoGuesses(payload)
 
           return Promise.all([
-            animateHide($refs.statusComponent),
+            animateHide(this.getRef('statusComponent')),
             maybeHideNoGuesses.currentPlayer,
             maybeHideNoGuesses.otherPlayer,
           ])
@@ -306,14 +319,21 @@ export default {
     },
   },
 
+  beforeDestroy() {
+    window.removeEventListener('scroll', this.maybeToggleStuck)
+  },
+
   mounted() {
     //
-    // because the swipe functionality is mobile-specific, we need to wait until
-    //   the app has rendered before initializing the events.  At this point
-    //   the vuex 'screenSize' store should have been initialized
+    // because the swipe functionality and sticky-header are mobile-specific, we
+    //   need to wait until the app has rendered before initializing the events.
+    //   At this point the vuex 'screenSize' store should have been initialized.
     //
     this.$nextTick(() => {
-      if (this.isPhoneOrSmaller) this.createTouchManager()
+      if (this.isPhoneOrSmaller) {
+        this.createTouchManager()
+        this.initStickyHeader()
+      }
     })
   },
 
@@ -341,13 +361,15 @@ export default {
         //   player in the mobile view.  We need a one column layout for mobile,
         //   and a carousel-like ux is what I landed on.
         slidePosition: 0,
+
+        stickyHeaderIsStuck: false,
       },
     }
   },
 
   methods: {
     createTouchManager() {
-      const playerViewEl = this.getRef('playerViewEl'),
+      const { playerViewEl } = this.$refs,
         { DIRECTION_HORIZONTAL: direction } = hammerjs,
         { Swipe, Manager } = bindAll(['Swipe', 'Manager'], hammerjs)
 
@@ -390,6 +412,25 @@ export default {
 
       return this.$refs[prefix + name]
     },
+    initStickyHeader() {
+      this.maybeToggleStuck()
+      window.addEventListener('scroll', this.maybeToggleStuck)
+    },
+    maybeToggleStuck() {
+      const { $refs, state } = this,
+        { stickyHeaderEl } = $refs,
+        { stickyHeaderIsStuck } = state,
+        offset = window.pageYOffset,
+        distance = stickyHeaderEl.offsetTop - offset
+
+      if (!stickyHeaderIsStuck && distance === 0) {
+        stickyHeaderEl.classList.add('stuck')
+        state.stickyHeaderIsStuck = true;
+      } else if (stickyHeaderIsStuck && distance > 0) {
+        stickyHeaderEl.classList.remove('stuck')
+        state.stickyHeaderIsStuck = false;
+      }
+    },
     onSwipe({ type }) {
       const { slidePosition } = this.state
       if (type === 'swipeleft' && slidePosition < 1) {
@@ -409,13 +450,14 @@ export default {
       })
     },
     showStatus() {
-      const statusComponent = this.$refs.statusComponent
+      const statusComponent = this.getRefs('statusComponent')
 
       return statusComponent
         .maybeDrawAttentionUntilUserInteracts()
         .then(() => animateShow(statusComponent))
     },
     sliiiideToTheLeft() {
+      console.log('sliiiideToTheLeft')
       return this.slide(-1)
     },
     sliiiideToTheRight() {
@@ -427,19 +469,23 @@ export default {
       if (state.isSliding) return
       else state.isSliding = true
 
-      const playerViewEl = this.getRef('playerViewEl'),
+      const { displayNamesEl, playerViewEl } = this.$refs,
         index = state.slidePosition,
         to = (index + positionMoved) * 100,
         from = index * 100,
-        fromNode = playerViewEl.childNodes[index],
-        toNode = playerViewEl.childNodes[index + positionMoved],
+        fromDisplayName = displayNamesEl.childNodes[index],
+        toDisplayName = displayNamesEl.childNodes[index + positionMoved],
+        fromGuessList = playerViewEl.childNodes[index],
+        toGuessList = playerViewEl.childNodes[index + positionMoved],
         transform = [`translateX(-${to}%)`, `translateX(-${from}%)`]
 
       state.slidePosition += positionMoved
 
       return Promise.all([
-        animate(fromNode, { opacity: [0, 1], transform }),
-        animate(toNode, { opacity: [1, 0], transform }),
+        animate(fromDisplayName, { opacity: [0, 1], transform }),
+        animate(toDisplayName, { opacity: [1, 0], transform }),
+        animate(fromGuessList, { opacity: [0, 1], transform }),
+        animate(toGuessList, { opacity: [1, 0], transform }),
       ]).then(() => {
         state.isSliding = false
       })
@@ -520,16 +566,28 @@ function getLocalComputedProperties() {
   #app.game {
     text-align: center;
 
-    > header .logo {
-      margin-left: auto;
-      margin-right: auto;
+    > header {
+      @include res-aware-element-spacing('margin-bottom', 'md');
 
-      //
-      // due to the feather leaning to the right, the logo doesn't seem centered
-      //   without a manual offset.
-      //
-      position: relative;
-      right: -8px;
+      .logo {
+        margin-left: auto;
+        margin-right: auto;
+
+        //
+        // due to the feather leaning to the right, the logo doesn't seem centered
+        //   without a manual offset.
+        //
+        position: relative;
+        right: -8px;
+      }
+    }
+
+    > main {
+      > .site-container {
+        max-width: unset;
+        padding-left: 0;
+        padding-right: 0;
+      }
     }
 
     > footer {
@@ -554,14 +612,16 @@ function getLocalComputedProperties() {
   }
 
   @include for-tablets-and-up {
+    > .board > .column {
+      @include res-aware-element-spacing('margin-top', 'md');
+    }
+
     > .game-over {
       max-width: $column-width * 2;
     }
   }
 
   > .board {
-    @include res-aware-element-spacing('margin-top', 'md');
-
     > .column {
       @include res-aware-element-spacing('padding-bottom', 'xl');
 
@@ -603,20 +663,65 @@ function getLocalComputedProperties() {
 
     &.phones-and-smaller {
       display: flex;
+      flex-direction: column;
       flex-grow: 1;
-      position: relative;
       text-align: center;
 
-      button.arrow-circle {
-        position: absolute;
-        top: 4px;
+      > .sticky-header {
+        @include res-aware-element-spacing('padding-bottom', 'md');
+        @include res-aware-element-spacing('padding-top', 'xs');
+
+        align-self: start;
+        background-color: $bg;
+        box-shadow: 0 0 0 transparent;
+        position: sticky;
+        top: 0;
+        transition: box-shadow $duration-short $easing-default;
+        width: 100%;
         z-index: 2;
 
-        &:first-child {
-          left: 0;
+        &.stuck {
+          @include shadow-small;
         }
-        &:nth-child(2) {
-          right: 0;
+
+        > .status {
+          display: block;
+        }
+
+        > .wrapper {
+          max-width: $phone-min;
+          margin-left: auto;
+          margin-right: auto;
+          position: relative;
+        }
+
+        .display-names {
+          @include res-aware-element-spacing('margin-top', 'sm');
+
+          display: block;
+          overflow: hidden;
+          white-space: nowrap;
+          z-index: 0;
+
+          > h4 {
+            display: inline-block;
+            font-size: 22px;
+            margin-top: 0;
+            width: 100%;
+          }
+        }
+
+        button.arrow-circle {
+          bottom: 0;
+          position: absolute;
+          z-index: 1;
+
+          &.left {
+            @include res-aware-element-spacing('left', 'lg');
+          }
+          &.right {
+            @include res-aware-element-spacing('right', 'lg');
+          }
         }
       }
 
@@ -632,27 +737,18 @@ function getLocalComputedProperties() {
           vertical-align: top;
           width: 100%;
 
-          > h4 {
-            margin-top: 0;
-            font-size: 22px;
-          }
+          > ul > li {
+            &:not(.enter-guess) {
+              @include per-screen-size(
+                ('height', 'line-height'),
+                56,
+                56,
+                56,
+                56,
+                'px'
+              );
 
-          > ul {
-            @include res-aware-element-spacing('margin-top', 'xs');
-
-            > li {
-              &:not(.enter-guess) {
-                @include per-screen-size(
-                  ('height', 'line-height'),
-                  56,
-                  56,
-                  56,
-                  56,
-                  'px'
-                );
-
-                vertical-align: top;
-              }
+              vertical-align: top;
             }
           }
         }
