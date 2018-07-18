@@ -1,5 +1,11 @@
 <template>
-  <li class="enter-guess">
+  <li class="enter-guess"
+    :style="{ display }"
+    data-animate="{
+      duration: { opacity: 'slow' },
+      afterHide: 'makeInvisible',
+    }">
+
     <my-form class="guess-form"
       :form-object="formObject"
       :on-submit="onSubmit"
@@ -38,7 +44,7 @@ import {
 // Init //
 //------//
 
-const inputIdToInitialState = validationInfo.guess.body,
+const inputIdToInitialState = validationInfo.guess,
   { mapState } = createNamespacedHelpers('room')
 
 if (process.env.NODE_ENV === 'development') {
@@ -56,6 +62,8 @@ export default {
   beforeCreate() {
     this.formObject = createFormObject(inputIdToInitialState, this)
   },
+
+  props: ['display'],
 
   computed: getComputedProperties(),
 
@@ -87,15 +95,13 @@ export default {
 
         if (!isBetweenInclusive(1, 5)(currentGuess.length)) {
           errorMessage = 'Your guess must be 1 - 5 letters'
-        }
-        else if (!setOfValidWords.has(currentGuess)) {
+        } else if (!setOfValidWords.has(currentGuess)) {
           errorMessage = 'That word is not in my dictionary'
         }
 
-        return $myStore.dispatch(
-          'notifyError/tryToShow',
-          { html: `<p>${errorMessage}</p>` }
-        )
+        return $myStore.dispatch('notifyError/tryToShow', {
+          html: `<p>${errorMessage}</p>`,
+        })
       } else {
         $myStore.dispatch('notifyError/tryToHide')
       }

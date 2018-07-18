@@ -1,5 +1,7 @@
 <template>
-  <div class="my-button" :class="[type, { disabled }]">
+  <div class="my-button"
+    :class="[type, { disabled }]">
+
     <!--
       The enter and space handling is a workaround due to firefox not triggering
       the :active pseudoclass upon these buttons being pressed
@@ -7,7 +9,11 @@
     <button :type="type"
       :autofocus="autofocus"
       :disabled="disabled"
-      :class="{ active: isActive }"
+      :class="{
+        active: isActive,
+        primary: !secondary,
+        secondary
+      }"
       @click="onClickWrapper"
       @keydown.space="setActive"
       @keydown.enter="setActive"
@@ -35,11 +41,13 @@ export default {
       default: false,
     },
     disabled: {},
+    onClick: { default: () => noop },
+    secondary: {
+      type: Boolean,
+      default: false,
+    },
     text: {},
     type: {},
-    onClick: {
-      default: () => noop,
-    },
   },
   data: () => ({
     state: {
@@ -94,10 +102,7 @@ export default {
         $button-horizontal-padding-desktops;
     }
 
-    background-color: $green;
-    border: 1px solid $green;
     border-radius: $radius-small;
-    color: $bg;
     font-weight: 500;
     //
     // I have no idea why I need to specify 1px instead of 0, but 0 definitely
@@ -109,13 +114,27 @@ export default {
     transition-timing-function: $easing-default;
     z-index: 1;
 
-    &:focus {
-      border-color: $green-focus-border;
+    &.primary {
+      background-color: $green;
+      border: 1px solid $green;
+      color: $bg;
+
+      &:focus {
+        border-color: $green-focus-border;
+      }
+    }
+    &.secondary {
+      background-color: $bg;
+      border: 1px solid $quill-blue;
+
+      &:focus {
+        border-color: $info-blue-focus;
+      }
     }
 
     &:disabled {
       background-color: $disabled-gray;
-      border-color: $disabled-gray-dark;
+      border-color: $disabled-gray-darkest;
       cursor: default;
     }
 

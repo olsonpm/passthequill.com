@@ -51,10 +51,6 @@ body {
   width: 100%;
 }
 
-header {
-  @include res-aware-element-spacing('margin-top', 'lg');
-}
-
 footer {
   @include per-screen-size(
     ('height', 'line-height', 'margin-top'),
@@ -117,6 +113,12 @@ footer {
   }
 }
 
+h3,
+h4,
+h5 {
+  @include res-aware-element-spacing('margin-top', 'lg');
+}
+
 h1,
 h2,
 h3,
@@ -169,6 +171,8 @@ p {
 }
 
 header {
+  @include res-aware-element-spacing(('margin-top', 'padding-bottom'), 'lg');
+
   overflow: hidden;
 
   a + a {
@@ -252,6 +256,10 @@ dl {
   > dd + dt {
     @include res-aware-element-spacing('margin-top', 'md');
   }
+}
+
+.removed {
+  display: none !important;
 }
 
 //

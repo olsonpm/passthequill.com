@@ -2,7 +2,7 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent'
+import tedent from 'tedent'
 
 import { RateLimit } from 'koa2-ratelimit'
 
@@ -33,7 +33,7 @@ function getCreateARoomIpRateLimiter() {
     keyGenerator: ctx => ctx.request.ip,
     onLimitReached: ctx => {
       log.http.concern(
-        dedent(`
+        tedent(`
           Max create-a-room rate limit reached for ip: ${ctx.request.ip}
             max: ${max}
             interval: ${jstring(interval)}
@@ -58,14 +58,14 @@ function getCreateARoomConstantRateLimiter() {
     keyGenerator: () => 'constant',
     onLimitReached: () => {
       log.http.concern(
-        dedent(`
+        tedent(`
           Max create-a-room constant rate limit reached
             max: ${max}
             interval: ${jstring(interval)}
         `)
       )
     },
-    message: dedent(`
+    message: tedent(`
       Unfortunately it seems this server is getting spammed with requests.
         Please understand that on the web it's difficult to prevent determined
         "bad guys".

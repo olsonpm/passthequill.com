@@ -2,7 +2,7 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent/macro'
+import tedent from 'tedent'
 
 import createApp from '../create/app'
 import log from 'server/log'
@@ -56,8 +56,8 @@ const initSsrApp = context => {
 
       return resolveAsyncData
         .catch(error => {
-          const leadingMessage = dedent(`
-            Error occurred while resolving async data
+          const leadingMessage = tedent(`
+            occurred while resolving async data
 
             Note: This means we're missing an error handler in an asyncData
                   function and that should be fixed.  If the client hit this

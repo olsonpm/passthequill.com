@@ -6,11 +6,11 @@
 #   a clean solution.  This new plugin will resolve our config/debug.js
 #   hack below.
 #
-
-#
-# can't use `npx` because it wants to swallow error output for some reason.  I
-#   didn't look too much into it though, meaning it could have something to do
-#   with webpack and esm or a combination of all.
+# TODO: add some safety measures for migration-scripts
+#   - figure out a way for the migration script to declare what migrations it
+#     will run so that when it runs it can confirm with the user.
+#   - enforce that each migration declares an assumption prior to running.
+#   - automatically back up all databases prior to running a migration.
 #
 
 command="${1}"
@@ -68,12 +68,20 @@ build_server() {
   fi
 }
 
+build_migration_script() {
+  if [ -f "./migration-scripts/index.js" ]; then
+    build "config/webpack/migration-script.js" "$@"
+  else
+    echo 'you need a ./migration-scripts/index.js file in order to do this' >&2
+  fi
+}
+
 usage() {
   echo './run <command> [args]' >&2
   echo '' >&2
   echo 'commands' >&2
-  echo '  build-(prod|test|dev)' >&2
-  echo '  (prod|test|dev)' >&2
+  echo '  build-(prod|test|dev|migration-script)' >&2
+  echo '  (prod|test|dev|migration-script)' >&2
   echo '  lint' >&2
   echo '  create-empty-debug-module' >&2
 }
@@ -88,6 +96,9 @@ case "${command}" in
   build-dev)
     SHOULD_INIT_DEV_SERVER="${shouldInitDevServer}" NODE_ENV='development' build_server "$@" ;;
 
+  build-migration-script)
+    NODE_ENV='production' build_migration_script "$@" ;;
+
   prod)
     NODE_ENV='production' node server.bundle.js ;;
 
@@ -96,6 +107,9 @@ case "${command}" in
 
   dev)
     NODE_ENV='development' node server.bundle.js ;;
+
+  migration-script)
+    node ./migration-scripts/index.bundle.js ;;
 
   create-empty-debug-module)
     echo 'export default {}' > "${debugFileName}"

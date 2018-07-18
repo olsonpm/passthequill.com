@@ -1,47 +1,35 @@
 <template>
-  <h5 class="status">
-    <clock ref="clockComponent"
+  <h5 class="status"
+    data-animate="{
+      duration: { opacity: 'slow' },
+      afterHide: 'makeInvisible',
+    }">
+
+    <clock v-if="showClock"
+      ref="clockComponent"
+      :style="{ display: state.clockDisplay }"
       :onClick="showStatusHelp"
-      :initialClasses="{ exists: showClock }"
       data-animate="{
         duration: {
           opacity: 'slow',
           size: 'fast',
         },
-        shouldAnimate: { width: true },
+        shouldAnimate: {
+          width: true,
+        },
       }" />
 
-    <simple-button ref="helpButton"
+    <simple-button v-if="shouldShowHelpButton"
       class="help"
-      :on-click="showStatusHelp"
-      :initialClasses="{ exists: shouldShowHelpButton }"
-      data-animate="{
-        duration: {
-          opacity: 'slow',
-          size: 'fast',
-        },
-        shouldAnimate: { width: true },
-      }" >
+      :on-click="showStatusHelp">
 
       <help-circle />
     </simple-button>
 
     <span class="message">
       {{ message }}
-      <attention-circle ref="attentionCircleComponent"
-        data-animate="{
-          duration: {
-            opacity: {
-              onShow: 'immediate',
-              onHide: 'slow',
-            },
-            size: {
-              onShow: 'immediate',
-              onHide: 'fast',
-            },
-          },
-          shouldAnimate: { width: true },
-        }" />
+
+      <attention-circle ref="attentionCircleComponent" />
     </span>
   </h5>
 </template>
@@ -51,52 +39,32 @@
 // Imports //
 //---------//
 
-import dedentMacro from 'dedent/macro'
-import statusHelpContent from './status-help-content'
+import tedent from 'tedent'
+import statusIdToHelpContent from './status-id-to-help-content'
 
 import { createNamespacedHelpers } from 'vuex'
-import { logErrorToServer } from 'universal/utils'
-import {
-  addClass,
-  animateHide,
-  animateShow,
-  removeClass,
-} from 'client/utils'
-import {
-  combineAll,
-  containedIn,
-  forEach,
-  getCount,
-  isLaden,
-  keepWhen,
-  last,
-  passThrough,
-  unique
-} from 'fes'
+import { findFirstValueWithTruthyKey, logErrorToServer } from 'universal/utils'
+import { animateHide, animateShow } from 'client/utils'
+import { statusToMessage } from '../helpers'
+import { combineAll, forEach, isLaden, keepAll, last } from 'fes'
 
 //
 //------//
 // Init //
 //------//
 
-const statusToMessage = getStatusToMessage(),
-  interactionEvents = getInteractionEvents(),
+const interactionEvents = getInteractionEvents(),
   { mapGetters, mapState } = createNamespacedHelpers('room'),
   validHelpContentStatuses = new Set([
     'myTurn',
     'theirTurn',
-    'waitForFriendToInit'
+    'waitForFriendToInit',
   ])
 
 //
 //------//
 // Main //
 //------//
-
-//
-// TODO: create meaningful group events e.g. beforeTurnGoesToOtherPlayer.  That
-//   will remove a lot of the copy/paste below.
-//
 
 export default {
   name: 'status',
@@ -105,34 +73,27 @@ export default {
 
   subscribeTo: {
     room: {
-      afterAddGuess() {
-        const { $refs, showClock } = this
-
-        removeClass('exists', $refs.helpButton)
-        if (showClock) addClass('exists', $refs.clockComponent)
-      },
-
       liveUpdate: {
+        //
+        // TODO: figure out a less stateful way to handle the appearing of the
+        //   clock component.
+        //
+        beforeOtherPlayerChoseLetter() {
+          this.state.clockDisplay = 'none'
+        },
         afterOtherPlayerChoseLetter() {
-          return animateShow(this.$refs.clockComponent)
+          this.state.clockDisplay = 'inline-block'
+          return animateShow(this.$refs.clockComponent.$el)
         },
-        afterOtherPlayerInitialized() {
-          const { $refs, isMyTurn } = this
-
-          if (isMyTurn) {
-            addClass('exists', $refs.helpButton)
-            removeClass('exists', $refs.clockComponent)
-          }
-        },
-        afterOtherPlayerGuessed() {
-          const { $refs, shouldShowHelpButton } = this
-
-          if (shouldShowHelpButton) addClass('exists', $refs.helpButton)
-          removeClass('exists', $refs.clockComponent)
-        },
-      }
-    }
+      },
+    },
   },
+
+  data: () => ({
+    state: {
+      clockDisplay: 'inline-block',
+    }
+  }),
 
   methods: {
     maybeDrawAttentionUntilUserInteracts() {
@@ -146,14 +107,14 @@ export default {
       const stopPulsating = () => {
         $store.commit('room/setStatusIsPulsating', false)
         animateHide($refs.attentionCircleComponent)
-        forEach(
-          eventName => window.removeEventListener(eventName, stopPulsating)
+        forEach(eventName =>
+          window.removeEventListener(eventName, stopPulsating)
         )(interactionEvents)
       }
 
-      forEach(
-        eventName => window.addEventListener(eventName, stopPulsating)
-      )(interactionEvents)
+      forEach(eventName => window.addEventListener(eventName, stopPulsating))(
+        interactionEvents
+      )
 
       return animateShow($refs.attentionCircleComponent)
     },
@@ -164,7 +125,7 @@ export default {
         content: helpContent,
         type: 'info',
       })
-    }
+    },
   },
 }
 
@@ -177,34 +138,24 @@ function getComputedProperties() {
   const vuexState = mapState([
       'currentPlayer',
       'otherPlayer',
-      'statusIsPulsating'
+      'statusIsPulsating',
     ]),
     vuexGetters = mapGetters([
+      'currentPlayerHasGuessed',
       'currentPlayerHasNotMatchedAnyletters',
       'currentPlayerMustGuess',
       'currentPlayerMustRevealALetter',
+      'currentPlayersLastGuess',
       'friendWon',
       'isFriendsTurn',
       'isGameActive',
       'isMyTurn',
       'iWon',
-      'otherPlayerHasJoined',
       'otherPlayerMustGuess',
-      'otherPlayerMustJoin',
     ]),
     localComputedState = getLocalComputedState()
 
   return combineAll.objects([vuexState, vuexGetters, localComputedState])
-}
-
-function getStatusToMessage() {
-  return {
-    friendWon: "Bummer. Your friend won",
-    iWon: "Congratulations. You won!",
-    myTurn: "It's your turn",
-    theirTurn: "It's your friend's turn",
-    waitForFriendToInit: 'Waiting for friend to join',
-  }
 }
 
 function getLocalComputedState() {
@@ -212,97 +163,82 @@ function getLocalComputedState() {
     helpContent() {
       const {
         currentPlayer,
-        currentPlayerHasNotMatchedAnyletters,
+        currentPlayerHasGuessed,
         currentPlayerMustGuess,
         currentPlayerMustRevealALetter,
+        currentPlayersLastGuess,
         otherPlayer,
         otherPlayerMustGuess,
-        otherPlayerMustJoin,
-        status
+        status,
       } = this
 
       if (!validHelpContentStatuses.has(status)) return
 
       const otherPlayerHasGuessed = isLaden(otherPlayer.guesses),
-        mySecretWord = currentPlayer.word
+        mySecretWord = currentPlayer.secretWord,
+        otherPlayerMustGuessNoMatch = otherPlayerMustGuess
+          && currentPlayerHasGuessed
+          && !currentPlayersLastGuess.hasAnyMatchingLetters
 
       let numberOfMatchingLetters = 0
 
       if (otherPlayerHasGuessed) {
         const lastGuess = last(otherPlayer.guesses).word
-        numberOfMatchingLetters = passThrough(lastGuess, [
-          keepWhen(containedIn(mySecretWord)),
-          unique,
-          getCount
-        ])
+        numberOfMatchingLetters = keepAll(lastGuess)(mySecretWord).length
       }
 
-      //
-      // TODO: Same issue as below.  Figure out a simpler way to write this
-      //   roudy bunch'o booleans
-      //
-      if (otherPlayerMustJoin) return statusHelpContent.otherPlayerMustJoin
-      else if (currentPlayerMustGuess) return statusHelpContent.guessAWord
-      else if (currentPlayerMustRevealALetter) {
-        return (numberOfMatchingLetters === 1)
-          ? statusHelpContent.revealOnlyLetter
-          : statusHelpContent.revealOneOfTheLetters
-      }
-      else if (otherPlayerMustGuess) {
-        let result = statusHelpContent.otherPlayerIsGuessing
-        if (currentPlayerHasNotMatchedAnyletters) result += statusHelpContent.matchingLetterHint
-        return result
-      } else {
-        const error = new Error(
-          dedentMacro(`
-            helpContent called during an unsupported state
+      const statusId = findFirstValueWithTruthyKey([
+        [!otherPlayer.hasEnteredGame, 'otherPlayerMustJoin'],
+        [currentPlayerMustGuess, 'guessAWord'],
+        [
+          currentPlayerMustRevealALetter && numberOfMatchingLetters === 1,
+          'revealOnlyLetter',
+        ],
+        [currentPlayerMustRevealALetter, 'revealOneOfTheLetters'],
+        [otherPlayerMustGuessNoMatch, 'otherPlayerIsGuessingNoMatch'],
+        [otherPlayerMustGuess, 'otherPlayerIsGuessing'],
+      ])
 
-            NOTE: if this actually ever gets logged then appropriate variables
-              to help debug will replace this note :)
-          `)
-        )
+      if (statusId) return statusIdToHelpContent[statusId]
 
-        logErrorToServer({
-          context: 'when determining helpContent',
-          error
-        })
-      }
+      const error = new Error(
+        tedent(`
+          helpContent called during an unsupported state
+
+          NOTE: if this actually ever gets logged then appropriate variables
+            to help debug will replace this note :)
+        `)
+      )
+
+      logErrorToServer({
+        context: 'when determining helpContent',
+        error,
+      })
     },
     message() {
       return statusToMessage[this.status]
     },
     showClock() {
-      const {
-        otherPlayerMustGuess,
-        otherPlayerMustJoin,
-      } = this
+      const { otherPlayer, otherPlayerMustGuess } = this
 
-      return otherPlayerMustJoin || otherPlayerMustGuess
+      return !otherPlayer.hasEnteredGame || otherPlayerMustGuess
     },
     shouldShowHelpButton() {
-      const { isGameActive, isMyTurn, otherPlayerHasJoined } = this
+      const { isGameActive, isMyTurn, otherPlayer } = this
 
-      return isGameActive && isMyTurn && otherPlayerHasJoined
+      return isGameActive && isMyTurn && otherPlayer.hasEnteredGame
     },
     status() {
-      const { friendWon, isMyTurn, iWon, otherPlayerMustJoin } = this
+      const { friendWon, isMyTurn, iWon, otherPlayer } = this
 
-      //
-      // TODO: figure out a simpler way to write this.  I'm still undecided on
-      //   how to best convey a bunch of booleans.
-      //
-      if (otherPlayerMustJoin) {
-        return 'waitForFriendToInit'
-      } else if (iWon) {
-        return 'iWon'
-      } else if (friendWon) {
-        return 'friendWon'
-      } else if (isMyTurn) {
-        return 'myTurn'
-      } else {
-        return 'theirTurn'
-      }
-    }
+      return findFirstValueWithTruthyKey([
+        [!otherPlayer.hasEnteredGame, 'waitForFriendToInit'],
+        [iWon, 'iWon'],
+        [friendWon, 'friendWon'],
+        [isMyTurn, 'myTurn'],
+        [true, 'theirTurn'],
+      ])
+    },
   }
 }
 
@@ -321,46 +257,34 @@ function getInteractionEvents() {
 <style lang="scss">
 h5.status {
   @include per-screen-size(('height', 'line-height'), 30, 30, 30, 30, 'px');
-  @include per-screen-size('margin-top', 5, 5, 42, 48, 'px');
   @include for-tablets-and-up {
     width: $column-width * 2;
   }
 
   font-style: italic;
   font-weight: 500;
+  margin-top: 0;
 
   button.clock {
     @include res-aware-element-spacing('margin-right', 'xs');
-
-    display: none;
-
-    &.exists {
-      display: inline-block;
-    }
   }
 
   button.help {
     @include res-aware-element-spacing('margin-right', 'xs');
-    display: none;
+
     vertical-align: middle;
 
     // this offsets the perceived vertical alignment caused by the shadow
     margin-top: -4px;
 
-    &.exists {
-      display: inline-block;
-    }
-
     .help-circle {
-
       color: $bg;
       fill: $quill-blue;
     }
   }
 
-  .attention-circle {
+  .message {
     position: relative;
-    top: -2px;
   }
 }
 </style>

@@ -22,10 +22,6 @@
           <router-link to="/create-a-room" class="link-to">
             Begin
           </router-link>
-
-          <router-link to="/how-to-play" class="link-to">
-            How To Play
-          </router-link>
         </nav>
       </div>
     </header>
@@ -92,32 +88,33 @@ export default {
     // we need to set the screenSize state after everything has been rendered.
     //   Otherwise we'll get an unwanted rehydration
     //
-    this.$nextTick().then(() => {
-      const initialSizes = {
-        isPhoneOrSmaller: getIsPhoneOrSmaller(),
-        isSmallPhone: getIsSmallPhone()
-      }
-      this.$store.commit(
-        'screenSize/setIsPhoneOrSmaller',
-        initialSizes.isPhoneOrSmaller
-      )
-      this.$store.commit(
-        'screenSize/setIsSmallPhone',
-        initialSizes.isSmallPhone
-      )
+    this.$nextTick()
+      .then(() => {
+        const initialSizes = {
+          isPhoneOrSmaller: getIsPhoneOrSmaller(),
+          isSmallPhone: getIsSmallPhone(),
+        }
+        this.$store.commit(
+          'screenSize/setIsPhoneOrSmaller',
+          initialSizes.isPhoneOrSmaller
+        )
+        this.$store.commit(
+          'screenSize/setIsSmallPhone',
+          initialSizes.isSmallPhone
+        )
 
-      const maybeUpdateScreenSize = createMaybeUpdateScreenSize(this, initialSizes)
+        const maybeUpdateScreenSize = createMaybeUpdateScreenSize(
+          this,
+          initialSizes
+        )
 
-      window.addEventListener(
-        'resize',
-        debounce(maybeUpdateScreenSize, 150)
-      )
+        window.addEventListener('resize', debounce(maybeUpdateScreenSize, 150))
 
-      return this.$nextTick()
-    })
-    .then(() => {
-      this.$eventManager.publish('screenSize/wasInitialized')
-    })
+        return this.$nextTick()
+      })
+      .then(() => {
+        this.$eventManager.publish('screenSize/wasInitialized')
+      })
   },
   beforeDestroy() {
     for (const link of this.navLinks) {
@@ -162,10 +159,7 @@ function getComputedProperties() {
   const vuexRootState = mapRootState(['showNotFoundView', 'showErrorView']),
     localComputedState = getLocalComputedState()
 
-  return combineAll.objects([
-    vuexRootState,
-    localComputedState
-  ])
+  return combineAll.objects([vuexRootState, localComputedState])
 }
 
 function getLocalComputedState() {

@@ -36,7 +36,6 @@
 
 <script>
 import setOfValidWords from 'universal/set-of-valid-words'
-import funGameNote from 'universal/fun-game-note'
 
 const arrayOfValidWords = Array.from(setOfValidWords)
 
@@ -49,9 +48,6 @@ export default {
     },
     url_2of12inf_moreInfo() {
       return 'http://wordlist.aspell.net/12dicts-readme/#2of12inf'
-    },
-    funGameNote() {
-      return funGameNote
     },
     arrayOfValidWords() {
       return arrayOfValidWords

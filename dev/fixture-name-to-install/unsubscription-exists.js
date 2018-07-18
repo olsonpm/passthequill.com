@@ -2,7 +2,8 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent'
+import tedent from 'tedent'
+
 import { docidToHash } from '../../lib/server/db'
 import { dal } from 'server/db'
 import { log } from 'universal/utils'
@@ -49,9 +50,8 @@ function createEmailSentRecord() {
     })
     .then(({ _id }) => {
       logThenNewline(
-        dedent(`
+        tedent(`
           emailSent:
-            _id: ${_id}
             hash: ${docidToHash(_id)}
         `)
       )

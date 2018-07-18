@@ -2,39 +2,31 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent'
+import tedent from 'tedent'
 
-import { dal, hashToDocid } from 'server/db'
-import { handleErrorDuringRoute } from 'project-root/create/router/api/helpers'
-import { ifResponseIsNot404, ifStatusIsNot404 } from 'server/utils'
-import { transformProperties } from 'fes'
-import { getCurrentAndOtherPlayerData, sanitize } from './helpers'
-
-//
-//------//
-// Init //
-//------//
-
-const optionsForGet = {
-  allow404: true,
-  returnRawResponse: true,
-}
+import { mAssignOver } from 'fes'
+import { dal, removeCouchdbProperties } from 'server/db'
+import { createHandleErrorDuringRoute } from 'project-root/create/router/api/helpers'
+import { ifStatusIsNot404 } from 'server/utils'
+import { promiseFlow } from 'universal/utils'
+import {
+  attachToState,
+  authorize,
+  getRoomAndPlayers,
+  sanitize,
+} from './helpers'
 
 //
 //------//
 // Main //
 //------//
 
-function createGetRoute(arg) {
-  const { router } = arg
-  router.get('/:roomHash', getRoom)
-
-  return arg
+function createGetRoute({ router }) {
+  router.get('/:roomHash', attachToState({ routeName: 'getRoom' }), getRoom)
 }
 
 function getRoom(ctx) {
-  const { roomHash } = ctx.params,
-    playerHash = ctx.request.query['player-hash']
+  const playerHash = ctx.request.query['player-hash']
 
   if (!playerHash) {
     ctx.status = 400
@@ -44,69 +36,46 @@ function getRoom(ctx) {
     return
   }
 
-  const errorArgs = [playerHash, roomHash],
-    handleError = handleErrorDuringRoute(ctx, createErrorMessage, errorArgs)
+  const handleError = createHandleErrorDuringRoute(ctx, createErrorMessage)
 
-  try {
-    const authorizeThenGetPlayerData = createAuthorizeThenGetPlayerData(
-      ctx,
-      playerHash
+  return authorize(ctx)
+    .then(
+      ifStatusIsNot404(
+        promiseFlow([
+          getRoomAndPlayers,
+          getGuideForCurrentPlayer,
+          sanitizeAndReturnAllData,
+        ])
+      )
     )
-
-    return dal.activeRoom
-      .get({ _id: hashToDocid(roomHash) }, optionsForGet)
-      .then(ifResponseIsNot404(ctx, authorizeThenGetPlayerData))
-      .then(ifStatusIsNot404(sanitizeAndReturnAllData))
-      .catch(handleError)
-  } catch (error) {
-    return handleError(error)
-  }
+    .catch(handleError)
 }
 
-function createAuthorizeThenGetPlayerData(ctx, currentPlayerHash) {
-  return roomData => {
-    const { player1Hash, player2Hash } = roomData,
-      possiblePlayerHashes = new Set([player1Hash, player2Hash])
-
-    if (!possiblePlayerHashes.has(currentPlayerHash)) {
-      ctx.status = 404
-      ctx.body = {
-        error: "The room isn't associated with your queried playerHash",
-      }
-      return { is404: true }
-    }
-
-    return Promise.all([
-      ctx,
-      roomData,
-      getCurrentAndOtherPlayerData({
-        currentPlayerHash,
-        player1Hash,
-        player2Hash,
-      }),
-    ])
-  }
+function getGuideForCurrentPlayer(result) {
+  return dal.guide
+    .get({ _id: result.currentPlayer.encryptedEmail })
+    .then(guide => mAssignOver(result)({ guide }))
 }
 
 function sanitizeAndReturnAllData(result) {
-  const [ctx, roomData, currentAndOtherPlayer] = result,
-    { currentPlayer, otherPlayer } = transformProperties({
-      currentPlayer: sanitize.player.current,
-      otherPlayer: sanitize.player.other,
-    })(currentAndOtherPlayer)
+  const { ctx, guide, roomData, currentPlayer, otherPlayer } = result
 
   ctx.status = 200
   ctx.body = {
-    currentPlayer,
-    otherPlayer,
+    currentPlayer: sanitize.player.current(currentPlayer),
+    guide: removeCouchdbProperties(guide),
+    otherPlayer: sanitize.player.other(otherPlayer),
     room: sanitize.room(roomData),
   }
 }
 
-function createErrorMessage(playerHash, roomHash) {
+function createErrorMessage(ctx) {
+  const { roomHash } = ctx.params,
+    playerHash = ctx.request.query['player-hash']
+
   return {
     friendly: 'retrieving player data',
-    detailed: dedent(`
+    detailed: tedent(`
       error occurred during GET player
         playerHash: ${playerHash}
         roomHash: ${roomHash}

@@ -24,7 +24,7 @@ import infoUnsubscribeAll from '../view/email/unsubscriptions/info_all'
 import infoUnsubscribeRoomCreated from '../view/email/unsubscriptions/info_room-created'
 import infoUnsubscribeInvitation from '../view/email/unsubscriptions/info_invitation'
 import initPlayerInfo_displayName from '../view/room/init-player/info_display-name'
-import initPlayerInfo_word from '../view/room/init-player/info_word'
+import initPlayerInfo_secretWord from '../view/room/init-player/info_secret-word'
 import warnUnsubscribeRoomCreated from '../view/email/unsubscriptions/warn_room-created'
 
 import { createNamespacedHelpers } from 'vuex'
@@ -131,7 +131,7 @@ function getPossibleLightboxComponents() {
     infoUnsubscribeRoomCreated,
     infoUnsubscribeInvitation,
     initPlayerInfo_displayName,
-    initPlayerInfo_word,
+    initPlayerInfo_secretWord,
     warnUnsubscribeRoomCreated,
   ].reduce((nameToComponent, component) => {
     nameToComponent[component.name] = component

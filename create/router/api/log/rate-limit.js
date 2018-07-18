@@ -2,8 +2,7 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent'
-import dedentMacro from 'dedent'
+import tedent from 'tedent'
 
 import { RateLimit } from 'koa2-ratelimit'
 
@@ -62,7 +61,7 @@ function getLogConstantRateLimiter() {
           `\n  interval: ${jstring(interval)}`
       )
     },
-    message: dedentMacro(`
+    message: tedent(`
       Unfortunately it seems this server is getting spammed with requests.
         Please understand that on the web it's difficult to prevent determined
         "bad guys".

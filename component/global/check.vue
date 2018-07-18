@@ -8,7 +8,7 @@
     stroke-linecap="round"
     stroke-linejoin="round"
     class="check"
-    v-show-initially="showInitially">
+    v-initially-hidden="initiallyHidden">
 
     <polyline points="20 6 9 17 4 12" />
   </svg>
@@ -18,8 +18,8 @@
 export default {
   name: 'check',
   props: {
-    showInitially: {
-      default: true
+    initiallyHidden: {
+      default: false,
     },
   },
 }

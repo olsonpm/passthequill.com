@@ -19,21 +19,12 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent'
 import vue from 'vue'
 
 import { PersistentWebsocket } from 'persistent-websocket'
 import { liveUpdateWebsocket } from 'project-root/config/app'
-import { capitalizeFirstLetter, logErrorToServer } from 'universal/utils'
-import { assignOver, mSet, reduce } from 'fes'
-
-//
-//------//
-// Init //
-//------//
-
-const liveUpdateIds = getLiveUpdateIds(),
-  normalClosure = 1000
+import { capitalizeFirstLetter } from 'universal/utils'
+import { assignOver } from 'fes'
 
 //
 //------//
@@ -45,7 +36,7 @@ const init = ({ eventManager, store, playerHash, roomHash }) => {
       pingSendFunction: pws => pws.send('ping'),
       reachabilityTestUrl: '/ping',
     }),
-    idToHandleUpdate = getIdToHandleUpdate(eventManager, store)
+    handleUpdate = createHandleUpdate(eventManager, store)
 
   liveUpdatePws.onopen = () => {
     liveUpdatePws.send(
@@ -62,13 +53,7 @@ const init = ({ eventManager, store, playerHash, roomHash }) => {
   liveUpdatePws.onmessage = event => {
     if (event.data === 'pong') return
 
-    const { id, data } = JSON.parse(event.data),
-      handleUpdate = idToHandleUpdate[id]
-
-    if (!handleUpdate) {
-      throw new Error(`no handler for id: ${id}`)
-    }
-    handleUpdate(data)
+    JSON.parse(event.data).forEach(handleUpdate)
   }
 
   liveUpdatePws.open()
@@ -81,45 +66,33 @@ const init = ({ eventManager, store, playerHash, roomHash }) => {
 // Helper Functions //
 //------------------//
 
-function getLiveUpdateIds() {
-  return new Set([
-    'otherPlayerChoseLetter',
-    'otherPlayerGuessed',
-    'otherPlayerInitialized',
-  ])
-}
-
-function getIdToHandleUpdate(eventManager, store) {
+function createHandleUpdate(eventManager, store) {
   const injectEventManager = assignOver({ eventManager })
 
-  return reduce(toHandlers, {})(liveUpdateIds)
+  //
+  // currently the returned promises aren't followed up on because there's no
+  //   need.  I just return promises out of habit - the alternative seems like
+  //   a bug waiting to happen
+  //
+  return ({ id, data }) => {
+    const upperFirstId = capitalizeFirstLetter(id),
+      { commitOrDispatch, type, payload = {}, options = {} } = data
 
-  // helper function scoped to 'getIdToHandleUpdate'
-
-  function toHandlers(idToHandleUpdate, id) {
-    const upperFirstId = capitalizeFirstLetter(id)
-
-    return mSet(id, handleUpdate)(idToHandleUpdate)
-
-    function handleUpdate(data) {
-      const { commitOrDispatch, type, payload = {}, options = {} } = data
-
-      if (commitOrDispatch === 'dispatch') {
-        return store.dispatch(type, injectEventManager(payload), options)
-      } else {
-        // commitOrDispatch === 'commit'
-        return eventManager
-          .publish(`room/liveUpdate/before${upperFirstId}`, [{ payload }])
-          .then(() => {
-            store.commit(type, payload, options)
-            return vue.nextTick()
-          })
-          .then(() =>
-            eventManager.publish(`room/liveUpdate/after${upperFirstId}`, [
-              { payload },
-            ])
-          )
-      }
+    if (commitOrDispatch === 'dispatch') {
+      return store.dispatch(type, injectEventManager(payload), options)
+    } else {
+      // commitOrDispatch === 'commit'
+      return eventManager
+        .publish(`room/liveUpdate/before${upperFirstId}`, [{ payload }])
+        .then(() => {
+          store.commit(type, payload, options)
+          return vue.nextTick()
+        })
+        .then(() =>
+          eventManager.publish(`room/liveUpdate/after${upperFirstId}`, [
+            { payload },
+          ])
+        )
     }
   }
 }

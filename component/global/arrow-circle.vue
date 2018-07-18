@@ -1,7 +1,11 @@
 <template>
   <simple-button :class="['arrow-circle', direction]"
     :on-click="onClick"
-    :show-initially="showInitially">
+    :initially-hidden="initiallyHidden"
+    data-animate="{
+      duration: { opacity: 'fast' },
+      afterHide: 'makeInvisible',
+    }">
 
     <svg viewBox="0 0 24 24"
       width="27"
@@ -13,6 +17,7 @@
       class="arrow-circle"
       :class="[direction, { pulsate }]">
 
+      <!-- the first circle pulsates when told -->
       <circle cx="12" cy="12" r="12" stroke-width="0" />
       <circle cx="12" cy="12" r="12" stroke-width="0" />
 
@@ -41,8 +46,9 @@ export default {
     direction: {},
     onClick: {},
     pulsate: {},
-    showInitially: {
-      default: true,
+    initiallyHidden: {
+      type: Boolean,
+      default: false,
     },
   },
 }

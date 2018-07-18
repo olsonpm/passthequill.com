@@ -56,25 +56,33 @@
         text="Create"
         type="submit" />
 
-      <loading-check v-if="state.loading || state.success"
+      <loading-check v-initially-removed
         ref="loadingCheckComponent"
-        data-animate="{ duration: { opacity: 'fast' } }"
         :loading="state.loading"
         :success="state.success" />
 
       <failure-link ref="failureLinkComponent"
         text="Sorry, I had trouble creating your&nbsp;room"
-        data-animate="{ duration: { opacity: 'fast' } }"
+        data-animate="{
+          duration: { opacity: 'fast' },
+          afterHide: 'setDisplayNone',
+        }"
         :reasonContent="state.failureReason.content"
         :reasonComponentName="state.failureReason.componentName"
       />
 
     </my-form>
 
-    <div v-if="state.showSuccessInfo"
+    <div v-initially-removed
       class="info-after-submit"
       ref="infoAfterSubmitEl"
-      data-animate="{ duration: { opacity: 'fast' } }">
+      data-animate="{
+        duration: {
+          opacity: 'fast',
+          size: 'fast',
+        },
+        shouldAnimate: { height: true },
+      }">
 
       <h3>Success<party /></h3>
 
@@ -117,14 +125,14 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent'
-import dedentMacro from 'dedent/macro'
+import tedent from 'tedent'
 import validationInfo from 'universal/input-validation-info'
 import api from 'universal/api'
 import { getValueAtPath, getValueFrom, isEmpty, join, map } from 'fes'
 import debug from 'project-root/config/debug'
-import { settleAll, waitMs } from 'universal/utils'
+import { settleAll } from 'universal/utils'
 import { animateHide, animateShow } from 'client/utils'
+import { waitFor } from './helpers'
 import {
   createComputedFormData,
   createFormData,
@@ -135,7 +143,7 @@ import {
 // Init //
 //------//
 
-const inputIdToInitialState = validationInfo.createARoom.body,
+const inputIdToInitialState = validationInfo.createARoom,
   playerNumberToFamiliarName = getPlayerNumberToFamiliarName(),
   toFamiliarNames = getValueFrom(playerNumberToFamiliarName),
   getFriendlyMessage = getValueAtPath(['response', 'data', 'error']),
@@ -204,16 +212,14 @@ export default {
 
       state.loading = true
 
-      const minimumAnimationTime = waitMs(1000)
-
       //
       // regardless whether an error occurs, we want the animation to show for
       //   the minimum amount of time for a smooth experience
       //
       return settleAll([
         api.post('create-a-room', formData.inputs),
-        this.$nextTick().then(() => animateShow($refs.loadingCheckComponent)),
-        minimumAnimationTime,
+        animateShow($refs.loadingCheckComponent),
+        waitFor.animation.loadingCircle(),
       ])
         .then(([createARoomResult]) => {
           const { status, value } = createARoomResult
@@ -224,17 +230,15 @@ export default {
             success = isEmpty(unsubscribedPlayers)
 
           state.success = success
+          state.loading = false
 
           if (success) {
             // TODO: use javascript to animate loading-check so we can program
             //   a hook `onFinishedAnimating` or something.  This hardcoded wait
             //   is a hack in the meantime
-            return waitMs(1300).then(() => {
-              state.loading = false
+            return waitFor.animation.successCheck().then(() => {
               state.showSuccessInfo = true
-              return this.$nextTick().then(() =>
-                animateShow($refs.infoAfterSubmitEl)
-              )
+              return animateShow($refs.infoAfterSubmitEl)
             })
           }
 
@@ -248,6 +252,9 @@ export default {
             this.maybeDisplayError()
           )
         })
+        .finally(() => {
+          state.loading = false
+        })
         .catch(error => {
           const friendlyMessage =
             getFriendlyMessage(error) ||
@@ -259,9 +266,6 @@ export default {
             friendlyMessage
           )
           this.$store.commit('setShowErrorView', true)
-        })
-        .then(() => {
-          state.loading = false
         })
     },
 
@@ -281,7 +285,7 @@ function createFailureReasonContent(unsubscribedPlayers) {
 
   let content = '<p>'
   if (unsubscribedPlayers.length > 1) {
-    content += dedent(`
+    content += tedent(`
       Both ${join(' and ')(familiarNames)} are unsubscribed so the room
       wasn't&nbsp;created.
     `)
@@ -290,13 +294,13 @@ function createFailureReasonContent(unsubscribedPlayers) {
       "You are unsubscribed to this email so the room wasn't&nbsp;created."
   } else {
     // familiarNames[0] === 'your friend'
-    content += dedentMacro(`
+    content += tedent(`
       Your friend is unsubscribed to this email.  Currently the only way to get
       a link to the game is through email, so the room wasn't&nbsp;created.
     `)
   }
 
-  content += dedentMacro(`
+  content += tedent(`
     </p>
     <p>
       Email subscription settings can be found via a link 'manage your

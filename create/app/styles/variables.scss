@@ -23,7 +23,8 @@ $purple: #8c4f84;
 $quill-blue: #4c7eaf;
 $quill-blue-light: #a3d1ff;
 $disabled-gray: #888;
-$disabled-gray-dark: #555;
+$disabled-gray-darker: #777;
+$disabled-gray-darkest: #555;
 $shadow-gray-default: #aaa;
 
 // TODO: figure out whether this color will be used elsewhere, and change the
@@ -47,6 +48,8 @@ $duration-short: 0.3s;
 $duration-normal: 0.4s;
 
 $default-textbox-width: 300px;
+
+$desktop-single-column-content-width: 50%;
 
 // easeInSine
 $easing-default: cubic-bezier(0.47, 0, 0.745, 0.715);

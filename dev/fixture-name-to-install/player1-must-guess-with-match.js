@@ -2,7 +2,7 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent'
+import tedent from 'tedent'
 
 import { log } from 'universal/utils'
 import { baseUrl } from 'project-root/config/app'
@@ -79,9 +79,8 @@ const install = () => {
 function createEmailSentRecord(to, type) {
   return dal.emailSent.create({ to, type }).then(({ _id }) => {
     logThenNewline(
-      dedent(`
+      tedent(`
         emailSent:
-          _id: ${_id}
           hash: ${docidToHash(_id)}
       `)
     )
@@ -92,9 +91,8 @@ function createRoom() {
   return dal.activeRoom.create({}).then(({ _id, _rev }) => {
     const hash = docidToHash(_id)
     logThenNewline(
-      dedent(`
+      tedent(`
         room:
-          _id: ${_id}
           hash: ${hash}
       `)
     )
@@ -106,8 +104,8 @@ function createRoom() {
 function createPlayers([roomData]) {
   const { hash, _id, _rev } = roomData
   return Promise.all([
-    createAPlayer(test2EncryptedEmail, 1, hash, 'Space Ghost', 'coast'),
-    createAPlayer(test1EncryptedEmail, 2, hash, 'Wonder Woman', 'guest'),
+    createAPlayer(test1EncryptedEmail, 1, hash, 'Space Ghost', 'coast'),
+    createAPlayer(test2EncryptedEmail, 2, hash, 'Wonder Woman', 'guest'),
   ])
     .then(([player1, player2]) => {
       const idAndRev = pickIdAndRev(player2),
@@ -117,7 +115,7 @@ function createPlayers([roomData]) {
         {
           hasAnyMatchingLetters: true,
           isCorrect: false,
-          word: 'blast',
+          secretWord: 'blast',
           chosenLetter: 'a',
         },
       ]
@@ -137,21 +135,26 @@ function createPlayers([roomData]) {
     })
 }
 
-function createAPlayer(encryptedEmail, number, roomHash, displayName, word) {
+function createAPlayer(
+  encryptedEmail,
+  number,
+  roomHash,
+  displayName,
+  secretWord
+) {
   const playerData = {
     displayName,
     encryptedEmail,
     number,
     roomHash,
-    word,
+    secretWord,
   }
 
   return dal.player.create(playerData).then(({ _id }) => {
     const hash = docidToHash(_id)
     logThenNewline(
-      dedent(`
+      tedent(`
         player:
-          _id: ${_id}
           hash: ${hash}
           number: ${number}
       `)

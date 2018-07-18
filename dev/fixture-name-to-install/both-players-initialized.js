@@ -2,7 +2,7 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent'
+import tedent from 'tedent'
 
 import { docidToHash } from '../../lib/server/db'
 import { dal } from 'server/db'
@@ -33,10 +33,12 @@ const name = 'both-players-initialized'
 const install = () => {
   return Promise.all([
     createRoom(),
+    dal.guide.create({ _id: test1EncryptedEmail }),
+    dal.guide.create({ _id: test2EncryptedEmail }),
     createEmailSentRecord(test1EncryptedEmail, 'room-created'),
     createEmailSentRecord(test2EncryptedEmail, 'invitation'),
   ])
-    .then(createPlayers)
+    .then(createPlayersAndDisableGuides)
     .then(roomAndPlayerData => {
       const {
         roomHash,
@@ -74,9 +76,8 @@ const install = () => {
 function createEmailSentRecord(to, type) {
   return dal.emailSent.create({ to, type }).then(({ _id }) => {
     logThenNewline(
-      dedent(`
+      tedent(`
         emailSent:
-          _id: ${_id}
           hash: ${docidToHash(_id)}
       `)
     )
@@ -87,9 +88,8 @@ function createRoom() {
   return dal.activeRoom.create({}).then(({ _id, _rev }) => {
     const hash = docidToHash(_id)
     logThenNewline(
-      dedent(`
+      tedent(`
         room:
-          _id: ${_id}
           hash: ${hash}
       `)
     )
@@ -98,11 +98,14 @@ function createRoom() {
   })
 }
 
-function createPlayers([roomData]) {
+function createPlayersAndDisableGuides([roomData, player1Guide, player2Guide]) {
   const { hash, _id, _rev } = roomData
+
   return Promise.all([
-    createAPlayer(test2EncryptedEmail, 1, hash, 'Space Ghost', 'coast'),
-    createAPlayer(test1EncryptedEmail, 2, hash, 'Wonder Woman', 'guest'),
+    createAPlayer(test1EncryptedEmail, 1, hash, 'Space Ghost', 'coast'),
+    createAPlayer(test2EncryptedEmail, 2, hash, 'Wonder Woman', 'guest'),
+    disableGuide(player1Guide),
+    disableGuide(player2Guide),
   ]).then(([player1Hash, player2Hash]) => {
     return {
       roomHash: hash,
@@ -114,28 +117,47 @@ function createPlayers([roomData]) {
   })
 }
 
-function createAPlayer(encryptedEmail, number, roomHash, displayName, word) {
+function disableGuide({ _id }) {
+  return dal.guide.get({ _id }).then(guideData => {
+    guideData.isActive = false
+    return dal.guide.update(guideData)
+  })
+}
+
+function createAPlayer(
+  encryptedEmail,
+  number,
+  roomHash,
+  displayName,
+  secretWord
+) {
   const playerData = {
     displayName,
     encryptedEmail,
     number,
     roomHash,
-    word,
+    secretWord,
   }
 
-  return dal.player.create(playerData).then(({ _id }) => {
-    const hash = docidToHash(_id)
-    logThenNewline(
-      dedent(`
-        player:
-          _id: ${_id}
-          hash: ${hash}
-          number: ${number}
-      `)
-    )
+  return dal.player
+    .create(playerData)
+    .then(({ _id }) => dal.player.get({ _id }))
+    .then(playerData => {
+      playerData.hasEnteredGame = true
+      return dal.player.update(playerData)
+    })
+    .then(({ _id }) => {
+      const hash = docidToHash(_id)
+      logThenNewline(
+        tedent(`
+          player:
+            hash: ${hash}
+            number: ${number}
+        `)
+      )
 
-    return hash
-  })
+      return hash
+    })
 }
 
 //

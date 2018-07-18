@@ -30,15 +30,13 @@ export default {
       state.submitted = true
       formObject.__setSubmitted(true)
 
-      return Promise.resolve()
-        .then(() => this.onSubmit())
-        // finally
-        .then(() => {
-          state.isSubmitting = false
-        })
-        .catch(() => {
-          state.isSubmitting = false
-        })
+      return (
+        Promise.resolve()
+          .then(() => this.onSubmit())
+          .finally(() => {
+            state.isSubmitting = false
+          })
+      )
     },
   },
 }
@@ -58,8 +56,6 @@ export default {
   }
 
   .failure-link {
-    display: none;
-
     // we don't want a border, but we need one to make sure the sizing is the
     //   same as the sibling button.submit
     border: 1px solid transparent;
@@ -67,9 +63,7 @@ export default {
     @include for-tablets-and-up {
       @include res-aware-element-spacing('margin-top', $button-margin-top-size);
 
-      &.exists {
-        display: inline-block;
-      }
+      display: inline-block;
 
       //
       // this is necessary for the padding to align properly (height happens
@@ -86,17 +80,17 @@ export default {
       @include res-aware-element-spacing('margin-top', 'lg');
       @include res-aware-element-spacing('padding', 'sm');
 
-      &.exists {
-        display: flex;
-      }
+      display: flex;
     }
 
     @include for-tablets {
-      padding: $button-vertical-padding-tablets-and-smaller $button-horizontal-padding-tablets-and-smaller;
+      padding: $button-vertical-padding-tablets-and-smaller
+        $button-horizontal-padding-tablets-and-smaller;
     }
 
     @include for-desktops {
-      padding: $button-vertical-padding-desktops $button-horizontal-padding-desktops
+      padding: $button-vertical-padding-desktops
+        $button-horizontal-padding-desktops;
     }
   }
 }

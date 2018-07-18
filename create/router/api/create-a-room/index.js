@@ -2,10 +2,10 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent'
+import tedent from 'tedent'
 
-import createEmailSentRecords from './create-email-sent-records'
-import createGameAndPlayers from './create-game-and-players'
+import createEmailSentRecordsAndRoom from './create-email-sent-records-and-room'
+import createPlayersAndUpdateGame from './create-players-and-update-game'
 import createSendEmails from './create-send-emails'
 import ifNotUnsubscribed from './if-not-unsubscribed'
 import * as rateLimit from './rate-limit'
@@ -14,7 +14,7 @@ import { isLaden } from 'fes'
 import { encryptAllEmails } from 'server/email/encrypt'
 import { dal } from 'server/db'
 import { createIfRequestIsValid } from 'server/utils'
-import { handleErrorDuringRoute } from '../helpers'
+import { createHandleErrorDuringRoute } from '../helpers'
 
 //
 //------//
@@ -34,10 +34,7 @@ const ifRequestIsValid = createIfRequestIsValid('createARoom'),
 
 const post = ifRequestIsValid(ctx => {
   const { player1Email, player2Email } = ctx.request.body,
-    handleError = handleErrorDuringRoute(ctx, createErrorMessage, [
-      player1Email,
-      player2Email,
-    ])
+    handleError = createHandleErrorDuringRoute(ctx, createErrorMessage)
 
   try {
     const sendEmails = createSendEmails(player1Email, player2Email)
@@ -46,8 +43,8 @@ const post = ifRequestIsValid(ctx => {
       .then(getUnsubscribedTypes)
       .then(
         ifNotUnsubscribed([
-          createEmailSentRecords,
-          createGameAndPlayers,
+          createEmailSentRecordsAndRoom,
+          createPlayersAndUpdateGame,
           sendEmails,
         ])
       )
@@ -87,11 +84,13 @@ function getEmailUnsubscriptionTypes(encryptedEmail) {
     })
 }
 
-function createErrorMessage(player1Email, player2Email) {
+function createErrorMessage(ctx) {
+  const { player1Email, player2Email } = ctx.request.body
+
   return encryptAllEmails([player1Email, player2Email]).then(
     ([player1EncryptedEmail, player2EncryptedEmail]) => {
       const friendly = 'creating a room',
-        detailed = dedent(`
+        detailed = tedent(`
           An error occurred while creating a room
           player1EncryptedEmail: ${player1EncryptedEmail}
           player2EncryptedEmail: ${player2EncryptedEmail}

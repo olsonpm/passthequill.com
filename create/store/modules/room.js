@@ -6,7 +6,7 @@
 // TODO: find a sensible name for functions which share the logic between
 //   between 'current' and 'other' player, or find a way to restructure the data
 //   to prevent this duplicate code.
-//
+// TODO: rename/shorten currentPlayer -> i && otherPlayer -> friend
 //
 
 //---------//
@@ -16,18 +16,30 @@
 import vue from 'vue'
 
 import api from 'universal/api'
+import enterDisplayName from 'project-root/component/view/room/enter-display-name'
+import enterSecretWord from 'project-root/component/view/room/enter-secret-word'
+import firstTime from 'project-root/component/view/room/first-time/index'
 import game from 'project-root/component/view/room/game/index'
+import getInitialGuide from 'universal/get-initial-guide'
+import introduceGuide from 'project-root/component/view/room/introduce-guide'
 import initPlayer from 'project-root/component/view/room/init-player/index'
-import { assignAllLeaves } from '../helpers'
-import { logErrorToServer, setShowNotFoundOrErrorView } from 'universal/utils'
+import isDeepEqual from 'lodash/isEqual'
 import { getValueAt, isLaden, last, none } from 'fes'
+import {
+  assignAllLeaves,
+  findFirstValueWithTruthyKey,
+  logErrorToServer,
+  setShowNotFoundOrErrorView,
+} from 'universal/utils'
 
 //
 //------//
 // Init //
 //------//
 
-const hasTruthyValue = getValueAt
+const hasTruthyValue = getValueAt,
+  initialGuide = getInitialGuide(),
+  noData = {}
 
 //
 //------//
@@ -40,12 +52,7 @@ const room = {
     bothPlayersHaveJoined(state) {
       const { currentPlayer, otherPlayer } = state
 
-      return (
-        otherPlayer.hasWord &&
-        otherPlayer.displayName &&
-        currentPlayer.word &&
-        currentPlayer.displayName
-      )
+      return currentPlayer.hasEnteredGame && otherPlayer.hasEnteredGame
     },
     currentPlayerHasGuessed(state) {
       return isLaden(state.currentPlayer.guesses)
@@ -116,9 +123,6 @@ const room = {
     otherPlayerHasGuessed(state) {
       return isLaden(state.otherPlayer.guesses)
     },
-    otherPlayerHasJoined(_unused_state, getters) {
-      return !getters.otherPlayerMustJoin
-    },
     otherPlayerMustGuess(_unused_state, getters) {
       const {
         currentPlayerHasGuessed,
@@ -138,11 +142,6 @@ const room = {
           )
         )
       )
-    },
-    otherPlayerMustJoin(state) {
-      const { otherPlayer } = state
-
-      return !otherPlayer.hasWord || !otherPlayer.displayName
     },
     otherPlayerMustRevealALetter(_unused_state, getters) {
       const {
@@ -193,30 +192,60 @@ const room = {
         })
     },
     changeSubViewName({ commit }, { subViewName }) {
-      //
-      // TODO: move addAppClass into 'created' of game/index.vue
-      //
-      if (subViewName === 'game') {
-        commit('addAppClass', 'game', { root: true })
-      }
+      commit('addAppClass', subViewName, { root: true })
       commit('setSubViewName', subViewName)
+    },
+    disableGuide({ commit, rootState }) {
+      const { playerHash, roomHash } = rootState.route.params
+
+      //
+      // we don't want the user to have to wait for the result of this request
+      //   before taking her to the 'init-player' subView so we commit the state
+      //   right away.  I think this is termed 'optimistic ux'.
+      //
+      commit('disableGuide')
+      return api
+        .post(`/room/${roomHash}/player/${playerHash}/disable-guide`, noData)
+        .catch(error => {
+          logErrorToServer({
+            context: 'when disabling the guide',
+            error,
+          })
+
+          return Promise.reject(error)
+        })
+    },
+    enterGame({ commit, rootState }) {
+      const { playerHash, roomHash } = rootState.route.params
+
+      commit('enterGame')
+
+      return api
+        .post(`/room/${roomHash}/player/${playerHash}/enter-game`, noData)
+        .catch(error => {
+          logErrorToServer({
+            context: 'when entering the game',
+            error,
+          })
+
+          return Promise.reject(error)
+        })
     },
     getRoom({ commit, dispatch }, { route }) {
       const { playerHash, roomHash } = route.params
 
       return api
         .get(`/room/${roomHash}?player-hash=${playerHash}`)
-        .then(result => {
-          const { displayName, word } = result.currentPlayer,
-            subViewName = !displayName || !word ? initPlayer.name : game.name
+        .then(responseData => {
+          const subViewName = getSubView(responseData).name
 
           dispatch('changeSubViewName', { subViewName })
-          commit('setRoomData', result)
+          commit('setRoomData', responseData)
         })
         .catch(setShowNotFoundOrErrorView(commit))
     },
-    initPlayer({ commit, rootState }, { displayName, word }) {
-      const newPlayerData = { displayName, word },
+    initPlayer({ commit, rootState }, { displayName, secretWord }) {
+      const newPlayerData = { displayName, secretWord },
         { playerHash, roomHash } = rootState.route.params
 
       return api
@@ -233,6 +262,23 @@ const room = {
           return Promise.reject(error)
         })
     },
+    markAsUnderstood({ commit, rootState }, { understands }) {
+      const { playerHash, roomHash } = rootState.route.params
+
+      commit('setUnderstands', understands)
+      return api
+        .post(`/room/${roomHash}/player/${playerHash}/understands`, {
+          understands,
+        })
+        .catch(error => {
+          logErrorToServer({
+            context: 'when marking a concept as understood',
+            error,
+          })
+
+          return Promise.reject(error)
+        })
+    },
     revealLetter({ commit, rootState }, argObject) {
       const { eventManager, letter: chosenLetter } = argObject,
         { playerHash, roomHash } = rootState.route.params,
@@ -240,7 +286,7 @@ const room = {
 
       return Promise.all([
         api.post(
-          `/room/${roomHash}/player/${playerHash}/mark-chosen-letter`,
+          `/room/${roomHash}/player/${playerHash}/reveal-letter`,
           postBody
         ),
         eventManager.publish('room/beforeRevealLetter'),
@@ -259,16 +305,63 @@ const room = {
           return Promise.reject(error)
         })
     },
+    setDisplayName({ commit, rootState }, { displayName }) {
+      const { playerHash, roomHash } = rootState.route.params
+
+      return api
+        .post(`/room/${roomHash}/player/${playerHash}/display-name`, {
+          displayName,
+        })
+        .then(currentPlayer => {
+          commit('updateCurrentPlayer', currentPlayer)
+        })
+        .catch(error => {
+          logErrorToServer({
+            context: "when setting a player's displayName",
+            error,
+          })
+
+          return Promise.reject(error)
+        })
+    },
+    setSecretWord({ commit, rootState }, { secretWord }) {
+      const { playerHash, roomHash } = rootState.route.params
+
+      return api
+        .post(`/room/${roomHash}/player/${playerHash}/secret-word`, {
+          secretWord,
+        })
+        .then(currentAndOtherPlayer => {
+          commit('updatePlayers', currentAndOtherPlayer)
+        })
+        .catch(error => {
+          logErrorToServer({
+            context: "when setting a player's secretWord",
+            error,
+          })
+
+          return Promise.reject(error)
+        })
+    },
   },
   mutations: {
     clearJustAdded(state, currentOrOtherPlayer) {
       last(state[currentOrOtherPlayer].guesses).justAdded = false
+    },
+    disableGuide(state) {
+      state.guide.isActive = false
+    },
+    enterGame(state) {
+      state.currentPlayer.hasEnteredGame = true
     },
     setStatusIsPulsating(state, trueOrFalse) {
       state.statusIsPulsating = trueOrFalse
     },
     setSubViewName(state, name) {
       state.subViewName = name
+    },
+    setUnderstands(state, understandsKey) {
+      state.guide.understands[understandsKey] = true
     },
 
     //
@@ -303,22 +396,44 @@ const room = {
 
 function getInitialState() {
   return {
+    guide: getInitialGuide(),
     currentPlayer: {
       number: null,
       displayName: null,
       guesses: [],
-      word: null,
+      secretWord: null,
     },
     otherPlayer: {
       displayName: null,
       guesses: [],
       hasWord: null,
+      hasEnteredGame: null,
     },
     room: {
       playerNumberTurn: null,
     },
     statusIsPulsating: false,
     subViewName: null,
+  }
+}
+
+function getSubView(getRoomResponseData) {
+  const { currentPlayer, guide } = getRoomResponseData,
+    { displayName, secretWord } = currentPlayer
+
+  if (guide.isActive) {
+    const isInitialGuide = isDeepEqual(guide, initialGuide),
+      { understands } = guide
+
+    return findFirstValueWithTruthyKey([
+      [isInitialGuide && !displayName, introduceGuide],
+      [!displayName, enterDisplayName],
+      [!secretWord, enterSecretWord],
+      [!understands.gameRoomBasics, firstTime],
+      [true, game],
+    ])
+  } else {
+    return displayName && secretWord ? game : initPlayer
   }
 }
 

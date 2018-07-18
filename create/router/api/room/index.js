@@ -4,11 +4,9 @@
 
 import KoaRouter from 'koa-router'
 import createGetRoute from './get'
-import createPostGuess from './post_guess'
-import createPostRevealLetter from './post_reveal-letter'
-import createPostInitPlayer from './post_init-player'
+import createPostRoutes from './post'
 
-import { passThrough } from 'fes'
+import { callEach } from 'universal/utils'
 
 //
 //------//
@@ -18,12 +16,7 @@ import { passThrough } from 'fes'
 const createRoomRouter = websocketServer => {
   const router = new KoaRouter()
 
-  passThrough({ router, websocketServer }, [
-    createGetRoute,
-    createPostInitPlayer,
-    createPostGuess,
-    createPostRevealLetter,
-  ])
+  callEach({ router, websocketServer }, [createGetRoute, createPostRoutes])
 
   return router
 }

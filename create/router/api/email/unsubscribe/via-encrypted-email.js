@@ -2,7 +2,7 @@
 // Imports //
 //---------//
 
-import { handleServerError } from 'server/utils'
+import { createHandleServerError } from 'server/utils'
 import { dal } from 'server/db'
 import { validEmailTypes } from 'universal/email/types'
 import { alwaysReturn as justReturn, mAppend, mSet, reduce } from 'fes'
@@ -71,7 +71,7 @@ function toUnsubscribeFunctions(typeToFunction, type) {
             .then(justReturn({ result: 'unsubscribed successfully' }))
         }
       })
-      .catch(handleServerError(createErrorMessage, [encryptedEmail]))
+      .catch(createHandleServerError(createErrorMessage, [encryptedEmail]))
   }
 }
 

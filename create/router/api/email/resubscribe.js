@@ -3,10 +3,10 @@
 //---------//
 
 import KoaRouter from 'koa-router'
-import dedent from 'dedent'
+import tedent from 'tedent'
 
 import { dal, hashToDocid } from 'server/db'
-import { handleErrorDuringRoute } from 'project-root/create/router/api/helpers'
+import { createHandleErrorDuringRoute } from 'project-root/create/router/api/helpers'
 import { createIfRequestIsValid, ifResponseIsNot404 } from 'server/utils'
 import { alwaysReturn as justReturn, containedIn, discard } from 'fes'
 
@@ -45,8 +45,7 @@ function createPostRoute(resubscribeRouter) {
     ifRequestIsValid(ctx => {
       const { emailSentHash } = ctx.params,
         { type } = ctx.request.body,
-        errorArgs = [type, emailSentHash],
-        handleError = handleErrorDuringRoute(ctx, createErrorMessage, errorArgs)
+        handleError = createHandleErrorDuringRoute(ctx, createErrorMessage)
 
       try {
         const resubscribeToType = createResubscribeToType(ctx, type)
@@ -83,10 +82,13 @@ function createResubscribeToType(ctx, type) {
       })
 }
 
-function createErrorMessage(type, emailSentHash) {
+function createErrorMessage(ctx) {
+  const { emailSentHash } = ctx.params,
+    { type } = ctx.request.body
+
   return {
     friendly: 'attempting to update your unsubscribe settings',
-    detailed: dedent(`
+    detailed: tedent(`
       error occurred during POST resubscribe
         hash: ${emailSentHash}
         type: ${type}

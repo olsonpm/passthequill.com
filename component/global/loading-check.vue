@@ -1,12 +1,17 @@
 <template>
-  <spacing-wrapper type="previous sibling height">
+  <spacing-wrapper type="previous sibling height"
+    data-animate="{
+      duration: { opacity: 'fast' },
+      afterHide: 'setDisplayNone',
+    }">
+
     <svg xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
       class="loading-check"
       :class="{
         success,
-        loading: state.loading,
+        loading,
       }">
 
       <circle cx="12" cy="12" r="12" />
@@ -16,32 +21,8 @@
 </template>
 
 <script>
-import { waitMs } from 'universal/utils'
-
-//
-// TODO: use eventManager instead of the watchers and local state
-//
 export default {
   name: 'loading-check',
-  data() {
-    return {
-      state: {
-        loading: this.loading
-      }
-    }
-  },
-  watch: {
-    loading(value) {
-      if (value) this.state.loading = true
-    },
-    success(value) {
-      if (value) {
-        waitMs(400).then(() => {
-          this.state.loading = false
-        })
-      }
-    }
-  },
   props: ['loading', 'success'],
 }
 </script>

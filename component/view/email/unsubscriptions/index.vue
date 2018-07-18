@@ -25,8 +25,11 @@
           <simple-button v-if="type === 'room-created'"
             class="alert"
             ref="arrayOfAlertButtons"
-            data-animate="{ duration: { opacity: 'fast' } }"
-            :show-initially="showWarning"
+            data-animate="{
+              duration: { opacity: 'fast' },
+              afterHide: 'makeInvisible',
+            }"
+            :initially-hidden="!showWarning"
             :on-click="explainConsequenceForUnsubscribing">
 
             <alert class="warn" />

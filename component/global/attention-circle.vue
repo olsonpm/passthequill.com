@@ -1,5 +1,15 @@
 <template>
-  <span class="attention-circle">
+  <span class="attention-circle"
+    data-animate="{
+      duration: {
+        opacity: {
+          onShow: 'immediate',
+          onHide: 'slow',
+        },
+      },
+      afterHide: 'setDisplayNone',
+    }">
+
     <span class="pulsating-circle" />
   </span>
 </template>
@@ -21,9 +31,12 @@ $attention-circle-color: #ff8d00;
   border-radius: 100px;
   display: none;
   height: 14px;
+  position: absolute;
+  right: -16px;
+  top: -8px;
   width: 14px;
 
-  &.exists {
+  &.animate_shown {
     display: inline-block;
   }
 
@@ -52,7 +65,7 @@ $attention-circle-color: #ff8d00;
   }
   to {
     opacity: 0;
-    transform: scale(2);
+    transform: scale(2.4);
   }
 }
 </style>

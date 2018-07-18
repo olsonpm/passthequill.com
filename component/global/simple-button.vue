@@ -4,8 +4,8 @@
     :autofocus="autofocus"
     :class="{ 'custom-focus': hasCustomStyledFocus }"
     @click.capture.stop.prevent="onClickWrapper"
-    v-initial-classes="initialClasses"
-    v-show-initially="showInitially">
+    v-initially-removed="initiallyRemoved"
+    v-initially-hidden="initiallyHidden">
 
     <slot />
   </button>
@@ -50,14 +50,15 @@ export default {
       type: Boolean,
       default: false,
     },
-    initialClasses: {
-      default: () => ({}),
+    initiallyHidden: {
+      type: Boolean,
+      default: false,
+    },
+    initiallyRemoved: {
+      type: Boolean,
+      default: false,
     },
     onClick: {},
-    showInitially: {
-      type: Boolean,
-      default: true,
-    },
   },
   methods: {
     onClickWrapper() {

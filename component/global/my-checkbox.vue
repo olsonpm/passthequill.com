@@ -12,8 +12,11 @@
 
     <div class="nice-looking-checkbox">
       <check ref="checkComponent"
-        data-animate="{ duration: { opacity: 'fast' } }"
-        :show-initially="checked" />
+        data-animate="{
+          duration: { opacity: 'fast' },
+          afterHide: 'makeInvisible',
+        }"
+        :initially-hidden="!checked" />
     </div>
   </simple-button>
 </template>

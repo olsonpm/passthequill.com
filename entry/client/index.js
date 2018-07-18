@@ -3,6 +3,7 @@
 //---------//
 
 import focusWithin from 'focus-within'
+import promisePrototypeFinally from 'promise.prototype.finally'
 
 import createApp from 'project-root/create/app'
 import initWebsocket from './init-websocket'
@@ -17,6 +18,8 @@ import { discardFirstWhile, first, passThrough } from 'fes'
 //------//
 // Init //
 //------//
+
+promisePrototypeFinally.shim()
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 

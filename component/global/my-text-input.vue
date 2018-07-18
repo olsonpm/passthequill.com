@@ -5,14 +5,19 @@
       'has-inline-submit': includeInlineSubmitButton,
     }">
 
-    <simple-button v-if="infoComponentName"
+    <simple-button v-if="!inlineDescriptionHtml && infoComponentName"
       class="help"
       :on-click="displayInfo">
 
       <help-circle />
     </simple-button>
 
-    <label :for="id">{{ label }}</label>
+    <label v-if="label" :for="id">{{ label }}</label>
+
+    <div v-if="inlineDescriptionHtml"
+      v-html="inlineDescriptionHtml"
+      class="inline-description" />
+
     <div class="input-wrapper"
       ref="inputWrapper">
 
@@ -94,9 +99,11 @@ export default {
     infoComponentName: {
       type: String,
     },
+    inlineDescriptionHtml: {
+      type: String,
+    },
     label: {
       type: String,
-      required: true,
       validator: isLaden,
     },
     maxlength: {},

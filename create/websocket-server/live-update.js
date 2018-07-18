@@ -106,8 +106,11 @@ function maybeUpdateClient({ data, playerHash }) {
 
   if (!clientSockets) return
 
+  const arrayOfData = Array.isArray(data) ? data : [data],
+    dataString = JSON.stringify(arrayOfData)
+
   forEach(ws => {
-    ws.send(JSON.stringify(data), handleSendError)
+    ws.send(dataString, handleSendError)
   })(clientSockets)
 }
 

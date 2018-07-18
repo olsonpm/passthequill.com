@@ -1,7 +1,6 @@
 <template>
   <simple-button class="clock"
-    :on-click="onClick"
-    :initial-classes="initialClasses">
+    :on-click="onClick">
 
     <svg viewBox="0 0 24 24"
       width="24"
@@ -25,7 +24,13 @@
 <script>
 export default {
   name: 'clock',
-  props: ['initial-classes', 'on-click'],
+  props: {
+    initiallyRemoved: {
+      type: Boolean,
+      default: false,
+    },
+    onClick: {},
+  },
 }
 </script>
 

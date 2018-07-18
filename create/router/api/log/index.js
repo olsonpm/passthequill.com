@@ -2,14 +2,14 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent'
+import tedent from 'tedent'
 
 import * as rateLimit from './rate-limit'
 
 import { dal } from 'server/db'
 import { createIfRequestIsValid } from 'server/utils'
 import { logError } from 'universal/utils'
-import { handleErrorDuringRoute } from '../helpers'
+import { createHandleErrorDuringRoute } from '../helpers'
 import {
   applyAt,
   join,
@@ -49,8 +49,11 @@ const post = ifRequestIsValid(ctx => {
         message,
         stack,
         userAgent,
-      },
-      errorArguments = [logRecord]
+      }
+
+    const handleError = createHandleErrorDuringRoute(ctx, createErrorMessage)
+
+    ctx.state.logRecord = logRecord
 
     return dal.log
       .create(logRecord)
@@ -60,7 +63,7 @@ const post = ifRequestIsValid(ctx => {
           result: 'log created successfully',
         }
       })
-      .catch(handleErrorDuringRoute(ctx, createErrorMessage, errorArguments))
+      .catch(handleError)
   } catch (e) {
     // no need to throw errors if logging has an issue
     logError(e)
@@ -82,7 +85,7 @@ function truncate(aString) {
   ])
 }
 
-function createErrorMessage(logRecord) {
+function createErrorMessage(ctx) {
   const {
     commitHash,
     context,
@@ -91,10 +94,10 @@ function createErrorMessage(logRecord) {
     message,
     stack,
     userAgent,
-  } = logRecord
+  } = ctx.state.logRecord
 
   const friendly = 'creating a log',
-    detailed = dedent(`
+    detailed = tedent(`
       An error occurred while creating a log
 
       commitHash: ${commitHash}

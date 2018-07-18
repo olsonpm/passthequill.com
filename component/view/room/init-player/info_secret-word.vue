@@ -1,5 +1,5 @@
 <template>
-  <div class="init-player-info_word info">
+  <div class="init-player-info_secret-word info">
     <h3>Secret Word</h3>
 
     <ul class="bulleted">
@@ -13,20 +13,20 @@
 </template>
 
 <script>
-import funGameNote from 'universal/fun-game-note'
+import funGameNote from 'universal/html-snippets/fun-game-note'
 
 export default {
-  name: 'init-player-info_word',
+  name: 'init-player-info_secret-word',
   computed: {
     funGameNote() {
       return funGameNote
-    },
+    }
   },
 }
 </script>
 
 <style lang="scss">
-.init-player-info_word {
+.init-player-info_secret-word {
   h3 {
     @include res-aware-element-spacing('margin-bottom', 'md');
   }

@@ -3,7 +3,7 @@
 //---------//
 
 import log from 'server/log'
-import dedent from 'dedent/macro'
+import tedent from 'tedent'
 
 //
 //------//
@@ -17,7 +17,7 @@ import dedent from 'dedent/macro'
 //   for end users.  Granted even those errors are either bugs or people messing
 //   with the api, but those are expected.
 //
-const handleErrorDuringRoute = (ctx, createErrorMessage, args) => error => {
+const createHandleErrorDuringRoute = (ctx, createErrorMessage) => error => {
   ctx.status = 500
 
   if (error.isHandled) {
@@ -25,11 +25,11 @@ const handleErrorDuringRoute = (ctx, createErrorMessage, args) => error => {
     return
   }
 
-  const possiblyAsyncErrorMessage = createErrorMessage(...args)
+  const possiblyAsyncErrorMessage = createErrorMessage(ctx)
 
   return Promise.resolve(possiblyAsyncErrorMessage).then(message => {
     message.detailed += '\n\n'
-    message.detailed += dedent(`
+    message.detailed += tedent(`
       Note: This should be looked into because it means we missed handling an
             error somewhere.
     `)
@@ -43,4 +43,4 @@ const handleErrorDuringRoute = (ctx, createErrorMessage, args) => error => {
 // Exports //
 //---------//
 
-export { handleErrorDuringRoute }
+export { createHandleErrorDuringRoute }

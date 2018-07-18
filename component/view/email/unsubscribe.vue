@@ -80,21 +80,3 @@ export default {
   },
 }
 </script>
-
-<style lang="scss">
-.view.email-unsubscribe {
-  //
-  // TODO: set 'display: flex' only for #app.game so this following line
-  //   is unnecessary
-  //
-  display: block !important;
-
-  h4.success {
-    display: none;
-
-    &.exists {
-      display: block;
-    }
-  }
-}
-</style>

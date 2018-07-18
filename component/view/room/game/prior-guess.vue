@@ -1,20 +1,21 @@
 <template>
-  <!--
+  <li>
+    <!--
 
-  TODO: normalize the server data and connect this component to the vuex store
-    so it doesn't rely on all props directly being passed by `game/index.vue`
+    TODO: normalize the server data and connect this component to the vuex store
+      so it doesn't rely on all props directly being passed by `game/index.vue`
 
-  -->
-
-  <li v-show-initially="!justAdded"
-    data-animate="{ duration: { opacity: 'slow' } }">
+    -->
 
     <ul ref="lettersEl"
       class="letters"
-      :class="lettersClasses">
+      :class="lettersClasses"
+      data-animate="{
+        duration: { opacity: 'slow' },
+        afterHide: 'makeInvisible',
+      }">
 
       <li v-for="(letter, index) in word"
-        data-animate="{ duration: { opacity: 'slow' } }"
         :key="index"
         :class="{
           chosen: wasChosen(letter, index),
@@ -38,15 +39,7 @@
 
     <frown v-if="isCorrect && friendWon" />
 
-    <clock ref="clockComponent"
-      :initial-classes="{ exists: showClock }"
-      data-animate="{
-        duration: {
-          opacity: 'slow',
-          size: 'fast',
-        },
-        shouldAnimate: { width: true },
-      }"
+    <clock v-if="showClock"
       :onClick="showStatusHelp" />
   </li>
 </template>
@@ -62,14 +55,10 @@
 // Imports //
 //---------//
 
-import statusHelpContent from './status-help-content'
+import statusIdToHelpContent from './status-id-to-help-content'
 import { noop, waitMs } from 'universal/utils'
 import { createNamespacedHelpers } from 'vuex'
-import {
-  animateHide,
-  animateShow,
-  removeClass,
-} from 'client/utils'
+import { animateHide, animateShow } from 'client/utils'
 import {
   combineAll,
   containedIn,
@@ -150,15 +139,13 @@ export default {
 
         const showChildren = map(animateShow)($refs.lettersEl.children)
 
-        return Promise.all([
-            ...showChildren,
-            this.revealEnterGuess(),
-          ])
-          .then(() => {
+        return Promise.all([...showChildren, this.revealEnterGuess()]).then(
+          () => {
             const { lettersEl } = this.$refs
 
             forEach(maybeClearOpacity)(lettersEl.children)
-          })
+          }
+        )
       },
 
       liveUpdate: {
@@ -166,10 +153,8 @@ export default {
           const { $el, guessIndex, isOtherPlayer } = this,
             lastGuessIndex = payload.otherPlayer.guesses.length - 1
 
-          if (
-            isOtherPlayer
-            && guessIndex === lastGuessIndex
-          ) return animateShow($el)
+          if (isOtherPlayer && guessIndex === lastGuessIndex)
+            return animateShow($el)
         },
         beforeOtherPlayerChoseLetter() {
           const { $el, isCurrentPlayer, isLastGuess } = this
@@ -177,14 +162,11 @@ export default {
           if (isCurrentPlayer && isLastGuess) return animateHide($el)
         },
         afterOtherPlayerChoseLetter() {
-          const { $el, $refs, isCurrentPlayer, isLastGuess } = this
+          const { $el, isCurrentPlayer, isLastGuess } = this
 
-          if (isCurrentPlayer && isLastGuess) {
-            removeClass('exists', $refs.clockComponent)
-            return animateShow($el)
-          }
+          if (isCurrentPlayer && isLastGuess) return animateShow($el)
         },
-      }
+      },
     },
   },
 
@@ -214,7 +196,7 @@ export default {
 
           const hideNonChosenLetters = passThrough(lettersEl.children, [
             keepWhen(isNotChosen),
-            map(animateHide)
+            map(animateHide),
           ])
 
           return Promise.all(hideNonChosenLetters)
@@ -234,7 +216,7 @@ export default {
     isChoosable(letter, index) {
       const { currentPlayer, showLetterChooser, word: guessedWord } = this
 
-      const letterIsInWord = contains(letter)(currentPlayer.word)
+      const letterIsInWord = contains(letter)(currentPlayer.secretWord)
 
       return (
         showLetterChooser &&
@@ -244,7 +226,7 @@ export default {
     },
     showStatusHelp() {
       return this.$myStore.dispatch('lightbox/tryToShow', {
-        content: statusHelpContent.otherPlayerIsChoosingALetter,
+        content: statusIdToHelpContent.otherPlayerIsChoosingALetter,
         type: 'info',
       })
     },
@@ -280,9 +262,9 @@ function getComputedProperties() {
 function getLocalComputedProperties() {
   return {
     hasNoMatchingLetters() {
-      const { currentPlayer, word } = this
+      const { currentPlayer, word: guessedWord } = this
 
-      return none(containedIn(currentPlayer.word))(word)
+      return none(containedIn(currentPlayer.secretWord))(guessedWord)
     },
     isCurrentPlayer() {
       return this.currentOrOtherPlayer === 'currentPlayer'
@@ -297,7 +279,7 @@ function getLocalComputedProperties() {
         lastLetter = word[lastLetterIndex]
 
       return {
-        'last-letter-is-choosable': isChoosable(lastLetter, lastLetterIndex)
+        'last-letter-is-choosable': isChoosable(lastLetter, lastLetterIndex),
       }
     },
     showClock() {
@@ -307,11 +289,7 @@ function getLocalComputedProperties() {
         otherPlayerMustRevealALetter,
       } = this
 
-      return (
-        isCurrentPlayer &&
-        isLastGuess &&
-        otherPlayerMustRevealALetter
-      )
+      return isCurrentPlayer && isLastGuess && otherPlayerMustRevealALetter
     },
     showLetterChooser() {
       const {
@@ -350,14 +328,6 @@ $choose-letter-focus: #ff8d00;
 //   class on every child.  Or figure out another option? hmmmmm
 //
 .prior-guesses > li {
-  button.clock {
-    display: none;
-
-    &.exists {
-      display: inline-block;
-    }
-  }
-
   button.clock,
   .frown {
     @include res-aware-element-spacing('margin-left', 'sm');

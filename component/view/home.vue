@@ -36,6 +36,10 @@ export default {
 
 <style lang="scss">
 .home.view {
+  @include for-tablets-and-up {
+    max-width: $desktop-single-column-content-width;
+  }
+
   > p + p {
     @include res-aware-element-spacing('margin-top', 'lg');
   }

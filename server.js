@@ -19,7 +19,7 @@ import Koa from 'koa'
 import KoaRouter from 'koa-router'
 import chalk from 'chalk'
 import createLruCache from 'lru-cache'
-import dedent from 'dedent'
+import tedent from 'tedent'
 import koaCompress from 'koa-compress'
 import koaStatic from 'koa-static'
 import koaVueSsr_initDevServer from 'koa-vue-ssr_init-dev-server'
@@ -62,7 +62,7 @@ const distDir = path.resolve(__dirname, 'dist'),
     client: _client,
     ssr: _ssr,
   },
-  fixtureNameCamel = 'roomExists',
+  fixtureNameCamel = 'bothInitializedPlayer2Guided',
   installFixture = () => fixtureNameToInstall[fixtureNameCamel]()
 
 logUnhandledRejections()
@@ -233,7 +233,7 @@ function logUnhandledRejections() {
       error = new Error(jstring(reason))
     }
 
-    error.message = dedent(`
+    error.message = tedent(`
       ${error.message}
 
       at promise: ${p}

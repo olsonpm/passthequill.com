@@ -15,9 +15,15 @@
 // Imports //
 //---------//
 
+import enterDisplayName from './enter-display-name'
+import enterSecretWord from './enter-secret-word'
+import firstTime from './first-time/index'
+import firstTimeMobile from './first-time/mobile'
+import firstTimeDesktop from './first-time/desktop'
 import game from './game/index'
 import initPlayer from './init-player/index'
 import initWebsocket from 'project-root/entry/client/init-websocket'
+import introduceGuide from './introduce-guide'
 import { createNamespacedHelpers } from 'vuex'
 import { animate } from 'client/utils'
 
@@ -27,7 +33,16 @@ import { animate } from 'client/utils'
 //------//
 
 const { mapState } = createNamespacedHelpers('room'),
-  subViews = { game, initPlayer }
+  subViews = {
+    enterDisplayName,
+    enterSecretWord,
+    firstTime,
+    firstTimeMobile,
+    firstTimeDesktop,
+    game,
+    initPlayer,
+    introduceGuide,
+  }
 
 //
 //------//
@@ -100,19 +115,3 @@ export default {
   },
 }
 </script>
-
-<style lang="scss">
-.view.room {
-  > .wrapper {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-
-    > .sub-view {
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-    }
-  }
-}
-</style>

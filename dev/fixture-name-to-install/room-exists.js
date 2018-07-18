@@ -2,7 +2,7 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent'
+import tedent from 'tedent'
 
 import { docidToHash } from '../../lib/server/db'
 import { dal } from 'server/db'
@@ -33,8 +33,10 @@ const name = 'room-exists'
 const install = () => {
   return Promise.all([
     createRoom(),
-    createEmailSentRecord(test1EncryptedEmail, 'room-created'),
-    createEmailSentRecord(test2EncryptedEmail, 'invitation'),
+    createEmailSentRecord(test1EncryptedEmail, 'room-created', 1),
+    createEmailSentRecord(test2EncryptedEmail, 'invitation', 2),
+    dal.guide.create({ _id: test1EncryptedEmail }),
+    dal.guide.create({ _id: test2EncryptedEmail }),
   ])
     .then(createPlayers)
     .then(roomAndPlayerData => {
@@ -49,6 +51,11 @@ const install = () => {
       log(
         `player 1 room url: ${baseUrl.local}/room/` +
           `${roomHash}/player/${player1Hash}\n`
+      )
+
+      log(
+        `player 2 room url: ${baseUrl.local}/room/` +
+          `${roomHash}/player/${player2Hash}\n`
       )
 
       return dal.activeRoom.update({
@@ -66,13 +73,13 @@ const install = () => {
 // Helper Functions //
 //------------------//
 
-function createEmailSentRecord(to, type) {
+function createEmailSentRecord(to, type, playerNumber) {
   return dal.emailSent.create({ to, type }).then(({ _id }) => {
     logThenNewline(
-      dedent(`
+      tedent(`
         emailSent:
-          _id: ${_id}
           hash: ${docidToHash(_id)}
+          player number: ${playerNumber}
       `)
     )
   })
@@ -82,10 +89,8 @@ function createRoom() {
   return dal.activeRoom.create({}).then(({ _id, _rev }) => {
     const hash = docidToHash(_id)
     logThenNewline(
-      dedent(`
-        room:
-          _id: ${_id}
-          hash: ${hash}
+      tedent(`
+        room hash: ${hash}
       `)
     )
 
@@ -119,12 +124,9 @@ function createAPlayer(encryptedEmail, roomHash, number) {
     .then(({ _id }) => {
       const hash = docidToHash(_id)
       logThenNewline(
-        dedent(`
-        player:
-          _id: ${_id}
-          hash: ${hash}
-          number: ${number}
-      `)
+        tedent(`
+          player ${number} hash: ${hash}
+        `)
       )
 
       return hash

@@ -14,20 +14,18 @@
           <my-text-input id="display-name"
             label="Your display name"
             info-component-name="init-player-info_display-name"
-            ref="displayNameComponent"
-            :placeholder="placeholder.displayName"
             :autofocus="true"
             :parentComponent="this"
+            :placeholder="placeholder.displayName"
             :readonly="state.showSuccessInfo" />
         </li>
         <li>
-          <my-text-input id="word"
+          <my-text-input id="secretWord"
             autocomplete="off"
             label="Your secret word"
-            info-component-name="init-player-info_word"
-            ref="secretWordComponent"
-            :placeholder="placeholder.secretWord"
+            info-component-name="init-player-info_secret-word"
             :parentComponent="this"
+            :placeholder="placeholder.secretWord"
             :readonly="state.showSuccessInfo" />
         </li>
       </ul>
@@ -39,37 +37,31 @@
       />
 
       <loading-check ref="loadingCheckComponent"
-        data-animate="{ duration: { opacity: 'fast' } }"
         :loading="state.loading"
         :success="state.success"
       />
-
-      <!--
-        TODO: implement a failure-link
-      -->
     </my-form>
 
-    <div v-if="state.showSuccessInfo"
+    <div v-initially-removed
       class="info-after-submit"
       ref="infoAfterSubmitEl"
-      data-animate="{ duration: { opacity: 'fast' } }">
+      data-animate="{
+        duration: {
+          opacity: 'fast',
+          size: 'fast',
+        },
+        shouldAnimate: { height: true },
+      }">
 
       <h3>Got it<party /></h3>
 
       <p v-html="state.successStatusMessage"></p>
 
       <div class="just-kidding"
-        ref="justKiddingEl"
-        data-animate="{
-          duration: {
-            opacity: 'fast',
-            size: 'fast',
-          },
-          shouldAnimate: { height: true },
-        }">
+        v-initially-removed
+        ref="justKiddingEl">
 
-        Just kidding - it seems you're friend just joined.  Press 'Ok' to
-        start&nbsp;playing.
+        Just kidding - they joined now.  Press 'Ok' to start&nbsp;playing.
       </div>
 
       <my-button can-only-click-once
@@ -86,56 +78,34 @@
 // Imports //
 //---------//
 
-import dedent from 'dedent'
-import setOfValidWords from 'universal/set-of-valid-words'
+import tedent from 'tedent'
 import validationInfo from 'universal/input-validation-info'
 import { createNamespacedHelpers } from 'vuex'
 import { animateShow } from 'client/utils'
+import { getRandomElementFrom, settleAll, wrapIn } from 'universal/utils'
+import { waitFor } from '../../helpers'
+import { combineAll, join, map, mAppendTo, mAssignOver, passThrough } from 'fes'
 import {
-  getRandomElementFrom,
-  logErrorToServer,
-  settleAll,
-  waitMs,
-  wrapIn,
-} from 'universal/utils'
+  exampleDisplayNameAndSecretWordPairs,
+  invalidDisplayNameMessage,
+  invalidWordMessage,
+  initPlayer,
+} from '../helpers'
 import {
   createComputedFormData,
   createFormData,
   createFormObject,
 } from 'client/form-helpers'
-import {
-  combineAll,
-  getArrayOfKeys,
-  isGreaterThan,
-  isLaden,
-  join,
-  keep,
-  keepWhen,
-  mAppendTo,
-  map,
-  mMap,
-  mSet,
-  passThrough,
-  reduce,
-  unique,
-} from 'fes'
 
 //
 //------//
 // Init //
 //------//
 
-const inputIdToInitialState = validationInfo.initPlayer.body,
-  statusToMessage = getStatusToMessage(),
+const inputIdToInitialState = validationInfo.initPlayer,
   { mapState: mapRoomState } = createNamespacedHelpers('room'),
   { mapState: mapInitPlayerState } = createNamespacedHelpers('initPlayer'),
-  invalidDisplayNameMessage = 'display name must be 1 to 15 letters',
-  exampleDisplayNameAndSecretWordPairs = getExampleDisplayNameAndSecretWordPairs()
-
-if (process.env.NODE_ENV === 'development') {
-  inputIdToInitialState.displayName.initialValue = 'Superwoman'
-  inputIdToInitialState.word.initialValue = 'humor'
-}
+  statusToMessage = getStatusToMessage()
 
 //
 //------//
@@ -149,13 +119,39 @@ export default {
     this.formObject = createFormObject(inputIdToInitialState, this)
   },
 
+  beforeDestroy() {
+    this.$store.commit('removeAppClass', this.$options._componentTag)
+  },
+
   created() {
     if (!this.placeholder.displayName) this.setPlaceholder()
+
+    if (process.env.NODE_ENV === 'development') {
+      const { number } = this.currentPlayer
+      mAssignOver(this.formData.inputs)({
+        displayName: number === 1 ? 'Wonder Woman' : 'Strongbad',
+        secretWord: number === 1 ? 'super' : 'great'
+      })
+    }
   },
 
   props: ['transitionTo'],
 
   computed: getComputedProperties(),
+
+  subscribeTo: {
+    room: {
+      liveUpdate: {
+        afterOtherPlayerEnteredGame() {
+          const { $refs, state } = this
+
+          return state.successStatusMessage
+            ? animateShow($refs.justKiddingEl)
+            : undefined
+        },
+      },
+    },
+  },
 
   data() {
     return {
@@ -168,20 +164,6 @@ export default {
         successStatusMessage: '',
       },
     }
-  },
-
-  subscribeTo: {
-    room: {
-      liveUpdate: {
-        afterOtherPlayerInitialized() {
-          const { $refs, state } = this
-
-          if (!state.successStatusMessage) return
-
-          return animateShow($refs.justKiddingEl)
-        },
-      },
-    },
   },
 
   methods: {
@@ -201,7 +183,8 @@ export default {
       ])
     },
     okClicked() {
-      this.transitionTo('game')
+      this.$myStore.dispatch('room/enterGame')
+      return this.transitionTo('game')
     },
     onSubmit() {
       const { $myStore, $refs, formData, formObject, state } = this
@@ -216,12 +199,10 @@ export default {
 
       state.loading = true
 
-      const minimumAnimationTime = waitMs(1000)
-
       return settleAll([
         this.$myStore.dispatch('room/initPlayer', formData.inputs),
         animateShow($refs.loadingCheckComponent),
-        minimumAnimationTime,
+        waitFor.animation.loadingCircle(),
       ])
         .then(([initPlayerResult]) => {
           const { status, value } = initPlayerResult
@@ -229,18 +210,14 @@ export default {
         })
         .then(() => {
           state.success = true
-
-          // TODO: use javascript to animate loading-check so we can program
-          //   a hook `onFinishedAnimating` or something.  This hardcoded wait
-          //   is a hack in the meantime
-          return waitMs(1300)
+          state.loading = true
+          return waitFor.animation.successCheck()
         })
         .then(() => {
           state.showSuccessInfo = true
           state.successStatusMessage = statusToMessage[this.successStatus]
-          return this.$nextTick()
+          return animateShow($refs.infoAfterSubmitEl)
         })
-        .then(() => animateShow($refs.infoAfterSubmitEl))
     },
     setPlaceholder() {
       const [displayName, secretWord] = getRandomElementFrom(
@@ -262,108 +239,37 @@ export default {
 // Helper Functions //
 //------------------//
 
-function getExampleDisplayNameAndSecretWordPairs() {
-  return [
-    ['Austin Powers', 'swing'],
-    ['Backstreet Boy', 'group'],
-    ['Dopey', 'dwarf'],
-    ['Gordon Ramsay', 'shout'],
-    ['Hercules', 'bicep'],
-    ['Hulk Hogan', 'brawl'],
-    ['Jack Dawson', 'goner'],
-    ['Jason Voorhees', 'panic'],
-    ['Mario', 'peach'],
-    ['Michael Jordan', 'jumps'],
-    ['My Cat Max', 'meows'],
-    ['Paul Bunyan', 'giant'],
-    ['Tinkerbell', 'fairy'],
-    ['Wonder Woman', 'super'],
-  ]
-}
-
-function getLetterToLetterCount(currentWord) {
-  return passThrough(currentWord, [
-    unique,
-    reduce(toZeroes, {}),
-    mMap(toLetterCounts),
-  ])
-
-  // scoped helper functions
-
-  function toLetterCounts(_unused_zero, letter) {
-    return keep(letter)(currentWord).length
-  }
-}
-
-function toZeroes(result, letter) {
-  return mSet(letter, 0)(result)
-}
-
-function getStatusToMessage() {
-  return {
-    mustWaitForFriend: dedent(`
-      Looks like your friend hasn't entered in their display name and word
-      yet.  If you're sure they've received the invitation email then there aint
-      much to do other than wait in the game&nbsp;room.
-    `),
-    startGame: dedent(`
-      You're ready to start&nbsp;playing!
-    `),
-  }
-}
-
 function getComputedProperties() {
-  const vuexRoomState = mapRoomState(['currentPlayer', 'otherPlayer', 'room']),
+  const vuexRoomState = mapRoomState(['currentPlayer', 'otherPlayer']),
     vuexInitPlayerState = mapInitPlayerState(['placeholder']),
     formState = createComputedFormData(inputIdToInitialState),
-    customState = getLocalComputedProperties()
+    localState = getLocalComputedProperties()
 
   return combineAll.objects([
     vuexRoomState,
     vuexInitPlayerState,
     formState,
-    customState,
+    localState,
   ])
 }
 
 function getLocalComputedProperties() {
   return {
-    invalidWordMessage() {
-      const currentWord = this.formData.inputs.word || ''
+    invalidWordMessage,
+    successStatus: initPlayer.successStatus,
+  }
+}
 
-      if (currentWord.length !== 5) return 'secret word must be 5 letters'
-
-      const repeatingLetters = passThrough(currentWord, [
-        getLetterToLetterCount,
-        keepWhen(isGreaterThan(1)),
-        getArrayOfKeys,
-      ])
-
-      if (isLaden(repeatingLetters)) {
-        const showRepeatedLetters =
-          repeatingLetters.length === 1
-            ? `('${repeatingLetters[0]}' is repeated)`
-            : `('${join("' and '")(repeatingLetters)}' are repeated)`
-
-        return `your word must use unique letters<br>${showRepeatedLetters}`
-      }
-
-      if (!setOfValidWords.has(currentWord)) {
-        return `your word is not in my dictionary`
-      }
-
-      logErrorToServer({
-        context: 'during invalidWordMessage()',
-        error: new Error(`currentWord seems to be valid: '${currentWord}'`),
-      })
-    },
-    successStatus() {
-      const { otherPlayer } = this
-
-      return !otherPlayer.hasWord || !otherPlayer.displayName
-        ? 'mustWaitForFriend'
-        : 'startGame'
-    },
+function getStatusToMessage() {
+  return {
+    mustWaitForFriend: tedent(`
+      Looks like your friend hasn't entered in their display name and secret
+      word yet.  If you're sure they've received the invitation email then there
+      aint much to do other than wait in the game&nbsp;room.
+    `),
+    startGame: tedent(`
+      You're ready to start&nbsp;playing!
+    `),
   }
 }
 </script>
@@ -381,23 +287,16 @@ $local_label-width: 150px;
   }
 
   .info-after-submit {
-    > h3 {
-      @include res-aware-element-spacing('margin-top', 'lg');
-      @include res-aware-element-spacing('margin-bottom', 'sm');
-    }
+    @include res-aware-element-spacing('margin-top', 'xl');
 
-    > h3 + p {
-      margin-bottom: 0;
+    > h3 {
+      @include res-aware-element-spacing('margin-bottom', 'sm');
+
+      margin-top: 0;
     }
 
     .just-kidding {
       @include res-aware-element-spacing('margin-top', 'sm');
-
-      display: none;
-
-      &.exists {
-        display: block;
-      }
     }
   }
 }

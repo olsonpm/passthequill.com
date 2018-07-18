@@ -6,7 +6,7 @@ import KoaRouter from 'koa-router'
 
 import { dal, hashToDocid } from 'server/db'
 import { ifResponseIsNot404 } from 'server/utils'
-import { handleErrorDuringRoute } from 'project-root/create/router/api/helpers'
+import { createHandleErrorDuringRoute } from 'project-root/create/router/api/helpers'
 
 //
 //------//
@@ -33,9 +33,7 @@ const createUnsubscriptionsRouter = () => createGetRoute(new KoaRouter())
 function createGetRoute(unsubscriptionsRouter) {
   return unsubscriptionsRouter.get('/:emailSentHash', ctx => {
     const { emailSentHash } = ctx.params,
-      handleError = handleErrorDuringRoute(ctx, createErrorMessage, [
-        emailSentHash,
-      ])
+      handleError = createHandleErrorDuringRoute(ctx, createErrorMessage)
 
     try {
       const returnUnsubscriptions = createReturnUnsubscriptions(ctx)
@@ -66,7 +64,9 @@ function createReturnUnsubscriptions(ctx) {
   }
 }
 
-function createErrorMessage(emailSentHash) {
+function createErrorMessage(ctx) {
+  const { emailSentHash } = ctx.params
+
   return {
     friendly: 'attempting to retrieve unsubscribe settings',
     detailed: `error occurred during GET unsubscribe for the hash '${emailSentHash}'`,

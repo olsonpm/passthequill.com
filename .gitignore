@@ -4,5 +4,6 @@
 /dist
 /config/*.js
 /lib/server/email/templates/*.inline.html
+/migration-scripts/index.js
 /test.js
 /test

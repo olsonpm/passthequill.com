@@ -3,13 +3,13 @@
 //---------//
 
 import cors from '@koa/cors'
-import dedent from 'dedent'
+import tedent from 'tedent'
 import KoaRouter from 'koa-router'
 
 import unsubscribeViaEmailSentHash from './via-email-sent-hash'
 
 import { validEmailTypes } from 'universal/email/types'
-import { handleErrorDuringRoute } from 'project-root/create/router/api/helpers'
+import { createHandleErrorDuringRoute } from 'project-root/create/router/api/helpers'
 import { createIfRequestIsValid } from 'server/utils'
 import { join, passThrough } from 'fes'
 
@@ -47,11 +47,9 @@ function createListUnsubscribeRoute(unsubscribeRouter) {
 
   return unsubscribeRouter.post(nonRestfulUrl, cors(), ctx => {
     const { emailSentHash, emailType } = ctx.params,
-      errorArgs = [emailType, emailSentHash],
-      handleError = handleErrorDuringRoute(
+      handleError = createHandleErrorDuringRoute(
         ctx,
-        createErrorMessage.nonRestful.post,
-        errorArgs
+        createErrorMessage.nonRestful.post
       )
 
     try {
@@ -77,12 +75,7 @@ function createPostRoute(unsubscribeRouter) {
     ifRequestIsValid(ctx => {
       const { emailSentHash } = ctx.params,
         { type } = ctx.request.body,
-        errorArgs = [type, emailSentHash],
-        handleError = handleErrorDuringRoute(
-          ctx,
-          createErrorMessage.post,
-          errorArgs
-        )
+        handleError = createHandleErrorDuringRoute(ctx, createErrorMessage.post)
 
       try {
         return unsubscribeViaEmailSentHash(emailSentHash, type)
@@ -103,23 +96,32 @@ function getCreateErrorMessage() {
 
   return {
     nonRestful: {
-      post: (type, emailSentHash) => ({
+      post: ctx => {
+        const { emailSentHash, emailSentType } = ctx.params
+
+        return {
+          friendly,
+          detailed: tedent(`
+            error occurred during non-restful POST unsubscribe
+              hash: ${emailSentHash}
+              emailSentType: ${emailSentType}
+          `),
+        }
+      },
+    },
+    post: ctx => {
+      const { emailSentHash } = ctx.params,
+        { type } = ctx.request.body
+
+      return {
         friendly,
-        detailed: dedent(`
-          error occurred during non-restful POST unsubscribe
+        detailed: tedent(`
+          error occurred during POST unsubscribe
             hash: ${emailSentHash}
             type: ${type}
         `),
-      }),
+      }
     },
-    post: (type, emailSentHash) => ({
-      friendly,
-      detailed: dedent(`
-        error occurred during POST unsubscribe
-          hash: ${emailSentHash}
-          type: ${type}
-      `),
-    }),
   }
 }
 

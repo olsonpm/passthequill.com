@@ -32,14 +32,6 @@ const createStore = () =>
       showErrorView: false,
       showNotFoundView: false,
     }),
-    actions: {
-      maybeAddAppClass({ commit, state }, { appClass }) {
-        const index = state.appClasses.indexOf(appClass)
-        if (index > -1) return
-
-        commit('addAppClass', appClass)
-      },
-    },
     mutations: {
       addAppClass(state, appClass) {
         state.appClasses.push(appClass)

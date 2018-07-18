@@ -1,6 +1,7 @@
 <template>
   <simple-button type="button"
     class="failure-link link custom-focus"
+    initially-removed
     :on-click="explainFailure">
 
     <p v-html="text"></p>
@@ -11,18 +12,14 @@
 </template>
 
 <script>
-import dedent from 'dedent'
+import tedent from 'tedent'
 import { log, truncate } from 'universal/utils'
 
 const isNotProd = process.env.NODE_ENV !== 'production'
 
 export default {
   name: 'failure-link',
-  props: [
-    'reason-component-name',
-    'reason-content',
-    'text',
-  ],
+  props: ['reason-component-name', 'reason-content', 'text'],
   methods: {
     explainFailure() {
       warnIfIncorrectProps(this)
@@ -40,7 +37,7 @@ function warnIfIncorrectProps({ reasonComponentName, reasonContent }) {
   if (isNotProd) {
     if (reasonComponentName && reasonContent) {
       log(
-        dedent(`
+        tedent(`
           both reasonComponentName and reasonContent should not be truthy
 
           reasonComponentName: ${reasonComponentName}
@@ -51,7 +48,7 @@ function warnIfIncorrectProps({ reasonComponentName, reasonContent }) {
     }
     if (!reasonComponentName && !reasonContent) {
       log(
-        dedent(`
+        tedent(`
           either reasonComponentName or reasonContent should be truthy
 
           reasonComponentName: ${reasonComponentName}

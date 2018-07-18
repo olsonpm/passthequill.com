@@ -44,11 +44,11 @@ const createWebsocketServer = () => {
 function handleBroadcastError(error) {
   if (!error) return
 
-  log.server.error('Error occurred when attempting to broadcast', error)
+  log.server.error('occurred when attempting to broadcast', error)
 }
 
 function handleConnectionError(error) {
-  log.server.error('Error occurred with the connection to a client', error)
+  log.server.error('occurred with the connection to a client', error)
 }
 
 function isOpen(client) {
