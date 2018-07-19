@@ -290,6 +290,14 @@ export default {
         },
       },
     },
+    screenSize: {
+      hasInitialized() {
+        if (this.isPhoneOrSmaller) {
+          this.createTouchManager()
+          this.initStickyHeader()
+        }
+      }
+    },
   },
 
   components: { enterGuess, priorGuess, status },
@@ -317,20 +325,6 @@ export default {
       const animateShowOrHide = value ? animateShow : animateHide
       return animateShowOrHide(this.$refs.rightArrowComponent)
     },
-  },
-
-  mounted() {
-    //
-    // because the swipe functionality and sticky-header are mobile-specific, we
-    //   need to wait until the app has rendered before initializing the events.
-    //   At this point the vuex 'screenSize' store should have been initialized.
-    //
-    this.$nextTick(() => {
-      if (this.isPhoneOrSmaller) {
-        this.createTouchManager()
-        this.initStickyHeader()
-      }
-    })
   },
 
   beforeDestroy() {

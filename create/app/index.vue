@@ -112,6 +112,11 @@ export default {
         'resize',
         debounce(maybeUpdateScreenSize, 150)
       )
+
+      return this.$nextTick()
+    })
+    .then(() => {
+      this.$eventManager.publish('screenSize/hasInitialized')
     })
   },
   beforeDestroy() {
