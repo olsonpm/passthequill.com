@@ -18,6 +18,7 @@ shift
 
 buildSsrAssets='true'
 shouldInitDevServer='true'
+useHttps='true'
 
 if [ "${command}" = "build-dev" ]; then
   if [ "${1}" = "--include-ssr-assets" ]; then
@@ -26,6 +27,13 @@ if [ "${command}" = "build-dev" ]; then
     shift
   else
     buildSsrAssets='false'
+  fi
+fi
+
+if [ "${command}" = "build-test" ]; then
+  if [ "${1}" = "--insecure" ]; then
+    useHttps='false'
+    shift
   fi
 fi
 
@@ -75,7 +83,7 @@ case "${command}" in
     NODE_ENV='production' build_server "$@";;
 
   build-test)
-    NODE_ENV='test' build_server "$@" ;;
+    USE_HTTPS="${useHttps}" NODE_ENV='test' build_server "$@" ;;
 
   build-dev)
     SHOULD_INIT_DEV_SERVER="${shouldInitDevServer}" NODE_ENV='development' build_server "$@" ;;

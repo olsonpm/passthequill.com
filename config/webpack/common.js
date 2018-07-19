@@ -150,6 +150,10 @@ function getPlugins() {
       new VueLoaderPlugin(),
       new webpack.DefinePlugin({
         'process.env.CURRENT_COMMIT_HASH': getCurrentCommitHash(),
+        'process.env.USE_HTTPS':
+          process.env.USE_HTTPS !== undefined
+            ? process.env.USE_HTTPS
+            : !isDevelopment,
       }),
     ],
     environmentDependentPlugins = isDevelopment

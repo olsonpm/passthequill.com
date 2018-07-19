@@ -65,6 +65,10 @@ const eventualConfig = createInlineTemplates().then(() => {
             ? 'true'
             : process.env.SHOULD_INIT_DEV_SERVER,
         'process.env.VUE_ENV': 'undefined',
+        'process.env.USE_HTTPS':
+          process.env.USE_HTTPS !== undefined
+            ? process.env.USE_HTTPS
+            : !isDevelopment,
       }),
     ],
     module: {

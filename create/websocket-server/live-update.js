@@ -27,7 +27,7 @@ import { logErrorToServer, noop } from 'universal/utils'
 const playerHashToClientSockets = {},
   clientSocketToPlayerHash = new Map()
 
-const isDevelopment = process.env.NODE_ENV === 'development',
+const useHttps = process.env.USE_HTTPS,
   certAndKeyPaths = pickAll(['pathToCert', 'pathToKey'])(liveUpdateWebsocket)
 
 //
@@ -36,13 +36,11 @@ const isDevelopment = process.env.NODE_ENV === 'development',
 //------//
 
 const createWebsocketServer = () => {
-  const certAndKey = isDevelopment ? {} : getCertAndKey(certAndKeyPaths)
+  const certAndKey = useHttps ? getCertAndKey(certAndKeyPaths) : {}
 
-  const server = isDevelopment
-    ? http.createServer()
-    : https.createServer(certAndKey)
+  const server = useHttps ? https.createServer(certAndKey) : http.createServer()
 
-  if (!isDevelopment) checkCertAndKeyDaily(server, certAndKeyPaths)
+  if (useHttps) checkCertAndKeyDaily(server, certAndKeyPaths)
 
   const websocketServer = new ws.Server({ server })
 
