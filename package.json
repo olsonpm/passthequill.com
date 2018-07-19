@@ -82,7 +82,7 @@
     "webpack-cli": "^3.0.8",
     "webpack-node-externals": "^1.7.2",
     "winston": "^2.4.2",
-    "winston-daily-rotate-file": "github:olsonpm/winston-daily-rotate-file#feature_utc"
+    "winston-daily-rotate-file": "github:olsonpm/winston-daily-rotate-file#18fee1cd5d175d3cf6b870695bfa8eefb579e041"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.49",
