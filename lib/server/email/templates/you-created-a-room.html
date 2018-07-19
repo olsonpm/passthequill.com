@@ -328,9 +328,24 @@
 </head>
 
 <body class="">
+  <!-- this is for gmail's preview message text -->
+  <span style="display: none !important">
+    Your room is ready
+
+    Click the link below to enter and begin playing.
+    {{ global.externalBaseUrl }}/room/{{ roomHash }}/player/{{ playerHash }}
+    
+    Good luck!
+
+    Unsubscribe from 'room created' emails
+
+    Unsubscribe from all emails
+
+    Manage your subscriptions
+  </span>
   <table border="0" cellpadding="0" cellspacing="0" class="body">
     <tr>
-      <td>&nbsp;</td>
+      <td>{{{ invisibleRandomSpan }}}&nbsp;</td>
       <td class="container">
         <div class="content">
 
@@ -344,10 +359,12 @@
                   <tr>
                     <td>
                       <p>
+                        {{{ invisibleRandomSpan }}}
                         Your room is ready
                       </p>
 
                       <p>
+                        {{{ invisibleRandomSpan }}}
                         Click the button below to enter and begin playing.
                       </p>
                       <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
@@ -357,7 +374,9 @@
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tbody>
                                   <tr>
-                                    <td> <a href="{{ global.externalBaseUrl }}/room/{{ roomHash }}/player/{{ playerHash }}" target="_blank">Enter Room</a> </td>
+                                    <td>
+                                      {{{ invisibleRandomSpan }}}<a href="{{ global.externalBaseUrl }}/room/{{ roomHash }}/player/{{ playerHash }}" target="_blank">Enter Room</a>
+                                    </td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -365,7 +384,7 @@
                           </tr>
                         </tbody>
                       </table>
-                      <p>Good luck!</p>
+                      <p>{{{ invisibleRandomSpan }}}Good luck!</p>
                     </td>
                   </tr>
                 </table>
@@ -380,22 +399,22 @@
             <table border="0" cellpadding="0" cellspacing="0">
               <tr>
                 <td>
-                  <span class="apple-link">Pass The Quill</span>
+                  <span class="apple-link">{{{ invisibleRandomSpan }}}Pass The Quill</span>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <a href="{{ global.externalBaseUrl }}/email/unsubscribe/room-created/{{ emailSentHash }}" target="_blank">Unsubscribe</a> from "room created" emails
+                  {{{ invisibleRandomSpan }}}<a href="{{ global.externalBaseUrl }}/email/unsubscribe/room-created/{{ emailSentHash }}" target="_blank">Unsubscribe</a> from "room created" emails
                 </td>
               </tr>
               <tr>
                 <td>
-                  <a href="{{ global.externalBaseUrl }}/email/unsubscribe/all/{{ emailSentHash }}" target="_blank">Unsubscribe</a> from all emails
+                  {{{ invisibleRandomSpan }}}<a href="{{ global.externalBaseUrl }}/email/unsubscribe/all/{{ emailSentHash }}" target="_blank">Unsubscribe</a> from all emails
                 </td>
               </tr>
               <tr>
                 <td>
-                  <a href="{{ global.externalBaseUrl }}/email/unsubscriptions/{{ emailSentHash }}" target="_blank">Manage</a> your subscriptions
+                  {{{ invisibleRandomSpan }}}<a href="{{ global.externalBaseUrl }}/email/unsubscriptions/{{ emailSentHash }}" target="_blank">Manage</a> your subscriptions
                 </td>
               </tr>
             </table>
@@ -405,7 +424,7 @@
           <!-- END CENTERED WHITE CONTAINER -->
         </div>
       </td>
-      <td>&nbsp;</td>
+      <td>{{{ invisibleRandomSpan }}}&nbsp;</td>
     </tr>
   </table>
 </body>

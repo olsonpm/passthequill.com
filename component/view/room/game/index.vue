@@ -69,7 +69,7 @@
       <div class="sticky-header"
         ref="stickyHeaderEl">
 
-        <status ref="tabletsAndLarger_statusComponent"
+        <status ref="phonesAndSmaller_statusComponent"
           data-animate="{ duration: { opacity: 'slow' } }" />
 
         <div class="wrapper">
@@ -83,14 +83,14 @@
           <div class="display-names"
             ref="displayNamesEl">
 
+            <h4>{{ currentPlayer.displayName }}</h4>
+
             <h4 ref="phonesAndSmaller_otherPlayerDisplayNameEl"
               data-animate="{ duration: { opacity: 'slow' } }"
               :class="{ tbd: !otherPlayer.displayName }">
 
               {{ otherPlayer.displayName || '&lt;not entered yet&gt;' }}
             </h4>
-
-            <h4>{{ currentPlayer.displayName }}</h4>
           </div>
 
           <arrow-circle direction="right"
@@ -319,10 +319,6 @@ export default {
     },
   },
 
-  beforeDestroy() {
-    window.removeEventListener('scroll', this.maybeToggleStuck)
-  },
-
   mounted() {
     //
     // because the swipe functionality and sticky-header are mobile-specific, we
@@ -339,8 +335,8 @@ export default {
 
   beforeDestroy() {
     this.$store.commit('removeAppClass', 'game')
-    this.closeLiveUpdateWebSocket()
     this.destroyTouchManager()
+    window.removeEventListener('scroll', this.maybeToggleStuck)
   },
 
   data() {
@@ -450,14 +446,13 @@ export default {
       })
     },
     showStatus() {
-      const statusComponent = this.getRefs('statusComponent')
+      const statusComponent = this.getRef('statusComponent')
 
       return statusComponent
         .maybeDrawAttentionUntilUserInteracts()
         .then(() => animateShow(statusComponent))
     },
     sliiiideToTheLeft() {
-      console.log('sliiiideToTheLeft')
       return this.slide(-1)
     },
     sliiiideToTheRight() {

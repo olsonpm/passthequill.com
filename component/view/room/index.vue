@@ -50,14 +50,20 @@ export default {
     const { $eventManager, $store, $route } = this,
       { playerHash, roomHash } = $route.params
 
+    //
     // it doesn't really matter which life-cycle event the websocket is created,
     //   just as long as it only fires on the client
+    //
     this.closeLiveUpdateWebSocket = initWebsocket.liveUpdate({
       playerHash,
       roomHash,
       eventManager: $eventManager,
       store: $store,
     })
+  },
+
+  beforeDestroy() {
+    this.closeLiveUpdateWebSocket()
   },
 
   methods: {

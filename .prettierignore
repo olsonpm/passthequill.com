@@ -1,2 +1,4 @@
 /create/app/styles/variables.scss
+/lib/server/email/templates/you-are-invited.html
+/lib/server/email/templates/you-created-a-room.html
 *.md
