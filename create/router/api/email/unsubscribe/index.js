@@ -11,9 +11,7 @@ import unsubscribeViaEmailSentHash from './via-email-sent-hash'
 import { validEmailTypes } from 'universal/email/types'
 import { handleErrorDuringRoute } from 'project-root/create/router/api/helpers'
 import { createIfRequestIsValid } from 'server/utils'
-import { hashToDocid } from 'server/db'
 import { join, passThrough } from 'fes'
-import { logErrorToServer } from 'universal/utils'
 
 //
 //------//
@@ -49,20 +47,23 @@ function createListUnsubscribeRoute(unsubscribeRouter) {
 
   return unsubscribeRouter.post(nonRestfulUrl, cors(), ctx => {
     const { emailSentHash, emailType } = ctx.params,
-      errorArgs = [emailType, emailSentHash]
-
-    return unsubscribeViaEmailSentHash(emailSentHash, emailType)
-      .then(result => {
-        ctx.status = 200
-        ctx.body = result
-      })
-      .catch(
-        handleErrorDuringRoute(
-          ctx,
-          createErrorMessage.nonRestful.post,
-          errorArgs
-        )
+      errorArgs = [emailType, emailSentHash],
+      handleError = handleErrorDuringRoute(
+        ctx,
+        createErrorMessage.nonRestful.post,
+        errorArgs
       )
+
+    try {
+      return unsubscribeViaEmailSentHash(emailSentHash, emailType)
+        .then(result => {
+          ctx.status = 200
+          ctx.body = result
+        })
+        .catch(handleError)
+    } catch (error) {
+      return handleError(error)
+    }
   })
 }
 
@@ -76,32 +77,23 @@ function createPostRoute(unsubscribeRouter) {
     ifRequestIsValid(ctx => {
       const { emailSentHash } = ctx.params,
         { type } = ctx.request.body,
-        errorArgs = [type, emailSentHash]
+        errorArgs = [type, emailSentHash],
+        handleError = handleErrorDuringRoute(
+          ctx,
+          createErrorMessage.post,
+          errorArgs
+        )
 
-      //
-      // TODO: remove this code once the bug is solved - this check should
-      //   be unnecessary
-      //
       try {
-        hashToDocid(emailSentHash)
+        return unsubscribeViaEmailSentHash(emailSentHash, type)
+          .then(result => {
+            ctx.status = 200
+            ctx.body = result
+          })
+          .catch(handleError)
       } catch (error) {
-        ctx.status = 400
-        ctx.body = {
-          error: `Invalid emailSentHash was passed: ${emailSentHash}`,
-        }
-        logErrorToServer({
-          error,
-          context: 'during POST api/email/unsubscribe',
-        })
-        return
+        return handleError(error)
       }
-
-      return unsubscribeViaEmailSentHash(emailSentHash, type)
-        .then(result => {
-          ctx.status = 200
-          ctx.body = result
-        })
-        .catch(handleErrorDuringRoute(ctx, createErrorMessage.post, errorArgs))
     })
   )
 }

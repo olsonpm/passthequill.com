@@ -9,7 +9,6 @@ import { handleErrorDuringRoute } from 'project-root/create/router/api/helpers'
 import { ifResponseIsNot404, ifStatusIsNot404 } from 'server/utils'
 import { transformProperties } from 'fes'
 import { getCurrentAndOtherPlayerData, sanitize } from './helpers'
-import { logErrorToServer } from 'universal/utils'
 
 //
 //------//
@@ -46,35 +45,22 @@ function getRoom(ctx) {
   }
 
   const errorArgs = [playerHash, roomHash],
-    authorizeThenGetPlayerData = createAuthorizeThenGetPlayerData(
+    handleError = handleErrorDuringRoute(ctx, createErrorMessage, errorArgs)
+
+  try {
+    const authorizeThenGetPlayerData = createAuthorizeThenGetPlayerData(
       ctx,
       playerHash
     )
 
-  //
-  // TODO: once bug is solved then remove this check.  It should be unnecessary
-  //
-  let _id
-
-  try {
-    _id = hashToDocid(roomHash)
+    return dal.activeRoom
+      .get({ _id: hashToDocid(roomHash) }, optionsForGet)
+      .then(ifResponseIsNot404(ctx, authorizeThenGetPlayerData))
+      .then(ifStatusIsNot404(sanitizeAndReturnAllData))
+      .catch(handleError)
   } catch (error) {
-    ctx.status = 400
-    ctx.body = {
-      error: `Invalid roomHash was passed: ${roomHash}`,
-    }
-    logErrorToServer({
-      error,
-      context: 'during GET api/room',
-    })
-    return
+    return handleError(error)
   }
-
-  return dal.activeRoom
-    .get({ _id }, optionsForGet)
-    .then(ifResponseIsNot404(ctx, authorizeThenGetPlayerData))
-    .then(ifStatusIsNot404(sanitizeAndReturnAllData))
-    .catch(handleErrorDuringRoute(ctx, createErrorMessage, errorArgs))
 }
 
 function createAuthorizeThenGetPlayerData(ctx, currentPlayerHash) {

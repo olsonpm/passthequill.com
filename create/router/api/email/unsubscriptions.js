@@ -33,12 +33,22 @@ const createUnsubscriptionsRouter = () => createGetRoute(new KoaRouter())
 function createGetRoute(unsubscriptionsRouter) {
   return unsubscriptionsRouter.get('/:emailSentHash', ctx => {
     const { emailSentHash } = ctx.params,
-      returnUnsubscriptions = createReturnUnsubscriptions(ctx)
+      handleError = handleErrorDuringRoute(ctx, createErrorMessage, [
+        emailSentHash,
+      ])
 
-    return dal.emailSent
-      .get({ _id: hashToDocid(emailSentHash) }, optionsForGet)
-      .then(ifResponseIsNot404(ctx, returnUnsubscriptions))
-      .catch(handleErrorDuringRoute(ctx, createErrorMessage, [emailSentHash]))
+    try {
+      const returnUnsubscriptions = createReturnUnsubscriptions(ctx)
+
+      return Promise.resolve()
+        .then(() =>
+          dal.emailSent.get({ _id: hashToDocid(emailSentHash) }, optionsForGet)
+        )
+        .then(ifResponseIsNot404(ctx, returnUnsubscriptions))
+        .catch(handleError)
+    } catch (error) {
+      return handleError(error)
+    }
   })
 }
 

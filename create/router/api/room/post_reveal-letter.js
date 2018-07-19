@@ -53,18 +53,24 @@ function createRevealLetter(websocketServer) {
     const { playerHash, roomHash } = ctx.params,
       { chosenLetter } = ctx.request.body,
       errorArgs = [playerHash, roomHash, chosenLetter],
-      authorizeThenGetOtherPlayerData = createAuthorizeThenGetOtherPlayerData(
-        ctx
-      ),
-      revealLetterAndReturnOtherPlayer = createRevealLetterAndReturnOtherPlayer(
-        websocketServer
-      )
+      handleError = handleErrorDuringRoute(ctx, createErrorMessage, errorArgs)
 
-    return dal.activeRoom
-      .get({ _id: hashToDocid(roomHash) }, optionsForGet)
-      .then(ifResponseIsNot404(ctx, authorizeThenGetOtherPlayerData))
-      .then(ifStatusIsNot404(revealLetterAndReturnOtherPlayer))
-      .catch(handleErrorDuringRoute(ctx, createErrorMessage, errorArgs))
+    try {
+      const authorizeThenGetOtherPlayerData = createAuthorizeThenGetOtherPlayerData(
+          ctx
+        ),
+        revealLetterAndReturnOtherPlayer = createRevealLetterAndReturnOtherPlayer(
+          websocketServer
+        )
+
+      return dal.activeRoom
+        .get({ _id: hashToDocid(roomHash) }, optionsForGet)
+        .then(ifResponseIsNot404(ctx, authorizeThenGetOtherPlayerData))
+        .then(ifStatusIsNot404(revealLetterAndReturnOtherPlayer))
+        .catch(handleError)
+    } catch (error) {
+      return handleError(error)
+    }
   }
 }
 

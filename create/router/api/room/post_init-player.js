@@ -60,16 +60,22 @@ function createInitializePlayer(websocketServer) {
 
     const { displayName, word } = body,
       errorArgs = [playerHash, roomHash, displayName, word],
-      authorizeThenGetPlayerData = createAuthorizeThenGetPlayerData(
+      handleError = handleErrorDuringRoute(ctx, createErrorMessage, errorArgs)
+
+    try {
+      const authorizeThenGetPlayerData = createAuthorizeThenGetPlayerData(
         ctx,
         playerHash
       )
 
-    return dal.activeRoom
-      .get({ _id: hashToDocid(roomHash) }, optionsForGet)
-      .then(ifResponseIsNot404(ctx, authorizeThenGetPlayerData))
-      .then(ifStatusIsNot404(initPlayerAndReturnBothPlayersData))
-      .catch(handleErrorDuringRoute(ctx, createErrorMessage, errorArgs))
+      return dal.activeRoom
+        .get({ _id: hashToDocid(roomHash) }, optionsForGet)
+        .then(ifResponseIsNot404(ctx, authorizeThenGetPlayerData))
+        .then(ifStatusIsNot404(initPlayerAndReturnBothPlayersData))
+        .catch(handleError)
+    } catch (error) {
+      return handleError(error)
+    }
   }
 }
 

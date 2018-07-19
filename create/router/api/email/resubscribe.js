@@ -46,12 +46,18 @@ function createPostRoute(resubscribeRouter) {
       const { emailSentHash } = ctx.params,
         { type } = ctx.request.body,
         errorArgs = [type, emailSentHash],
-        resubscribeToType = createResubscribeToType(ctx, type)
+        handleError = handleErrorDuringRoute(ctx, createErrorMessage, errorArgs)
 
-      return dal.emailSent
-        .get({ _id: hashToDocid(emailSentHash) }, optionsForGet)
-        .then(ifResponseIsNot404(ctx, resubscribeToType))
-        .catch(handleErrorDuringRoute(ctx, createErrorMessage, errorArgs))
+      try {
+        const resubscribeToType = createResubscribeToType(ctx, type)
+
+        return dal.emailSent
+          .get({ _id: hashToDocid(emailSentHash) }, optionsForGet)
+          .then(ifResponseIsNot404(ctx, resubscribeToType))
+          .catch(handleError)
+      } catch (error) {
+        return handleError(error)
+      }
     })
   )
 }

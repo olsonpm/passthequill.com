@@ -3,6 +3,7 @@
 //---------//
 
 import dedent from 'dedent'
+import dedentMacro from 'dedent'
 
 import { RateLimit } from 'koa2-ratelimit'
 
@@ -33,11 +34,9 @@ function getLogIpRateLimiter() {
     keyGenerator: ctx => ctx.request.ip,
     onLimitReached: ctx => {
       log.http.concern(
-        dedent(`
-          Max log rate limit reached for ip: ${ctx.request.ip}
-            max: ${max}
-            interval: ${jstring(interval)}
-        `)
+        `Max log rate limit reached for ip: ${ctx.request.ip}` +
+          `\n  max: ${max}` +
+          `\n  interval: ${jstring(interval)}`
       )
     },
     message: 'Too many logs created from this IP',
@@ -58,14 +57,12 @@ function getLogConstantRateLimiter() {
     keyGenerator: () => 'constant',
     onLimitReached: () => {
       log.http.concern(
-        dedent(`
-          Max log constant rate limit reached
-            max: ${max}
-            interval: ${jstring(interval)}
-        `)
+        'Max log constant rate limit reached' +
+          `\n  max: ${max}` +
+          `\n  interval: ${jstring(interval)}`
       )
     },
-    message: dedent(`
+    message: dedentMacro(`
       Unfortunately it seems this server is getting spammed with requests.
         Please understand that on the web it's difficult to prevent determined
         "bad guys".

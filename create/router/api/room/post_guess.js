@@ -63,16 +63,22 @@ function createAddGuess(websocketServer) {
     const { playerHash, roomHash } = ctx.params,
       guess = ctx.request.body,
       errorArgs = [playerHash, roomHash, guess],
-      authorizeThenGetPlayerData = createAuthorizeThenGetPlayerData(
+      handleError = handleErrorDuringRoute(ctx, createErrorMessage, errorArgs)
+
+    try {
+      const authorizeThenGetPlayerData = createAuthorizeThenGetPlayerData(
         ctx,
         playerHash
       )
 
-    return dal.activeRoom
-      .get({ _id: hashToDocid(roomHash) }, optionsForGet)
-      .then(ifResponseIsNot404(ctx, authorizeThenGetPlayerData))
-      .then(ifStatusIsNot404(addGuessAndReturnCurrentPlayer))
-      .catch(handleErrorDuringRoute(ctx, createErrorMessage, errorArgs))
+      return dal.activeRoom
+        .get({ _id: hashToDocid(roomHash) }, optionsForGet)
+        .then(ifResponseIsNot404(ctx, authorizeThenGetPlayerData))
+        .then(ifStatusIsNot404(addGuessAndReturnCurrentPlayer))
+        .catch(handleError)
+    } catch (error) {
+      return handleError(error)
+    }
   }
 }
 

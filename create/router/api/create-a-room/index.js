@@ -34,35 +34,39 @@ const ifRequestIsValid = createIfRequestIsValid('createARoom'),
 
 const post = ifRequestIsValid(ctx => {
   const { player1Email, player2Email } = ctx.request.body,
-    sendEmails = createSendEmails(player1Email, player2Email)
+    handleError = handleErrorDuringRoute(ctx, createErrorMessage, [
+      player1Email,
+      player2Email,
+    ])
 
-  return encryptAllEmails([player1Email, player2Email])
-    .then(getUnsubscribedTypes)
-    .then(
-      ifNotUnsubscribed([
-        createEmailSentRecords,
-        createGameAndPlayers,
-        sendEmails,
-      ])
-    )
-    .then(({ unsubscribedPlayers = [] }) => {
-      ctx.status = 200
+  try {
+    const sendEmails = createSendEmails(player1Email, player2Email)
 
-      const result = isLaden(unsubscribedPlayers)
-        ? 'emails were not sent due to one or both players being unsubscribed'
-        : 'emails sent successfully'
+    return encryptAllEmails([player1Email, player2Email])
+      .then(getUnsubscribedTypes)
+      .then(
+        ifNotUnsubscribed([
+          createEmailSentRecords,
+          createGameAndPlayers,
+          sendEmails,
+        ])
+      )
+      .then(({ unsubscribedPlayers = [] }) => {
+        ctx.status = 200
 
-      ctx.body = {
-        result,
-        unsubscribedPlayers,
-      }
-    })
-    .catch(
-      handleErrorDuringRoute(ctx, createErrorMessage, [
-        player1Email,
-        player2Email,
-      ])
-    )
+        const result = isLaden(unsubscribedPlayers)
+          ? 'emails were not sent due to one or both players being unsubscribed'
+          : 'emails sent successfully'
+
+        ctx.body = {
+          result,
+          unsubscribedPlayers,
+        }
+      })
+      .catch(handleError)
+  } catch (error) {
+    return handleError(error)
+  }
 })
 
 function getUnsubscribedTypes(encryptedEmails) {
