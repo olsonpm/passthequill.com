@@ -1,6 +1,6 @@
 <template>
   <div :class="{ 'game-over': isGameOver }">
-    <div v-if="isTabletOrLarger"
+    <div v-if="screenSizeIsTabletOrLarger"
       class="board tablets-and-larger">
 
       <status ref="tabletsAndLarger_statusComponent"
@@ -63,7 +63,7 @@
       </div>
     </div>
 
-    <div v-if="isPhoneOrSmaller"
+    <div v-if="screenSizeIsPhoneOrSmaller"
       class="board phones-and-smaller">
 
       <div class="sticky-header"
@@ -191,7 +191,10 @@ import { combineAll, isLaden, last } from 'fes'
 // Init //
 //------//
 
-const { mapState: mapScreenSizeState } = createNamespacedHelpers('screenSize'),
+const {
+    mapGetters: mapScreenSizeGetters,
+    mapState: mapScreenSizeState,
+  } = createNamespacedHelpers('screenSize'),
   {
     mapGetters: mapRoomGetters,
     mapState: mapRoomState,
@@ -291,11 +294,8 @@ export default {
       },
     },
     screenSize: {
-      hasInitialized() {
-        if (this.isPhoneOrSmaller) {
-          this.createTouchManager()
-          this.initStickyHeader()
-        }
+      wasInitialized() {
+        this.maybeInitializeMobileView()
       }
     },
   },
@@ -310,8 +310,12 @@ export default {
     state.showEnterGuess = currentPlayerMustGuess
   },
 
+  mounted() {
+    this.maybeInitializeMobileView()
+  },
+
   watch: {
-    isPhoneOrSmaller(value) {
+    screenSizeIsPhoneOrSmaller(value) {
       // nextTick is necessary because otherwise the referenced element
       //   `phonesAndSmaller_playerViewEl` won't have been rendered
       if (value) this.$nextTick(() => this.createTouchManager())
@@ -353,6 +357,7 @@ export default {
         slidePosition: 0,
 
         stickyHeaderIsStuck: false,
+        mobileViewWasInitialized: false,
       },
     }
   },
@@ -396,7 +401,7 @@ export default {
       }
     },
     getRef(name) {
-      const prefix = this.isPhoneOrSmaller
+      const prefix = this.screenSizeIsPhoneOrSmaller
         ? 'phonesAndSmaller_'
         : 'tabletsAndLarger_'
 
@@ -405,6 +410,19 @@ export default {
     initStickyHeader() {
       this.maybeToggleStuck()
       window.addEventListener('scroll', this.maybeToggleStuck)
+    },
+    maybeInitializeMobileView() {
+      const { screenSizeIsPhoneOrSmaller, screenSizeWasInitialized, state } = this
+
+      if (
+        !state.mobileViewWasInitialized
+        && screenSizeWasInitialized
+        && screenSizeIsPhoneOrSmaller
+      ) {
+        state.mobileViewWasInitialized = true
+        this.createTouchManager()
+        this.initStickyHeader()
+      }
     },
     maybeToggleStuck() {
       const { $refs, state } = this,
@@ -502,16 +520,20 @@ function getComputedProperties() {
       'isFriendsTurn',
       'otherPlayerHasGuessed',
     ]),
-    vuexScreenSizeState = mapScreenSizeState([
-      'isPhoneOrSmaller',
-      'isTabletOrLarger',
-    ]),
+    vuexScreenSizeGetters = mapScreenSizeGetters({
+      screenSizeWasInitialized: 'wasInitialized',
+    }),
+    vuexScreenSizeState = mapScreenSizeState({
+      screenSizeIsPhoneOrSmaller: 'isPhoneOrSmaller',
+      screenSizeIsTabletOrLarger: 'isTabletOrLarger',
+    }),
     localState = getLocalComputedProperties()
 
   return combineAll.objects([
     vuexRoomState,
     vuexRoomGetters,
     vuexScreenSizeState,
+    vuexScreenSizeGetters,
     localState,
   ])
 }

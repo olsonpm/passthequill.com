@@ -9,7 +9,7 @@
 //     In the future I could set a cookie that sends the result of
 //     `window.matchMedia` to the server upon every request, but for now I'm
 //     just going to render everything on the server and trigger the state
-//     change when the app is 'mounted'
+//     change after the app is 'mounted'
 //
 
 const screenSize = {
@@ -19,6 +19,20 @@ const screenSize = {
     isSmallPhone: true,
     isTabletOrLarger: true,
   }),
+  getters: {
+    wasInitialized(state) {
+      //
+      // if all the breakpoints are true then we haven't initialized the screen
+      //   size yet
+      //
+      return !(
+        state.isPhoneOrLarger &&
+        state.isPhoneOrSmaller &&
+        state.isSmallPhone &&
+        state.isTabletOrLarger
+      )
+    },
+  },
   mutations: {
     setIsPhoneOrSmaller(state, value) {
       state.isPhoneOrSmaller = value

@@ -193,6 +193,9 @@ const room = {
         })
     },
     changeSubViewName({ commit }, { subViewName }) {
+      //
+      // TODO: move addAppClass into 'created' of game/index.vue
+      //
       if (subViewName === 'game') {
         commit('addAppClass', 'game', { root: true })
       }

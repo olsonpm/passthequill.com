@@ -116,7 +116,7 @@ export default {
       return this.$nextTick()
     })
     .then(() => {
-      this.$eventManager.publish('screenSize/hasInitialized')
+      this.$eventManager.publish('screenSize/wasInitialized')
     })
   },
   beforeDestroy() {
