@@ -155,7 +155,7 @@
       </ul>
     </div>
     <div v-if="isGameOver"
-      class="game-over"
+      class="game-over-message"
       ref="gameOverEl"
       data-animate="{ duration: { opacity: 'slow' } }">
 
@@ -619,6 +619,10 @@ function getLocalComputedProperties() {
       > .board.phones-and-smaller > ul.player-view {
         @include res-aware-element-spacing('padding-bottom', 'lg');
       }
+
+      > .game-over-message {
+        @include res-aware-element-spacing(('padding-left', 'padding-right'), 'lg');
+      }
     }
   }
 
@@ -627,7 +631,7 @@ function getLocalComputedProperties() {
       @include res-aware-element-spacing('margin-top', 'md');
     }
 
-    > .game-over {
+    > .game-over-message {
       max-width: $column-width * 2;
     }
   }
