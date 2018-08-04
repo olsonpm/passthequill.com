@@ -2,6 +2,7 @@
 // Imports //
 //---------//
 
+import couchdbBase64 from 'couchdb-base64'
 import tedent from 'tedent'
 
 import { authorize, getCurrentPlayerData } from '../helpers'
@@ -30,10 +31,11 @@ function createPostDisableGuide({ router }) {
 }
 
 function disableGuideAndReturnResult({ ctx, currentPlayer }) {
-  const { encryptedEmail } = currentPlayer
+  const { encryptedEmail } = currentPlayer,
+    _id = couchdbBase64.encodeFromString(encryptedEmail)
 
   return dal.guide
-    .get({ _id: encryptedEmail })
+    .get({ _id })
     .then(guideData => {
       guideData.isActive = false
 

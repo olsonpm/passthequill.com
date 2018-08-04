@@ -67,7 +67,7 @@ function getOtherPlayerMustJoinContent() {
 function getRevealOnlyLetterContent() {
   return tedent(`
     <p>
-      Your friend's guess matched a single letter.
+      Your friend's guess matched a single&nbsp;letter.
     </p>
     <p>
       Having to click the only matching letter may seem silly, but if I

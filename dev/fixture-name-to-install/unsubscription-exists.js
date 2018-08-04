@@ -2,6 +2,7 @@
 // Imports //
 //---------//
 
+import couchdbBase64 from 'couchdb-base64'
 import tedent from 'tedent'
 
 import { docidToHash } from '../../lib/server/db'
@@ -37,7 +38,7 @@ const install = () =>
 
 function createUnsubscription() {
   return dal.emailUnsubscription.create({
-    _id: encryptedEmail,
+    _id: couchdbBase64.encodeFromString(encryptedEmail),
     types: ['all', 'invitation', 'room-created'],
   })
 }

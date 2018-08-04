@@ -2,6 +2,7 @@
 // Imports //
 //---------//
 
+import couchdbBase64 from 'couchdb-base64'
 import tedent from 'tedent'
 
 import { docidToHash } from '../../lib/server/db'
@@ -35,8 +36,12 @@ const install = () => {
     createRoom(),
     createEmailSentRecord(test1EncryptedEmail, 'room-created', 1),
     createEmailSentRecord(test2EncryptedEmail, 'invitation', 2),
-    dal.guide.create({ _id: test1EncryptedEmail }),
-    dal.guide.create({ _id: test2EncryptedEmail }),
+    dal.guide.create({
+      _id: couchdbBase64.encodeFromString(test1EncryptedEmail),
+    }),
+    dal.guide.create({
+      _id: couchdbBase64.encodeFromString(test2EncryptedEmail),
+    }),
   ])
     .then(createPlayers)
     .then(roomAndPlayerData => {

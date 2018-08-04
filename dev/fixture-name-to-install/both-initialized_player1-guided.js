@@ -9,6 +9,7 @@
 // Imports //
 //---------//
 
+import couchdbBase64 from 'couchdb-base64'
 import tedent from 'tedent'
 
 import { docidToHash } from '../../lib/server/db'
@@ -126,6 +127,8 @@ function createPlayersAndSetupGuides([roomData, player1Guide, player2Guide]) {
 }
 
 function setupGuide({ _id }) {
+  _id = couchdbBase64.encodeFromString(_id)
+
   return dal.guide.get({ _id }).then(guideData => {
     mAssignOver(guideData.understands)({
       displayNameAndSecretWord: true,
@@ -136,6 +139,8 @@ function setupGuide({ _id }) {
 }
 
 function disableGuide({ _id }) {
+  _id = couchdbBase64.encodeFromString(_id)
+
   return dal.guide.get({ _id }).then(guideData => {
     guideData.isActive = false
     return dal.guide.update(guideData)

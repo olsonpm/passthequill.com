@@ -2,6 +2,7 @@
 // Imports //
 //---------//
 
+import couchdbBase64 from 'couchdb-base64'
 import tedent from 'tedent'
 
 import { mAssignOver } from 'fes'
@@ -52,9 +53,10 @@ function getRoom(ctx) {
 }
 
 function getGuideForCurrentPlayer(result) {
-  return dal.guide
-    .get({ _id: result.currentPlayer.encryptedEmail })
-    .then(guide => mAssignOver(result)({ guide }))
+  const { encryptedEmail } = result.currentPlayer,
+    _id = couchdbBase64.encodeFromString(encryptedEmail)
+
+  return dal.guide.get({ _id }).then(guide => mAssignOver(result)({ guide }))
 }
 
 function sanitizeAndReturnAllData(result) {
@@ -76,7 +78,7 @@ function createErrorMessage(ctx) {
   return {
     friendly: 'retrieving player data',
     detailed: tedent(`
-      error occurred during GET player
+      during GET player
         playerHash: ${playerHash}
         roomHash: ${roomHash}
     `),
