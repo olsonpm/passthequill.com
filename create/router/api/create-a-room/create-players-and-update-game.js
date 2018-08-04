@@ -66,27 +66,19 @@ const createGameAndPlayers = responses => {
 
 function maybeCreateGuides(player) {
   const createPlayer1Guide =
-    player.one.guide.status === '404'
-      ? dal.guide.create(createInitialGuideBody(player.one.encryptedEmail))
+    player.one.guide.status === 404
+      ? dal.guide.create({ _id: player.one.guideId })
       : null
 
   const createPlayer2Guide =
-    player.two.guide.status === '404'
-      ? dal.guide.create(createInitialGuideBody(player.two.encryptedEmail))
+    player.two.guide.status === 404
+      ? dal.guide.create({ _id: player.two.guideId })
       : null
 
   return resolveAllProperties({
     createPlayer1Guide,
     createPlayer2Guide,
   })
-}
-
-function createInitialGuideBody(encryptedEmail) {
-  return {
-    _id: encryptedEmail,
-    isActive: true,
-    understands: initialUnderstands,
-  }
 }
 
 function createPlayer(number, roomHash, encryptedEmail) {

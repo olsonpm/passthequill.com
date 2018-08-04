@@ -73,9 +73,9 @@
       </li>
       <li>
         <p>
-          When you're waiting on your friend for something there will instead
-          be a blue clock icon.  In the game you can tap it to get a status
-          update on your&nbsp;friend.
+          When you're waiting on your friend there will instead be a blue clock
+          icon.  In the game you can tap it to get a status update on
+          your&nbsp;friend.
         </p>
 
         <p>Click 'next' to move&nbsp;on</p>
@@ -263,10 +263,12 @@ export default {
       return Promise.all([
         this.hideCurrentStep(),
         animateHide($refs.statusComponent),
-      ]).then(() => Promise.all([
-        this.showNextStep(),
-        animateShow($refs.displayNamesWrapperEl),
-      ]))
+      ]).then(() =>
+        Promise.all([
+          this.showNextStep(),
+          animateShow($refs.displayNamesWrapperEl),
+        ])
+      )
     },
     revealStatusAlert() {
       const { $refs, state } = this

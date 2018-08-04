@@ -2,6 +2,7 @@
 // Imports //
 //---------//
 
+import couchdbBase64 from 'couchdb-base64'
 import KoaRouter from 'koa-router'
 import tedent from 'tedent'
 
@@ -64,7 +65,7 @@ function createPostRoute(resubscribeRouter) {
 function createResubscribeToType(ctx, type) {
   return ({ to: encryptedEmail }) =>
     dal.emailUnsubscription
-      .get({ _id: encryptedEmail })
+      .get({ _id: couchdbBase64.encodeFromString(encryptedEmail) })
       .then(({ _id, _rev, types: unsubscribedTypes }) => {
         // remember we're subscribed if we're _not_ unsubscribed
         const isAlreadySubscribed = !containedIn(unsubscribedTypes)(type)

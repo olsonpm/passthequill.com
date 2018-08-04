@@ -427,6 +427,7 @@ function getSubView(getRoomResponseData) {
 
     return findFirstValueWithTruthyKey([
       [isInitialGuide && !displayName, introduceGuide],
+      [understands.gameRoomBasics && !displayName, initPlayer],
       [!displayName, enterDisplayName],
       [!secretWord, enterSecretWord],
       [!understands.gameRoomBasics, firstTime],

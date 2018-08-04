@@ -2,6 +2,7 @@
 // Imports //
 //---------//
 
+import couchdbBase64 from 'couchdb-base64'
 import tedent from 'tedent'
 
 import { authorize, getCurrentPlayerData } from '../helpers'
@@ -49,10 +50,11 @@ function getPlayerDataAndMarkAsUnderstood(ctx) {
 
 function updateGuide({ ctx, currentPlayer }) {
   const { understands: understandsKey } = ctx.request.body,
-    { encryptedEmail } = currentPlayer
+    { encryptedEmail } = currentPlayer,
+    _id = couchdbBase64.encodeFromString(encryptedEmail)
 
   return dal.guide
-    .get({ _id: encryptedEmail })
+    .get({ _id })
     .then(guideData => {
       guideData.understands[understandsKey] = true
       return dal.guide.update(guideData)

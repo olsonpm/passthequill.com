@@ -2,6 +2,7 @@
 // Imports //
 //---------//
 
+import couchdbBase64 from 'couchdb-base64'
 import tedent from 'tedent'
 
 import createEmailSentRecordsAndRoom from './create-email-sent-records-and-room'
@@ -77,11 +78,11 @@ function getUnsubscribedTypes(encryptedEmails) {
 }
 
 function getEmailUnsubscriptionTypes(encryptedEmail) {
-  return dal.emailUnsubscription
-    .get({ _id: encryptedEmail }, optionsForGet)
-    .then(response => {
-      return response.status === 404 ? [] : response.data.types
-    })
+  const _id = couchdbBase64.encodeFromString(encryptedEmail)
+
+  return dal.emailUnsubscription.get({ _id }, optionsForGet).then(response => {
+    return response.status === 404 ? [] : response.data.types
+  })
 }
 
 function createErrorMessage(ctx) {

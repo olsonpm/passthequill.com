@@ -9,9 +9,11 @@
 // Imports //
 //---------//
 
+import couchdbBase64 from 'couchdb-base64'
+
 import { log, logError, resolveAll, then } from 'universal/utils'
 import { couchdb } from 'server/api'
-import { combine, getValueAt, map, passThrough, unique } from 'fes'
+import { combine, getValueAt, map, mMap, passThrough, unique } from 'fes'
 
 //
 //------//
@@ -43,9 +45,8 @@ const createGuides = () =>
 
 function createAllGuides([guide, allEmailHashes]) {
   return passThrough(allEmailHashes, [
-    map(anEmailHash =>
-      guide.createDocument(combine({ _id: anEmailHash })(initialGuideData))
-    ),
+    map(emailHash => couchdbBase64.encodeFromString(emailHash)),
+    mMap(_id => guide.createDocument(combine({ _id })(initialGuideData))),
     resolveAll,
     then(allGuides => ({ guideAccessor: guide, allGuides })),
   ])

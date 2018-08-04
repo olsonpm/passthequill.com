@@ -2,6 +2,8 @@
 // Imports //
 //---------//
 
+import couchdbBase64 from 'couchdb-base64'
+
 import { dal } from 'server/db'
 import { resolveAllProperties } from 'universal/utils'
 
@@ -39,10 +41,13 @@ const createEmailSentRecordsAndRoom = encryptedEmails => {
 //------------------//
 
 function resolvePlayer(encryptedEmail, emailType) {
+  const guideId = couchdbBase64.encodeFromString(encryptedEmail)
+
   return resolveAllProperties({
     encryptedEmail,
     emailSentData: createEmailSentRecord(encryptedEmail, emailType),
-    guide: dal.guide.get({ _id: encryptedEmail }, guideOpts),
+    guide: dal.guide.get({ _id: guideId }, guideOpts),
+    guideId,
   })
 }
 

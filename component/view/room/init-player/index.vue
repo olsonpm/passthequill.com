@@ -130,7 +130,7 @@ export default {
       const { number } = this.currentPlayer
       mAssignOver(this.formData.inputs)({
         displayName: number === 1 ? 'Wonder Woman' : 'Strongbad',
-        secretWord: number === 1 ? 'super' : 'great'
+        secretWord: number === 1 ? 'super' : 'great',
       })
     }
   },
@@ -263,9 +263,9 @@ function getLocalComputedProperties() {
 function getStatusToMessage() {
   return {
     mustWaitForFriend: tedent(`
-      Looks like your friend hasn't entered in their display name and secret
-      word yet.  If you're sure they've received the invitation email then there
-      aint much to do other than wait in the game&nbsp;room.
+      Your friend hasn't entered the game yet.  If you're sure they've received
+      the invitation email then there aint much to do other than wait in the
+      game&nbsp;room.
     `),
     startGame: tedent(`
       You're ready to start&nbsp;playing!

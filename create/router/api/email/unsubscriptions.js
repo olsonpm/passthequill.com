@@ -2,6 +2,7 @@
 // Imports //
 //---------//
 
+import couchdbBase64 from 'couchdb-base64'
 import KoaRouter from 'koa-router'
 
 import { dal, hashToDocid } from 'server/db'
@@ -52,8 +53,10 @@ function createGetRoute(unsubscriptionsRouter) {
 
 function createReturnUnsubscriptions(ctx) {
   return ({ to: encryptedEmail }) => {
+    const _id = couchdbBase64.encodeFromString(encryptedEmail)
+
     return dal.emailUnsubscription
-      .get({ _id: encryptedEmail }, optionsForGet)
+      .get({ _id }, optionsForGet)
       .then(response => {
         const types = response.status === 404 ? [] : response.data.types
 
