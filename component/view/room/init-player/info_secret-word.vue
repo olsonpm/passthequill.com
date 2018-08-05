@@ -5,7 +5,6 @@
     <ul class="bulleted">
       <li>Must be 5 letters</li>
       <li>Cannot use the same letter&nbsp;twice</li>
-      <li>Must be a real word</li>
     </ul>
 
     <p v-html="funGameNote" />

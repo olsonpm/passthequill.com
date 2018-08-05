@@ -8,11 +8,6 @@
       Let me guide you through your first&nbsp;game.
     </p>
 
-    <p class="sidenote">
-      If you've played before and are just using a new email address then click
-      'No&nbsp;Thanks'.
-    </p>
-
     <my-button type="button"
       text="Sure!"
       autofocus
@@ -20,13 +15,13 @@
       :on-click="continueWithGuide"
     />
 
-    <my-button type="button"
-      text="No Thanks"
-      class="no-thanks"
+    <simple-button type="button"
+      class="link no-thanks"
       can-only-click-once
-      secondary
-      :on-click="continueWithoutGuide"
-    />
+      :on-click="continueWithoutGuide">
+
+      <span>I've played before</span>
+    </simple-button>
   </div>
 </template>
 
@@ -61,8 +56,10 @@ export default {
     max-width: $desktop-single-column-content-width;
   }
 
-  .my-button.no-thanks {
+  button.no-thanks {
     @include res-aware-element-spacing('margin-left', 'lg');
+
+    line-height: $default-line-height;
   }
 }
 </style>

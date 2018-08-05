@@ -22,7 +22,9 @@ const logThenNewline = msg => {
 const test1EncryptedEmail =
     '$2b$04$7Umq.2nzEiMyGhgmQ2h8S.u6Ps74veAJJWW1b/iPFes9iuT8rpoYC',
   test2EncryptedEmail =
-    '$2b$04$7Umq.2nzEiMyGhgmQ2h8S.zvRdVlidIL8krbeEJi2CJYTnMfi6hYC'
+    '$2b$04$7Umq.2nzEiMyGhgmQ2h8S.zvRdVlidIL8krbeEJi2CJYTnMfi6hYC',
+  player1GuideId = couchdbBase64.encodeFromString(test1EncryptedEmail),
+  player2GuideId = couchdbBase64.encodeFromString(test2EncryptedEmail)
 
 //
 //------//
@@ -36,12 +38,8 @@ const install = () => {
     createRoom(),
     createEmailSentRecord(test1EncryptedEmail, 'room-created', 1),
     createEmailSentRecord(test2EncryptedEmail, 'invitation', 2),
-    dal.guide.create({
-      _id: couchdbBase64.encodeFromString(test1EncryptedEmail),
-    }),
-    dal.guide.create({
-      _id: couchdbBase64.encodeFromString(test2EncryptedEmail),
-    }),
+    dal.guide.create({ _id: player1GuideId }),
+    dal.guide.create({ _id: player2GuideId }),
   ])
     .then(createPlayers)
     .then(roomAndPlayerData => {

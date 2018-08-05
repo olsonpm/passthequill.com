@@ -12,7 +12,6 @@
       <ul class="bulleted">
         <li>Must be 5 letters</li>
         <li>Cannot use the same letter&nbsp;twice</li>
-        <li>Must be a real word</li>
       </ul>
 
       <p v-html="funGameNote" />
@@ -20,40 +19,13 @@
       <my-text-input id="secret-word"
         autofocus
         :parentComponent="this"
-        :placeholder="placeholder.secretWord"
-        :readonly="state.showSuccessInfo" />
+        :placeholder="placeholder.secretWord" />
 
       <my-button type="submit"
-        text="Submit"
+        text="Next"
         :active="state.submitActive"
         :disabled="formData.submitted && state.showSuccessInfo" />
-
-      <loading-check ref="loadingCheckComponent"
-        :loading="state.loading"
-        :success="state.success" />
     </my-form>
-
-    <div v-initially-removed
-      class="info-after-submit"
-      ref="infoAfterSubmitEl"
-      data-animate="{
-        duration: {
-          opacity: 'fast',
-          size: 'fast',
-        },
-        shouldAnimate: { height: true },
-      }">
-
-      <h3>Got it<party /></h3>
-
-      <p>Time to introduce you to the game&nbsp;room.</p>
-
-      <my-button can-only-click-once
-        type="button"
-        text="Ok"
-        class="ok"
-        :on-click="okClicked" />
-    </div>
   </div>
 </template>
 
@@ -67,9 +39,7 @@ import funGameNote from 'universal/html-snippets/fun-game-note'
 
 import { createNamespacedHelpers } from 'vuex'
 import { combineAll } from 'fes'
-import { animateShow } from 'client/utils'
-import { getRandomElementFrom, settleAll } from 'universal/utils'
-import { waitFor } from '../helpers'
+import { getRandomElementFrom } from 'universal/utils'
 import {
   exampleDisplayNameAndSecretWordPairs,
   invalidWordMessage,
@@ -127,12 +97,9 @@ export default {
   computed: getComputedProperties(),
 
   methods: {
-    okClicked() {
-      const mobileOrDesktop = this.isPhoneOrSmaller ? 'mobile' : 'desktop'
-      this.transitionTo(`first-time-${mobileOrDesktop}`)
-    },
+    okClicked() {},
     onSubmit() {
-      const { $myStore, $refs, formData, formObject, state } = this
+      const { $myStore, formData, formObject } = this
 
       if (!formObject.isValid()) {
         return $myStore.dispatch('notifyError/tryToShow', {
@@ -142,27 +109,13 @@ export default {
         $myStore.dispatch('notifyError/tryToHide')
       }
 
-      state.loading = true
-      const understands = 'displayNameAndSecretWord'
+      const understands = 'displayNameAndSecretWord',
+        mobileOrDesktop = this.isPhoneOrSmaller ? 'mobile' : 'desktop'
 
-      return settleAll([
-        this.$myStore.dispatch('room/setSecretWord', formData.inputs),
-        this.$myStore.dispatch('room/markAsUnderstood', { understands }),
-        animateShow($refs.loadingCheckComponent),
-        waitFor.animation.loadingCircle(),
-      ])
-        .then(([setSecretWordResult]) => {
-          const { status, value } = setSecretWordResult
-          return Promise[status](value)
-        })
-        .then(() => {
-          state.success = true
-          return waitFor.animation.successCheck()
-        })
-        .then(() => {
-          state.showSuccessInfo = true
-          return animateShow($refs.infoAfterSubmitEl)
-        })
+      $myStore.dispatch('room/setSecretWord', formData.inputs)
+      $myStore.dispatch('room/markAsUnderstood', { understands })
+
+      return this.transitionTo(`first-time-${mobileOrDesktop}`)
     },
     setPlaceholder() {
       const [displayName, secretWord] = getRandomElementFrom(

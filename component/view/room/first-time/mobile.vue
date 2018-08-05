@@ -59,7 +59,7 @@
         </p>
         <p>
           When it's your turn there will be a question mark beside it.  Tap it
-          if you're ever unsure what you're supposed to&nbsp;do.
+          if you're ever unsure what to&nbsp;do.
         </p>
         <p>Tap it now to move&nbsp;forward!</p>
       </li>
@@ -358,6 +358,8 @@ export default {
     },
     statusHelpClicked() {
       const { $myStore, state } = this
+
+      if (!state.statusHelpClicked) window.scrollTo(0, 0)
 
       $myStore.dispatch('lightbox/tryToShow', {
         content: statusHelpContent,

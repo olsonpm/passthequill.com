@@ -19,38 +19,12 @@
       <my-text-input id="display-name"
         autofocus
         :parentComponent="this"
-        :placeholder="placeholder.displayName"
-        :readonly="state.showSuccessInfo" />
+        :placeholder="placeholder.displayName"  />
 
       <my-button type="submit"
-        text="Submit"
-        :active="state.submitActive"
-        :disabled="formData.submitted && state.showSuccessInfo" />
-
-      <loading-check ref="loadingCheckComponent"
-        :loading="state.loading"
-        :success="state.success" />
-    </my-form>
-
-    <div v-initially-removed
-      class="info-after-submit"
-      ref="infoAfterSubmitEl"
-      data-animate="{
-        duration: {
-          opacity: 'fast',
-          size: 'fast',
-        },
-        shouldAnimate: { height: true },
-      }">
-
-      <h3>Got it<party /></h3>
-
-      <my-button can-only-click-once
-        type="button"
         text="Next"
-        class="ok"
-        :on-click="okClicked" />
-    </div>
+        :active="state.submitActive" />
+    </my-form>
   </div>
 </template>
 
@@ -110,10 +84,7 @@ export default {
     return {
       formData: createFormData(this.formObject),
       state: {
-        loading: false,
-        showSuccessInfo: false,
         submitActive: false,
-        success: null,
       },
     }
   },
@@ -121,11 +92,8 @@ export default {
   computed: getComputedProperties(),
 
   methods: {
-    okClicked() {
-      return this.transitionTo('enter-secret-word')
-    },
     onSubmit() {
-      const { $myStore, $refs, formData, formObject, state } = this
+      const { $myStore, formData, formObject } = this
 
       if (!formObject.isValid()) {
         return $myStore.dispatch('notifyError/tryToShow', {
@@ -135,25 +103,9 @@ export default {
         $myStore.dispatch('notifyError/tryToHide')
       }
 
-      state.loading = true
+      this.$myStore.dispatch('room/setDisplayName', formData.inputs)
 
-      return settleAll([
-        this.$myStore.dispatch('room/setDisplayName', formData.inputs),
-        animateShow($refs.loadingCheckComponent),
-        waitFor.animation.loadingCircle(),
-      ])
-        .then(([setDisplayNameResult]) => {
-          const { status, value } = setDisplayNameResult
-          return Promise[status](value)
-        })
-        .then(() => {
-          state.success = true
-          return waitFor.animation.successCheck()
-        })
-        .then(() => {
-          state.showSuccessInfo = true
-          return animateShow($refs.infoAfterSubmitEl)
-        })
+      return this.transitionTo('enter-secret-word')
     },
     setPlaceholder() {
       const [displayName, secretWord] = getRandomElementFrom(
