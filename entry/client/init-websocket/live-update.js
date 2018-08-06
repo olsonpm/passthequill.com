@@ -10,20 +10,17 @@
 //   there's no good reason to separate it as its own vuex module.  For now I'm
 //   just going to keep the event publishing and store mutations located here.
 //
-// TODO: Implement a clientSocketToDataQueue, where if a message can't be sent
-//   due to the client temporarily being disconnected, then the data is sent
-//   once the client comes back online and requests the queue.
-//
 
 //---------//
 // Imports //
 //---------//
 
+import tedent from 'tedent'
 import vue from 'vue'
 
 import { PersistentWebsocket } from 'persistent-websocket'
 import { liveUpdateWebsocket } from 'project-root/config/app'
-import { capitalizeFirstLetter } from 'universal/utils'
+import { capitalizeFirstLetter, logErrorToServer } from 'universal/utils'
 import { assignOver } from 'fes'
 
 //
@@ -38,7 +35,17 @@ const init = ({ eventManager, store, playerHash, roomHash }) => {
     }),
     handleUpdate = createHandleUpdate(eventManager, store)
 
-  liveUpdatePws.onopen = () => {
+  let downStartMs = 0
+
+  liveUpdatePws.onopen = theEvent => {
+    if (theEvent.wasReconnect) {
+      logErrorToServer({
+        context: "liveupdate websocket 'onopen' reconnect",
+        error: new Error(`downtime ms: ${+new Date() - downStartMs}`),
+        ignoreStack: true,
+      })
+    }
+
     liveUpdatePws.send(
       JSON.stringify({
         id: 'initial-connection',
@@ -50,10 +57,30 @@ const init = ({ eventManager, store, playerHash, roomHash }) => {
     )
   }
 
+  liveUpdatePws.onclose = theEvent => {
+    if (!theEvent.wasExpected) {
+      downStartMs = +new Date()
+    }
+
+    const { code, reason } = theEvent
+    if (code && code >= 4000 && code < 5000) {
+      logErrorToServer({
+        context: "liveupdate websocket 'onclose'",
+        error: new Error(
+          tedent(`
+            code: ${code}
+            reason: ${reason}
+          `)
+        ),
+        ignoreStack: true,
+      })
+    }
+  }
+
   liveUpdatePws.onmessage = event => {
     if (event.data === 'pong') return
 
-    JSON.parse(event.data).forEach(handleUpdate)
+    handleUpdate(JSON.parse(event.data))
   }
 
   liveUpdatePws.open()

@@ -8,11 +8,12 @@
 // Imports //
 //---------//
 
-import checkCertAndKeyDaily from 'server/check-cert-and-key-daily'
 import fs from 'fs'
 import http from 'http'
 import https from 'https'
 import ws from 'ws'
+
+import checkCertAndKeyDaily from 'server/check-cert-and-key-daily'
 
 import { forEach, isEmpty, pickAll } from 'fes'
 import { liveUpdateWebsocket } from 'project-root/config/app'
@@ -23,7 +24,6 @@ import { logErrorToServer, noop } from 'universal/utils'
 // Init //
 //------//
 
-// together these create a two-way map
 const playerHashToClientSockets = {},
   clientSocketToPlayerHash = new Map()
 
@@ -36,9 +36,8 @@ const useHttps = process.env.USE_HTTPS,
 //------//
 
 const createWebsocketServer = () => {
-  const certAndKey = useHttps ? getCertAndKey(certAndKeyPaths) : {}
-
-  const server = useHttps ? https.createServer(certAndKey) : http.createServer()
+  const certAndKey = useHttps ? getCertAndKey(certAndKeyPaths) : {},
+    server = useHttps ? https.createServer(certAndKey) : http.createServer()
 
   if (useHttps) checkCertAndKeyDaily(server, certAndKeyPaths)
 
@@ -106,11 +105,8 @@ function maybeUpdateClient({ data, playerHash }) {
 
   if (!clientSockets) return
 
-  const arrayOfData = Array.isArray(data) ? data : [data],
-    dataString = JSON.stringify(arrayOfData)
-
   forEach(ws => {
-    ws.send(dataString, handleSendError)
+    ws.send(JSON.stringify(data), handleSendError)
   })(clientSockets)
 }
 
