@@ -57,7 +57,9 @@ const distDir = path.resolve(__dirname, 'dist'),
   isDevelopment = process.env.NODE_ENV === 'development',
   shouldInitDevServer = process.env.SHOULD_INIT_DEV_SERVER,
   templatePath = path.resolve(__dirname, 'index.template.html'),
-  faviconPath = path.resolve(__dirname, 'assets/images/favicon'),
+  imagesPath = path.resolve(__dirname, 'assets/images'),
+  faviconPath = path.resolve(imagesPath, 'favicon'),
+  linkedinPath = path.resolve(imagesPath, 'for-linkedin.png'),
   webpackConfigs = {
     client: _client,
     ssr: _ssr,
@@ -76,12 +78,13 @@ maybeInitDevDatabase()
   .then(() =>
     resolveAllProperties({
       ico: readRawFile(faviconPath + '.ico'),
+      linkedin: readRawFile(linkedinPath),
       png16: readRawFile(faviconPath + '.16.png'),
       png32: readRawFile(faviconPath + '.32.png'),
     })
   )
-  .then(contents => {
-    const koaApp = createInitialKoaApp(contents)
+  .then(imageContents => {
+    const koaApp = createInitialKoaApp(imageContents)
 
     return isDevelopment && shouldInitDevServer
       ? initDevServer(koaApp)
@@ -115,21 +118,18 @@ maybeInitDevDatabase()
 // Helper Functions //
 //------------------//
 
-function createInitialKoaApp(faviconContents) {
-  const koaApp = new Koa()
+function createInitialKoaApp(imageContents) {
+  const koaApp = new Koa(),
+    imageToBody = getImageToBody(imageContents)
 
   // ensures request.ip is correct
   koaApp.proxy = true
 
   koaApp.use(koaCompress()).use((ctx, next) => {
-    if (ctx.url === '/favicon.ico') {
-      ctx.body = faviconContents.ico
-      return
-    } else if (ctx.url === '/favicon.png' || ctx.url === '/favicon.16.png') {
-      ctx.body = faviconContents.png16
-      return
-    } else if (ctx.url === '/favicon.32.png') {
-      ctx.body = faviconContents.png32
+    const maybeBody = imageToBody[ctx.url]
+    if (maybeBody) {
+      ctx.type = ctx.url === '/favicon.ico' ? 'image/x-icon' : 'image/png'
+      ctx.body = maybeBody
       return
     } else {
       return next()
@@ -137,6 +137,16 @@ function createInitialKoaApp(faviconContents) {
   })
 
   return koaApp
+}
+
+function getImageToBody(imageContents) {
+  return {
+    '/favicon.ico': imageContents.ico,
+    '/favicon.png': imageContents.png16,
+    '/favicon.16.png': imageContents.png16,
+    '/favicon.32.png': imageContents.png32,
+    '/for-linkedin.png': imageContents.linkedin,
+  }
 }
 
 //
