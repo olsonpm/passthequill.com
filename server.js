@@ -59,7 +59,6 @@ const distDir = path.resolve(__dirname, 'dist'),
   templatePath = path.resolve(__dirname, 'index.template.html'),
   imagesPath = path.resolve(__dirname, 'assets/images'),
   faviconPath = path.resolve(imagesPath, 'favicon'),
-  linkedinPath = path.resolve(imagesPath, 'for-linkedin.png'),
   webpackConfigs = {
     client: _client,
     ssr: _ssr,
@@ -78,7 +77,6 @@ maybeInitDevDatabase()
   .then(() =>
     resolveAllProperties({
       ico: readRawFile(faviconPath + '.ico'),
-      linkedin: readRawFile(linkedinPath),
       png16: readRawFile(faviconPath + '.16.png'),
       png32: readRawFile(faviconPath + '.32.png'),
     })
@@ -145,7 +143,6 @@ function getImageToBody(imageContents) {
     '/favicon.png': imageContents.png16,
     '/favicon.16.png': imageContents.png16,
     '/favicon.32.png': imageContents.png32,
-    '/for-linkedin.png': imageContents.linkedin,
   }
 }
 

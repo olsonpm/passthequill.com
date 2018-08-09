@@ -21,6 +21,10 @@ import { getModuleAliases, projectRootDirectory } from './helpers'
 
 const distDir = path.resolve(projectRootDirectory, 'dist'),
   isDevelopment = process.env.NODE_ENV === 'development',
+  linkedinPath = path.resolve(
+    projectRootDirectory,
+    'assets/images/for-linkedin.png'
+  ),
   pathToMappingsWasm = path.resolve(
     projectRootDirectory,
     'node_modules/source-map/lib/mappings.wasm'
@@ -55,7 +59,10 @@ const eventualConfig = createInlineTemplates().then(() => {
       extensions: ['.js', '.json', '.vue'],
     },
     plugins: [
-      new CopyPlugin([{ from: pathToMappingsWasm, to: distDir }]),
+      new CopyPlugin([
+        { from: pathToMappingsWasm, to: distDir },
+        { from: linkedinPath, to: distDir },
+      ]),
       new FriendlyErrorsPlugin(),
       new webpack.DefinePlugin({
         'process.env.BASE_URL': `'${baseUrl.local}/'`,
