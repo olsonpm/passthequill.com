@@ -2,7 +2,7 @@
 // Imports //
 //---------//
 
-import { log, logError, resolveAll } from 'universal/utils'
+import { log, resolveAll } from 'universal/utils'
 import { couchdb } from 'server/api'
 import { map, mMap, passThrough } from 'fes'
 
@@ -25,9 +25,6 @@ const wordToSecretWord = () =>
     .then(initHasEnteredGameForAllPlayers)
     .then(() => {
       log('migration finished: 001_word-to-secret-word')
-    })
-    .catch(err => {
-      logError(err)
     })
 
 //

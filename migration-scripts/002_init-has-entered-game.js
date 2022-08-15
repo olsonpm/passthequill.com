@@ -2,7 +2,7 @@
 // Imports //
 //---------//
 
-import { log, logError, resolveAll } from 'universal/utils'
+import { log, resolveAll } from 'universal/utils'
 import { couchdb } from 'server/api'
 import { hasKey, map, mAssignOver, mMap, passThrough } from 'fes'
 
@@ -25,9 +25,6 @@ const initHasEnteredGame = () =>
     .then(initHasEnteredGameForAllPlayers)
     .then(() => {
       log('migration finished: 002_init-has-entered')
-    })
-    .catch(err => {
-      logError(err)
     })
 
 //

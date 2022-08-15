@@ -11,7 +11,7 @@
 
 import couchdbBase64 from 'couchdb-base64'
 
-import { log, logError, resolveAll, then } from 'universal/utils'
+import { log, resolveAll, then } from 'universal/utils'
 import { couchdb } from 'server/api'
 import { combine, getValueAt, map, mMap, passThrough, unique } from 'fes'
 
@@ -33,9 +33,6 @@ const createGuides = () =>
     .then(createAllGuides)
     .then(() => {
       log('migration finished: 000_add-guide')
-    })
-    .catch(err => {
-      logError(err)
     })
 
 //
