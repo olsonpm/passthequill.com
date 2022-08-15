@@ -20,7 +20,7 @@ import { combine, getValueAt, map, mMap, passThrough, unique } from 'fes'
 // Init //
 //------//
 
-const { createDbAccessor, createDbAndAccessor, getAllIds } = couchdb,
+const { createDbAccessor, getAllIds } = couchdb,
   initialGuideData = getInitialGuideData()
 
 //
@@ -29,7 +29,7 @@ const { createDbAccessor, createDbAndAccessor, getAllIds } = couchdb,
 //------//
 
 const createGuides = () =>
-  Promise.all([createDbAndAccessor('guide'), getAllEmailHashes()])
+  Promise.all([createDbAccessor('guide'), getAllEmailHashes()])
     .then(createAllGuides)
     .then(() => {
       log('migration finished: 000_add-guide')
