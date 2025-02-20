@@ -8,14 +8,10 @@
 // Imports //
 //---------//
 
-import fs from 'fs'
 import http from 'http'
-import https from 'https'
 import ws from 'ws'
 
-import checkCertAndKeyDaily from 'server/check-cert-and-key-daily'
-
-import { forEach, isEmpty, pickAll } from 'fes'
+import { forEach, isEmpty } from 'fes'
 import { liveUpdateWebsocket } from 'project-root/config/app'
 import { logErrorToServer, noop } from 'universal/utils'
 
@@ -27,19 +23,13 @@ import { logErrorToServer, noop } from 'universal/utils'
 const playerHashToClientSockets = {},
   clientSocketToPlayerHash = new Map()
 
-const useHttps = process.env.USE_HTTPS,
-  certAndKeyPaths = pickAll(['pathToCert', 'pathToKey'])(liveUpdateWebsocket)
-
 //
 //------//
 // Main //
 //------//
 
 const createWebsocketServer = () => {
-  const certAndKey = useHttps ? getCertAndKey(certAndKeyPaths) : {},
-    server = useHttps ? https.createServer(certAndKey) : http.createServer()
-
-  if (useHttps) checkCertAndKeyDaily(server, certAndKeyPaths)
+  const server = http.createServer()
 
   const websocketServer = new ws.Server({ server })
 
@@ -143,13 +133,6 @@ function handleErrorEvent(error) {
     context: 'in error event of liveUpdate websocket',
     error,
   })
-}
-
-function getCertAndKey({ pathToCert, pathToKey }) {
-  return {
-    cert: fs.readFileSync(pathToCert),
-    key: fs.readFileSync(pathToKey),
-  }
 }
 
 //
