@@ -37,7 +37,7 @@ import debugConfig from 'project-root/config/debug'
 import { createBundleRenderer } from 'vue-server-renderer'
 import { createAllDatabases, deleteAllDatabases } from 'server/db'
 import { readFile, readRawFile } from 'server/utils'
-import { persistentStaticDir, serverPort } from 'project-root/config/app'
+import { serverPort } from 'project-root/config/app'
 import {
   jstring,
   logError,
@@ -92,10 +92,6 @@ maybeInitDevDatabase()
     const router = createRouter(getRenderer)
 
     if (!isDevelopment || !shouldInitDevServer) {
-      if (persistentStaticDir) {
-        koaApp.use(koaStatic(persistentStaticDir, { hidden: true }))
-      }
-
       koaApp.use(koaStatic(distDir))
     }
 
