@@ -119,5 +119,6 @@
     "plugins": [
       "vue"
     ]
-  }
+  },
+  "packageManager": "npm@7.24.2"
 }
