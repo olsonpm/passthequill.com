@@ -25,8 +25,6 @@ import koaStatic from 'koa-static'
 import koaVueSsr_initDevServer from 'koa-vue-ssr_init-dev-server'
 import path from 'path'
 
-import _client from './config/webpack/client'
-import _ssr from './config/webpack/ssr'
 import createApiRouter from './create/router/api'
 import createDebugRouter from './create/router/debug'
 import createPageRouter from './create/router/page'
@@ -59,10 +57,7 @@ const distDir = path.resolve(__dirname, 'dist'),
   templatePath = path.resolve(__dirname, 'index.template.html'),
   imagesPath = path.resolve(__dirname, 'assets/images'),
   faviconPath = path.resolve(imagesPath, 'favicon'),
-  webpackConfigs = {
-    client: _client,
-    ssr: _ssr,
-  },
+  webpackConfigs = debugConfig.webpackConfigs,
   fixtureNameCamel = 'roomExists',
   installFixture = () => fixtureNameToInstall[fixtureNameCamel]()
 
@@ -157,7 +152,7 @@ function initNonDevServer(koaApp) {
       // doesn't matter whether we use client or ssr output paths as they
       //   should be the same
       //
-      basedir: webpackConfigs.client.output.path,
+      basedir: distDir,
       cache: createLruCache({
         max: 1000,
         maxAge: 1000 * 60 * 15,
