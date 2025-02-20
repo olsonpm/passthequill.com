@@ -22,7 +22,6 @@ useHttps='true'
 
 if [ "${command}" = "build-dev" ]; then
   if [ "${1}" = "--include-ssr-assets" ]; then
-    buildSsrAssets='true'
     shouldInitDevServer='false'
     shift
   else
