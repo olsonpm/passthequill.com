@@ -7,3 +7,6 @@
 /migration-scripts/index.*
 /test.js
 /test
+/container/
+/build-log/
+/.env

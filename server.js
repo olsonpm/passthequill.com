@@ -15,6 +15,7 @@ import 'longjohn'
 // Imports //
 //---------//
 
+import axios from 'axios'
 import Koa from 'koa'
 import KoaRouter from 'koa-router'
 import chalk from 'chalk'
@@ -69,6 +70,7 @@ logUnhandledRejections()
 //------//
 
 maybeInitDevDatabase()
+  .then(() => maybeInitDatabases())
   .then(() =>
     resolveAllProperties({
       ico: readRawFile(faviconPath + '.ico'),
@@ -194,6 +196,12 @@ function maybeInitDevDatabase() {
   return deleteAllDatabases()
     .then(createAllDatabases)
     .then(installFixture)
+}
+
+function maybeInitDatabases() {
+  return axios.get('http://couchdb:5984/_all_dbs').then(res => {
+    return res.data.length > 1 ? undefined : createAllDatabases()
+  })
 }
 
 function createRouter(getRenderer) {
